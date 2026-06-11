@@ -1,0 +1,136 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { teams, generateMatches } from '../data/worldCupData';
+
+// Get Brazil's matches
+const allMatches = generateMatches();
+const brazilMatches = allMatches.filter(m => m.homeId === 'BR' || m.awayId === 'BR');
+
+// Get Group D teams
+const groupDTeams = Object.entries(teams)
+  .filter(([_, t]) => t.group === 'D')
+  .map(([id, t]) => ({ id, ...t }));
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SportsEvent",
+  "name": "Jogos do Brasil na Copa do Mundo 2026",
+  "description": "Confira todos os jogos da Seleção Brasileira na Copa do Mundo 2026. Veja adversários, datas, grupo e simule os resultados!",
+  "location": { "@type": "Place", "name": "Estádios nos EUA, México e Canadá" },
+  "startDate": "2026-06-11",
+  "endDate": "2026-07-19",
+  "competitor": [{ "@type": "SportsTeam", "name": "Brasil" }]
+};
+---
+
+<Layout
+  title="Jogos do Brasil na Copa 2026 — Tabela, Adversários e Simulador"
+  description="Veja todos os jogos da Seleção Brasileira na Copa do Mundo 2026! Confira o Grupo D, adversários, jogadores e simule os resultados. Quem será campeão?"
+>
+  <main class="container seo-group-page">
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+    <header>
+      <div class="logo-badge">Copa do Mundo 2026</div>
+      <h1>JOGOS DO BRASIL NA COPA 2026</h1>
+      <p class="subtitle">Confira todos os confrontos da Seleção Brasileira na fase de grupos e simule os resultados!</p>
+    </header>
+
+    <section class="glass-card seo-section">
+      <h2>🇧🇷 Brasil no Grupo D</h2>
+      <p style="color:var(--text-muted); margin-bottom:1rem;">
+        A Seleção Brasileira está no <strong>Grupo D</strong> da Copa do Mundo 2026 ao lado de {groupDTeams.filter(t => t.id !== 'BR').map(t => t.name).join(', ')}.
+      </p>
+      <div class="seo-teams-grid">
+        {groupDTeams.map(team => (
+          <div class={`seo-team-card glass-card ${team.id === 'BR' ? 'seo-team-highlight' : ''}`}>
+            <img
+              src={`https://flagcdn.com/64x48/${team.code}.png`}
+              alt={`Bandeira ${team.name}`}
+              width="64" height="48" loading="lazy"
+            />
+            <h3>{team.name}</h3>
+            <ul class="seo-players-list">
+              {team.players.map(p => <li>{p}</li>)}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <section class="glass-card seo-section">
+      <h2>📅 Jogos do Brasil</h2>
+      <table class="standing-table seo-matches-table">
+        <thead>
+          <tr>
+            <th>Rodada</th>
+            <th class="align-left">Mandante</th>
+            <th>vs</th>
+            <th class="align-left">Visitante</th>
+          </tr>
+        </thead>
+        <tbody>
+          {brazilMatches.map(m => {
+            const home = teams[m.homeId];
+            const away = teams[m.awayId];
+            return (
+              <tr>
+                <td style="text-align:center; font-weight:700; color:var(--color-accent);">{m.round}ª</td>
+                <td class="align-left">
+                  <img src={`https://flagcdn.com/20x15/${home.code}.png`} alt="" width="20" height="15" style="vertical-align:middle; margin-right:0.4rem;" loading="lazy" />
+                  <strong>{home.name}</strong>
+                </td>
+                <td style="text-align:center; color:var(--text-muted);">×</td>
+                <td class="align-left">
+                  <img src={`https://flagcdn.com/20x15/${away.code}.png`} alt="" width="20" height="15" style="vertical-align:middle; margin-right:0.4rem;" loading="lazy" />
+                  <strong>{away.name}</strong>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </section>
+
+    <section class="glass-card seo-section">
+      <h2>⭐ Destaques do Brasil</h2>
+      <div class="seo-players-highlight">
+        {teams['BR'].players.map(p => (
+          <div class="glass-card seo-player-pill">
+            <span>⚽</span> {p}
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <section class="glass-card seo-section seo-cta-section">
+      <h2>🏆 Monte Seu Palpite!</h2>
+      <p>Simule todos os jogos do Brasil e de todos os grupos, defina o mata-mata e descubra quem será o campeão da Copa do Mundo 2026!</p>
+      <a href="/" class="btn btn-primary seo-cta-btn">CRIAR MINHA SIMULAÇÃO →</a>
+    </section>
+  </main>
+
+  <style>
+    .seo-group-page { padding-bottom: 5rem; }
+    .seo-section { padding: 1.5rem; margin-bottom: 1.5rem; }
+    .seo-section h2 { color: var(--color-secondary); font-size: 1.2rem; font-weight: 800; margin-bottom: 1rem; }
+    .seo-teams-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+    .seo-team-card { padding: 1.25rem; text-align: center; border: 1px solid rgba(255,255,255,0.06); }
+    .seo-team-card img { margin: 0 auto 0.75rem; display: block; border-radius: 4px; }
+    .seo-team-card h3 { font-size: 1.05rem; margin-bottom: 0.5rem; }
+    .seo-team-highlight { border: 2px solid var(--color-primary) !important; box-shadow: 0 0 15px rgba(0,255,135,0.15); }
+    .seo-players-list { list-style: none; padding: 0; margin: 0; font-size: 0.85rem; color: var(--text-main); }
+    .seo-players-list li { padding: 0.15rem 0; }
+    .seo-matches-table { margin-bottom: 0; }
+    .seo-matches-table td, .seo-matches-table th { padding: 0.7rem 0.5rem; }
+    .seo-players-highlight { display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center; }
+    .seo-player-pill { padding: 0.6rem 1.2rem; font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 0.5rem; }
+    .seo-cta-section { text-align: center; }
+    .seo-cta-section p { max-width: 520px; margin: 0 auto 1.25rem; color: var(--text-muted); }
+    .seo-cta-btn { max-width: 320px; text-decoration: none; display: inline-block; }
+    @media (max-width: 640px) {
+      .seo-teams-grid { grid-template-columns: repeat(2, 1fr); }
+      .seo-section { padding: 1.1rem; }
+    }
+  </style>
+</Layout>

@@ -1,0 +1,70 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { teams, groups } from '../data/worldCupData';
+import { getAllGroupSEO } from '../data/seoGroups';
+
+const allGroups = getAllGroupSEO();
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SportsEvent",
+  "name": "Tabela da Copa do Mundo 2026",
+  "description": "Tabela completa da Copa do Mundo 2026 com todos os 12 grupos, 48 seleções e os jogos da fase de grupos.",
+  "location": { "@type": "Place", "name": "Estádios nos EUA, México e Canadá" },
+  "startDate": "2026-06-11",
+  "endDate": "2026-07-19"
+};
+---
+
+<Layout
+  title="Tabela da Copa do Mundo 2026 — Todos os Grupos e Seleções"
+  description="Veja a tabela completa da Copa 2026! Todos os 12 grupos, 48 seleções, jogos e classificação. Simule os resultados e descubra o campeão!"
+>
+  <main class="container seo-group-page">
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+    <header>
+      <div class="logo-badge">Copa do Mundo 2026</div>
+      <h1>TABELA DA COPA DO MUNDO 2026</h1>
+      <p class="subtitle">Todos os 12 grupos com 48 seleções. Confira os adversários e simule os resultados!</p>
+    </header>
+
+    {allGroups.map(g => (
+      <section class="glass-card seo-section">
+        <a href={`/${g.slug}`} class="seo-group-link">
+          <h2>Grupo {g.letter}</h2>
+        </a>
+        <div class="seo-mini-teams">
+          {g.teams.map(team => (
+            <div class="seo-mini-team">
+              <img src={`https://flagcdn.com/24x18/${team.code}.png`} alt={team.name} width="24" height="18" loading="lazy" />
+              <span>{team.name}</span>
+            </div>
+          ))}
+        </div>
+        <a href={`/${g.slug}`} class="seo-see-more">Ver jogos e destaques →</a>
+      </section>
+    ))}
+
+    <section class="glass-card seo-section seo-cta-section">
+      <h2>🏆 Simule Todos os Resultados!</h2>
+      <p>Monte seus palpites para todos os grupos, defina o chaveamento do mata-mata e descubra o campeão da Copa 2026!</p>
+      <a href="/" class="btn btn-primary seo-cta-btn">CRIAR MINHA SIMULAÇÃO →</a>
+    </section>
+  </main>
+
+  <style>
+    .seo-group-page { padding-bottom: 5rem; }
+    .seo-section { padding: 1.25rem 1.5rem; margin-bottom: 1rem; }
+    .seo-section h2 { color: var(--color-secondary); font-size: 1.15rem; font-weight: 800; margin-bottom: 0.75rem; }
+    .seo-group-link { text-decoration: none; }
+    .seo-group-link:hover h2 { color: var(--color-primary); }
+    .seo-mini-teams { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 0.75rem; }
+    .seo-mini-team { display: flex; align-items: center; gap: 0.4rem; font-size: 0.95rem; font-weight: 600; }
+    .seo-see-more { color: var(--color-primary); font-size: 0.85rem; font-weight: 700; text-decoration: none; }
+    .seo-see-more:hover { text-decoration: underline; }
+    .seo-cta-section { text-align: center; }
+    .seo-cta-section p { max-width: 520px; margin: 0 auto 1.25rem; color: var(--text-muted); }
+    .seo-cta-btn { max-width: 320px; text-decoration: none; display: inline-block; }
+  </style>
+</Layout>

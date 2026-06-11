@@ -1,0 +1,6 @@
+---
+import SeoGroupPage from '../components/SeoGroupPage.astro';
+import { getGroupSEO } from '../data/seoGroups';
+const seo = getGroupSEO('F');
+---
+<SeoGroupPage {...seo} />

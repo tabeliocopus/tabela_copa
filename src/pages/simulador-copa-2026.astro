@@ -1,0 +1,75 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Simulador da Copa do Mundo 2026",
+  "description": "Simulador interativo e gratuito da Copa do Mundo 2026. Monte seus palpites da fase de grupos ao mata-mata e descubra quem será campeão!",
+  "url": "https://tabelacopa.com/simulador-copa-2026",
+  "applicationCategory": "SportsApplication",
+  "operatingSystem": "Web",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "BRL" }
+};
+
+const features = [
+  { icon: '⚽', title: 'Fase de Grupos Completa', desc: 'Preencha placares dos 12 grupos com 48 seleções e veja a classificação ao vivo.' },
+  { icon: '🏆', title: 'Mata-Mata Automático', desc: 'Classificados avançam automaticamente. Defina os resultados até a grande final!' },
+  { icon: '👟', title: 'Artilharia', desc: 'Escolha os goleadores de cada jogo e veja o ranking de artilheiros da Copa.' },
+  { icon: '👥', title: 'Mini-Bolão', desc: 'Crie grupos com amigos, compare palpites e veja quem acerta mais!' },
+  { icon: '📢', title: 'Compartilhamento', desc: 'Salve sua simulação e compartilhe no WhatsApp, redes sociais ou por link.' },
+  { icon: '📊', title: 'Ranking Global', desc: 'Ganhe pontos por simular, compartilhar e convidar amigos. Suba no ranking!' }
+];
+---
+
+<Layout
+  title="Simulador Copa 2026 — Monte Seus Palpites Gratuitamente"
+  description="Use o simulador gratuito da Copa do Mundo 2026! Preencha placares, monte o chaveamento, escolha artilheiros e compartilhe com amigos. Totalmente interativo!"
+>
+  <main class="container seo-group-page">
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+    <header>
+      <div class="logo-badge">Copa do Mundo 2026</div>
+      <h1>SIMULADOR DA COPA DO MUNDO 2026</h1>
+      <p class="subtitle">Monte seus palpites, defina o campeão e compartilhe com seus amigos — 100% gratuito e interativo!</p>
+    </header>
+
+    <section class="glass-card seo-section">
+      <h2>🎮 Como Funciona</h2>
+      <div class="seo-features-grid">
+        {features.map(f => (
+          <div class="glass-card seo-feature-card">
+            <div class="seo-feature-icon">{f.icon}</div>
+            <h3>{f.title}</h3>
+            <p class="text-muted">{f.desc}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <section class="glass-card seo-section seo-cta-section">
+      <h2>🚀 Comece Agora!</h2>
+      <p>É rápido, gratuito e divertido. Clique abaixo para criar sua simulação personalizada da Copa do Mundo 2026!</p>
+      <a href="/" class="btn btn-primary seo-cta-btn">CRIAR MINHA SIMULAÇÃO →</a>
+    </section>
+  </main>
+
+  <style>
+    .seo-group-page { padding-bottom: 5rem; }
+    .seo-section { padding: 1.5rem; margin-bottom: 1.5rem; }
+    .seo-section h2 { color: var(--color-secondary); font-size: 1.2rem; font-weight: 800; margin-bottom: 1rem; }
+    .seo-features-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
+    .seo-feature-card { padding: 1.25rem; text-align: center; border: 1px solid rgba(255,255,255,0.06); }
+    .seo-feature-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+    .seo-feature-card h3 { font-size: 1rem; margin-bottom: 0.4rem; }
+    .seo-feature-card p { font-size: 0.85rem; line-height: 1.4; }
+    .seo-cta-section { text-align: center; }
+    .seo-cta-section p { max-width: 520px; margin: 0 auto 1.25rem; color: var(--text-muted); }
+    .seo-cta-btn { max-width: 320px; text-decoration: none; display: inline-block; }
+    @media (max-width: 640px) {
+      .seo-features-grid { grid-template-columns: 1fr; }
+      .seo-section { padding: 1.1rem; }
+    }
+  </style>
+</Layout>

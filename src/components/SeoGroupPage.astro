@@ -1,0 +1,137 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+interface Props {
+  letter: string;
+  title: string;
+  description: string;
+  h1: string;
+  teams: Array<{ id: string; name: string; code: string; group: string; players: string[] }>;
+  jsonLd: Record<string, any>;
+}
+
+const { letter, title, description, h1, teams: groupTeams, jsonLd } = Astro.props;
+
+// Generate round-robin schedule for 4 teams
+const schedule = [
+  { home: 0, away: 1, round: 1 },
+  { home: 2, away: 3, round: 1 },
+  { home: 0, away: 2, round: 2 },
+  { home: 1, away: 3, round: 2 },
+  { home: 3, away: 0, round: 3 },
+  { home: 1, away: 2, round: 3 }
+];
+---
+
+<Layout title={title} description={description}>
+  <main class="container seo-group-page">
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+    <header>
+      <div class="logo-badge">Copa do Mundo 2026</div>
+      <h1>{h1}</h1>
+      <p class="subtitle">Conheça as seleções, os jogos e simule os resultados do Grupo {letter}!</p>
+    </header>
+
+    <section class="glass-card seo-section">
+      <h2>🏴 Seleções do Grupo {letter}</h2>
+      <div class="seo-teams-grid">
+        {groupTeams.map(team => (
+          <div class="seo-team-card glass-card">
+            <img
+              src={`https://flagcdn.com/64x48/${team.code}.png`}
+              alt={`Bandeira ${team.name}`}
+              width="64"
+              height="48"
+              loading="lazy"
+            />
+            <h3>{team.name}</h3>
+            <p class="text-muted seo-players-label">Destaques:</p>
+            <ul class="seo-players-list">
+              {team.players.map(p => <li>{p}</li>)}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <section class="glass-card seo-section">
+      <h2>📅 Jogos do Grupo {letter}</h2>
+      <table class="standing-table seo-matches-table">
+        <thead>
+          <tr>
+            <th>Rodada</th>
+            <th class="align-left">Mandante</th>
+            <th>vs</th>
+            <th class="align-left">Visitante</th>
+          </tr>
+        </thead>
+        <tbody>
+          {schedule.map(s => (
+            <tr>
+              <td style="text-align:center; font-weight:700; color:var(--color-accent);">
+                {s.round}ª
+              </td>
+              <td class="align-left">
+                <img src={`https://flagcdn.com/20x15/${groupTeams[s.home].code}.png`} alt="" width="20" height="15" style="vertical-align:middle; margin-right:0.4rem;" loading="lazy" />
+                {groupTeams[s.home].name}
+              </td>
+              <td style="text-align:center; color:var(--text-muted);">×</td>
+              <td class="align-left">
+                <img src={`https://flagcdn.com/20x15/${groupTeams[s.away].code}.png`} alt="" width="20" height="15" style="vertical-align:middle; margin-right:0.4rem;" loading="lazy" />
+                {groupTeams[s.away].name}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </section>
+
+    <section class="glass-card seo-section seo-cta-section">
+      <h2>🏆 Simule os Resultados!</h2>
+      <p>Monte seus palpites para o Grupo {letter} e todos os outros grupos, defina o mata-mata e descubra quem será campeão!</p>
+      <a href="/" class="btn btn-primary seo-cta-btn">CRIAR MINHA SIMULAÇÃO →</a>
+    </section>
+  </main>
+
+  <style>
+    .seo-group-page { padding-bottom: 5rem; }
+    .seo-section { padding: 1.5rem; margin-bottom: 1.5rem; }
+    .seo-section h2 {
+      color: var(--color-secondary);
+      font-size: 1.2rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+    }
+    .seo-teams-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    .seo-team-card {
+      padding: 1.25rem;
+      text-align: center;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .seo-team-card img { margin: 0 auto 0.75rem; display: block; border-radius: 4px; }
+    .seo-team-card h3 { font-size: 1.05rem; margin-bottom: 0.5rem; }
+    .seo-players-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.25rem; }
+    .seo-players-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      font-size: 0.85rem;
+      color: var(--text-main);
+    }
+    .seo-players-list li { padding: 0.15rem 0; }
+    .seo-matches-table { margin-bottom: 0; }
+    .seo-matches-table td, .seo-matches-table th { padding: 0.7rem 0.5rem; }
+    .seo-cta-section { text-align: center; }
+    .seo-cta-section p { max-width: 520px; margin: 0 auto 1.25rem; color: var(--text-muted); }
+    .seo-cta-btn { max-width: 320px; text-decoration: none; display: inline-block; }
+    @media (max-width: 640px) {
+      .seo-teams-grid { grid-template-columns: repeat(2, 1fr); }
+      .seo-section { padding: 1.1rem; }
+    }
+  </style>
+</Layout>

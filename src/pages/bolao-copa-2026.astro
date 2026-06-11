@@ -1,0 +1,99 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Bolão da Copa do Mundo 2026",
+  "description": "Crie bolões da Copa 2026 com seus amigos! Monte grupos, compare simulações e descubra quem entende mais de futebol.",
+  "url": "https://tabelacopa.com/bolao-copa-2026",
+  "applicationCategory": "SportsApplication",
+  "operatingSystem": "Web",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "BRL" }
+};
+
+const steps = [
+  { num: '1', title: 'Simule os Jogos', desc: 'Preencha os placares de todos os grupos e do mata-mata no simulador interativo.' },
+  { num: '2', title: 'Cadastre-se Gratuitamente', desc: 'Salve sua simulação com nome, e-mail e WhatsApp para participar do bolão.' },
+  { num: '3', title: 'Crie ou Entre em um Grupo', desc: 'Gere um código exclusivo e convide amigos, ou entre em um grupo existente.' },
+  { num: '4', title: 'Compare e Dispute!', desc: 'Veja o ranking do grupo, quem fez os melhores palpites e dispute a liderança!' }
+];
+---
+
+<Layout
+  title="Bolão Copa 2026 — Crie Grupos e Dispute com Amigos"
+  description="Crie seu bolão gratuito da Copa do Mundo 2026! Monte grupos com amigos, compare simulações e veja quem acerta mais. Totalmente online e interativo."
+>
+  <main class="container seo-group-page">
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+    <header>
+      <div class="logo-badge">Copa do Mundo 2026</div>
+      <h1>BOLÃO DA COPA DO MUNDO 2026</h1>
+      <p class="subtitle">Crie grupos com seus amigos, compare palpites e descubra quem manja mais de futebol — 100% gratuito!</p>
+    </header>
+
+    <section class="glass-card seo-section">
+      <h2>📋 Como Funciona o Bolão</h2>
+      <div class="seo-steps-grid">
+        {steps.map(s => (
+          <div class="glass-card seo-step-card">
+            <div class="seo-step-number">{s.num}</div>
+            <h3>{s.title}</h3>
+            <p class="text-muted">{s.desc}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <section class="glass-card seo-section">
+      <h2>🎯 Por que usar nosso Bolão?</h2>
+      <ul class="seo-benefits-list">
+        <li><strong>100% Gratuito</strong> — Sem taxas, sem anúncios invasivos.</li>
+        <li><strong>Simples e Rápido</strong> — Crie um grupo em segundos com um código exclusivo.</li>
+        <li><strong>Ranking em Tempo Real</strong> — Veja a posição de cada participante.</li>
+        <li><strong>Conquistas e Badges</strong> — Desbloqueie insígnias exclusivas por participação.</li>
+        <li><strong>Programa de Indicação</strong> — Ganhe pontos extras convidando amigos!</li>
+      </ul>
+    </section>
+
+    <section class="glass-card seo-section seo-cta-section">
+      <h2>🏆 Comece Seu Bolão Agora!</h2>
+      <p>Simule os jogos, cadastre-se e crie seu grupo. É rápido e divertido!</p>
+      <a href="/" class="btn btn-primary seo-cta-btn">CRIAR MINHA SIMULAÇÃO →</a>
+    </section>
+  </main>
+
+  <style>
+    .seo-group-page { padding-bottom: 5rem; }
+    .seo-section { padding: 1.5rem; margin-bottom: 1.5rem; }
+    .seo-section h2 { color: var(--color-secondary); font-size: 1.2rem; font-weight: 800; margin-bottom: 1rem; }
+    .seo-steps-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
+    .seo-step-card { padding: 1.25rem; text-align: center; border: 1px solid rgba(255,255,255,0.06); position: relative; }
+    .seo-step-number {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--color-primary); color: var(--bg-card);
+      font-weight: 900; font-size: 1.1rem;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 0.75rem;
+    }
+    .seo-step-card h3 { font-size: 1rem; margin-bottom: 0.4rem; }
+    .seo-step-card p { font-size: 0.85rem; line-height: 1.4; }
+    .seo-benefits-list { list-style: none; padding: 0; }
+    .seo-benefits-list li {
+      padding: 0.75rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      font-size: 0.95rem;
+      color: var(--text-main);
+    }
+    .seo-benefits-list li:last-child { border-bottom: none; }
+    .seo-benefits-list li strong { color: var(--color-primary); }
+    .seo-cta-section { text-align: center; }
+    .seo-cta-section p { max-width: 520px; margin: 0 auto 1.25rem; color: var(--text-muted); }
+    .seo-cta-btn { max-width: 320px; text-decoration: none; display: inline-block; }
+    @media (max-width: 640px) {
+      .seo-steps-grid { grid-template-columns: 1fr 1fr; }
+      .seo-section { padding: 1.1rem; }
+    }
+  </style>
+</Layout>

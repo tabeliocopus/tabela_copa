@@ -391,4 +391,42 @@ Edição Local → git add . → git commit → git push origin main
 - [x] Build validado com `npm run build`.
 
 ### Proxima prioridade
-- Prioridade 6 - SEO Programatico.
+- Prioridade 7 - Captura Avançada de Leads (Disparo do modal no chaveamento e exit intent).
+
+---
+
+## Atualizacao Prioridade 6 - SEO Programático
+
+**Status:** Implementado e compilado.
+
+### Paginas Criadas
+- **Grupo A a L (`/grupo-a-copa-2026` a `/grupo-l-copa-2026`):**
+  - Mostra as seleções do grupo, destaques de jogadores e a tabela de confrontos de forma responsiva.
+- **Jogos do Brasil (`/jogos-do-brasil-copa-2026`):**
+  - Mostra a tabela completa dos jogos da Seleção Brasileira na fase de grupos (Grupo D) com destaques de elenco.
+- **Tabela Geral (`/tabela-copa-2026`):**
+  - Visão agregada de todos os 12 grupos com links diretos para o detalhe de cada grupo.
+- **Simulador Geral (`/simulador-copa-2026`):**
+  - Apresenta as principais funcionalidades do simulador (fase de grupos, mata-mata, artilharia, bolão).
+- **Bolão Geral (`/bolao-copa-2026`):**
+  - Explicação do funcionamento, regras, pontos e benefícios do Mini-Bolão.
+
+### SEO e Performance
+- Todos os arquivos utilizam metadados Open Graph (Title, Description, Images) dinâmicos ou específicos para a página.
+- Adicionado JSON-LD no padrão Schema.org (`SportsEvent` para partidas e grupos, `WebApplication` para simulador e bolão).
+- Design responsivo unificado integrado com a identidade visual do projeto principal.
+- CTA chamativo ("CRIAR MINHA SIMULAÇÃO") direcionando para a home page.
+- Renderizados estaticamente durante o build para performance máxima.
+
+### Arquivos alterados/criados nesta prioridade
+- `src/data/seoGroups.js` (Helper de metadados)
+- `src/components/SeoGroupPage.astro` (Template reutilizável)
+- `src/pages/grupo-[a-l]-copa-2026.astro` (12 páginas de grupo)
+- `src/pages/jogos-do-brasil-copa-2026.astro`
+- `src/pages/tabela-copa-2026.astro`
+- `src/pages/simulador-copa-2026.astro`
+- `src/pages/bolao-copa-2026.astro`
+- `brain.md`
+
+### Validacao
+- [x] Build completo gerou com sucesso todos os arquivos HTML na pasta dist.
