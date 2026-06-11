@@ -513,3 +513,43 @@ Edição Local → git add . → git commit → git push origin main
 ### Validação Técnica
 - Executado `npm run build` confirmando que todas as rotas estáticas (incluindo as rotas dinâmicas `/grupo-[a-l]-copa-2026`) geraram corretamente sem erros de compilação ou referências undefined.
 
+---
+
+## Atualizacao Prioridade 9 - Auditoria Geral de Dados e Alinhamento FIFA 2026
+
+**Status:** Concluído e verificado em build time.
+
+### Ajustes Realizados
+1. **Auditoria Automática (`validateWorldCupData`):**
+   - Implementada função de validação automatizada que confere quantidade de seleções (48), grupos (12), partidas (72), confrontos válidos, chaves de times corretas, datas no ano de 2026, além de estádios e cidades preenchidos para todos os 72 jogos.
+   - A validação é disparada a cada build, interrompendo o processo e gerando erro caso alguma inconsistência seja identificada.
+
+2. **Cálculo Dinâmico dos Dias da Semana (`getWeekDay`):**
+   - Desenvolvido o helper `getWeekDay(date)` para calcular dinamicamente o nome por extenso dos dias da semana (ex: Quinta-feira, Sexta-feira, Sábado) com base em objetos Date do JavaScript utilizando fuso horário UTC (evitando quaisquer deslocamentos de fuso local).
+
+3. **Cidades e Estádios (Fixture Metadata):**
+   - Mapeados e atribuídos os 16 estádios oficiais em suas respectivas cidades nos EUA, México e Canadá em cada um dos 72 confrontos.
+   - Adicionada a exibição do local do jogo ("🏟️ Nome do Estádio, Cidade") abaixo do horário nas tabelas de jogos da Home, das páginas de grupos individuais (`SeoGroupPage`) e na página dos jogos do Brasil.
+
+4. **Padronização de Nomes:**
+   - Corrigido o nome abreviado `"Bósnia e Hering."` para o oficial `"Bósnia e Herzegovina"`, garantindo maior credibilidade.
+
+5. **Renomeação de Cabeçalho e Ajustes de SEO:**
+   - Atualizado o título no badge do cabeçalho da Home para `"United States • Canada • Mexico 2026"`.
+   - Modificados os metadados de layout da Home e das páginas dinâmicas para o título oficial `"Simulador da Copa do Mundo FIFA 2026"` e descrição atualizada.
+
+### Arquivos alterados/criados nesta prioridade
+- `src/data/worldCupData.js` (helper getWeekDay, validateWorldCupData, estádios/cidades)
+- `src/pages/index.astro` (ajustes do cabeçalho, meta tags, exibição do estádio/cidade e trigger da validação)
+- `src/components/SeoGroupPage.astro` (exibição de estádio/cidade, ajuste da logo-badge)
+- `src/pages/jogos-do-brasil-copa-2026.astro` (exibição de estádio/cidade, layout e meta tags)
+- `src/data/seoGroups.js` (templates SEO atualizados para o padrão FIFA)
+- `brain.md` (registro de histórico)
+
+### Validação Técnica e Relatório de Auditoria
+- **Grupos Validados:** 12
+- **Seleções Validadas:** 48
+- **Jogos Validados:** 72
+- **Inconsistências encontradas:** 0
+- **Status da Compilação:** Sucesso (Astro build concluído sem avisos ou erros).
+
