@@ -1,4 +1,4 @@
-﻿---
+---
 import Layout from '../layouts/Layout.astro';
 import { teams, groups, generateMatches } from '../data/worldCupData';
 
@@ -226,6 +226,24 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
                 <button class="btn btn-primary" id="bolao-join-btn" style="white-space:nowrap;">Entrar</button>
               </div>
             </div>
+          </div>
+
+          <!-- Indicações Card -->
+          <div class="glass-card bolao-action-card" id="card-indicacao" style="margin-top: 1.5rem; display: block; max-width: 100%;">
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+              <div class="bolao-action-icon">📢</div>
+              <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--text-main);">Programa de Indicações</h3>
+            </div>
+            <p class="text-muted" style="margin-bottom: 0.75rem; font-size: 0.9rem;">
+              Convide seus amigos para palpitar! Cada amigo que se cadastrar pelo seu link garante **+15 pontos** para você e **+15 pontos** para ele no Ranking Global!
+            </p>
+            <div class="bolao-form-row">
+              <input type="text" id="ref-link-input" class="form-input" readonly value="" style="background: rgba(0,0,0,0.2);" />
+              <button class="btn btn-primary" id="ref-copy-btn" style="white-space:nowrap;">📋 Copiar Link</button>
+            </div>
+            <p class="text-xs text-muted" style="margin-top: 0.5rem; font-weight: 600;">
+              Seu Código de Indicação: <span id="ref-code-display" style="color:var(--color-primary); font-family: monospace; font-size: 0.95rem; letter-spacing: 0.05em;"></span>
+            </p>
           </div>
 
           <!-- Meus grupos -->
@@ -966,9 +984,20 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       return `${window.location.origin}${window.location.pathname}?sim=${btoa(payload)}`;
     }
 
+    function appendRefCode(urlStr) {
+      const lead = getSavedLead();
+      if (lead?.refCode && urlStr) {
+        if (urlStr.includes('ref=')) return urlStr;
+        const separator = urlStr.includes('?') ? '&' : '?';
+        return `${urlStr}${separator}ref=${lead.refCode}`;
+      }
+      return urlStr;
+    }
+
     function getShareUrl() {
       const lead = getSavedLead();
-      return lead?.predictionUrl || lead?.url || getLegacyShareUrl();
+      const rawUrl = lead?.predictionUrl || lead?.url || getLegacyShareUrl();
+      return appendRefCode(rawUrl);
     }
 
     function getCleanSupabaseUrl() {
@@ -1170,7 +1199,8 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
     }
 
     async function executeAction(action) {
-      const shareUrl = action === 'share' ? await ensurePublicPredictionUrl() : getShareUrl();
+      let shareUrl = action === 'share' ? await ensurePublicPredictionUrl() : getShareUrl();
+      shareUrl = appendRefCode(shareUrl);
       const winnerName = document.getElementById('champion-team-name').textContent || 'Brasil';
       const text = `Meu simulador da Copa 2026 deu que o campeão será o(a) *${winnerName}*! 🏆 Faça seu palpite e me desafie: ${shareUrl}`;
 
@@ -1236,6 +1266,10 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       }
     }
 
+    function generateRefCode() {
+      return 'COPUS-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+    }
+
     leadForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       
@@ -1245,8 +1279,11 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       let shareUrl = getLegacyShareUrl();
       const simulationSnapshot = getSimulationSnapshot();
 
+      const savedLead = getSavedLead();
+      const refCode = savedLead?.refCode || generateRefCode();
+
       // Save Lead Data Locally
-      const leadData = { nome, email, whatsapp, url: shareUrl };
+      const leadData = { nome, email, whatsapp, url: shareUrl, refCode };
       localStorage.setItem('lead_cadastrado', JSON.stringify(leadData));
 
       // Close modal
@@ -1260,7 +1297,8 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
             email: email,
             whatsapp: whatsapp,
             simulacao_data: simulationSnapshot,
-            url_compartilhamento: shareUrl
+            url_compartilhamento: shareUrl,
+            ref_code: refCode
           };
 
           // Sanitize url to remove trailing slashes or /rest/v1/ suffix
@@ -1286,6 +1324,45 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
               await recordEngagementEvent('simulation_created', 10, `simulation:${savedLeadId}`, {
                 leadId: savedLeadId
               });
+
+              // Handle Referral Code Invite
+              const refCodeConvite = localStorage.getItem('ref_code_convite');
+              if (refCodeConvite) {
+                try {
+                  const referrerRes = await fetch(`${cleanUrl}/rest/v1/leads?ref_code=eq.${encodeURIComponent(refCodeConvite)}&select=id&limit=1`, {
+                    headers: { 'apikey': supabaseAnonKey, 'Authorization': `Bearer ${supabaseAnonKey}` }
+                  });
+                  if (referrerRes.ok) {
+                    const referrerData = await referrerRes.json();
+                    const referrerId = referrerData[0]?.id;
+                    if (referrerId && referrerId !== savedLeadId) {
+                      const refCreateRes = await fetch(`${cleanUrl}/rest/v1/referrals`, {
+                        method: 'POST',
+                        headers: {
+                          'apikey': supabaseAnonKey,
+                          'Authorization': `Bearer ${supabaseAnonKey}`,
+                          'Content-Type': 'application/json',
+                          'Prefer': 'return=minimal'
+                        },
+                        body: JSON.stringify({ referrer_id: referrerId, invited_id: savedLeadId })
+                      });
+                      if (refCreateRes.ok) {
+                        await recordEngagementEvent('friend_invited', 15, `friend_invited:${referrerId}:${savedLeadId}`, {
+                          leadId: referrerId,
+                          invitedId: savedLeadId
+                        });
+                        await recordEngagementEvent('invited_by_friend', 15, `invited_by_friend:${savedLeadId}`, {
+                          leadId: savedLeadId,
+                          referrerId: referrerId
+                        });
+                        localStorage.removeItem('ref_code_convite');
+                      }
+                    }
+                  }
+                } catch (err) {
+                  console.error("Erro ao registrar indicacao no banco:", err);
+                }
+              }
             }
           }
           console.log("Lead sincronizado com Supabase com sucesso.");
@@ -1400,12 +1477,46 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
     function saveGroups(grps) {
       localStorage.setItem('bolao_grupos', JSON.stringify(grps));
     }
-    function initBolao() {
+    async function initBolao() {
       const lead = getSavedLead();
       const gate = document.getElementById('bolao-gate');
       const panel = document.getElementById('bolao-panel');
       if (!gate || !panel) return;
-      if (lead) { gate.style.display = 'none'; panel.style.display = 'block'; renderMyGroups(); }
+      if (lead) {
+        gate.style.display = 'none';
+        panel.style.display = 'block';
+        renderMyGroups();
+
+        // Handle legacy users without refCode
+        let refCode = lead.refCode;
+        if (!refCode) {
+          refCode = 'COPUS-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+          lead.refCode = refCode;
+          localStorage.setItem('lead_cadastrado', JSON.stringify(lead));
+          
+          if (supabaseUrl && supabaseAnonKey && lead.leadId) {
+            const cleanUrl = getCleanSupabaseUrl();
+            fetch(`${cleanUrl}/rest/v1/leads?id=eq.${lead.leadId}`, {
+              method: 'PATCH',
+              headers: {
+                'apikey': supabaseAnonKey,
+                'Authorization': `Bearer ${supabaseAnonKey}`,
+                'Content-Type': 'application/json',
+                'Prefer': 'return=minimal'
+              },
+              body: JSON.stringify({ ref_code: refCode })
+            }).catch(err => console.warn('Erro ao atualizar refCode legada:', err));
+          }
+        }
+
+        // Populate Referral card
+        const refLinkInput = document.getElementById('ref-link-input');
+        const refCodeDisplay = document.getElementById('ref-code-display');
+        if (refLinkInput && refCodeDisplay) {
+          refCodeDisplay.textContent = refCode;
+          refLinkInput.value = `${window.location.origin}${window.location.pathname}?ref=${refCode}`;
+        }
+      }
       else { gate.style.display = 'flex'; panel.style.display = 'none'; }
     }
     function renderMyGroups() {
@@ -1509,6 +1620,26 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
         renderMyGroups(); alert('Voce entrou no grupo "'+groupName+'"!');
       });
     }
+    const refCopyBtn = document.getElementById('ref-copy-btn');
+    if (refCopyBtn) {
+      refCopyBtn.addEventListener('click', () => {
+        const refLinkInput = document.getElementById('ref-link-input');
+        if (refLinkInput) {
+          navigator.clipboard.writeText(refLinkInput.value).then(() => {
+            const originalText = refCopyBtn.textContent;
+            refCopyBtn.textContent = '✅ Copiado!';
+            setTimeout(() => { refCopyBtn.textContent = originalText; }, 2500);
+          });
+        }
+      });
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const refParam = urlParams.get('ref');
+    if (refParam) {
+      localStorage.setItem('ref_code_convite', refParam.toUpperCase());
+    }
+
     document.querySelectorAll('.tab-btn[data-tab="bolao"]').forEach(btn => { btn.addEventListener('click', initBolao); });
     const urlBolaoCode = new URLSearchParams(window.location.search).get('bolao');
     if (urlBolaoCode) { const ji = document.getElementById('bolao-join-code'); if (ji) ji.value = urlBolaoCode.toUpperCase(); const bt = document.querySelector('[data-tab="bolao"]'); if (bt) bt.click(); }

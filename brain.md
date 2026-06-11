@@ -325,4 +325,36 @@ Edição Local → git add . → git commit → git push origin main
 - [x] Build validado com `npm.cmd run build`.
 
 ### Proxima prioridade
-- Prioridade 4 - Sistema de Indicacao (`ref_code`, `?ref=...`, tabela `referrals`).
+- Prioridade 5 - Conquistas/Badges baseadas em eventos e indicacoes.
+
+---
+
+## Atualizacao Prioridade 4 - Sistema de Indicação
+
+**Status local:** Implementado no workspace, ainda nao commitado/pushado para o GitHub.
+
+### Sistema de Indicacao
+- [x] Criada tabela `referrals` no banco de dados e adicionado campo `ref_code` na tabela de `leads`.
+- [x] Gerado `ref_code` unico do usuario (ex: `COPUS-8F3A`) ao registrar lead.
+- [x] Legados sao migrados dinamicamente ao abrir a aba Bolao, recebendo `ref_code` e atualizando local e remotamente (via fetch `PATCH`).
+- [x] Exibido Card do Programa de Indicacoes na aba do Bolao com link de indicacao (`?ref=COPUS-XXXX`) e botao de copiar link.
+- [x] Links de compartilhamento (`?sim=` ou `/palpite/[slug]`) agora ganham sufixo `&ref=COPUS-XXXX` automaticamente ao serem gerados.
+- [x] Quando um usuario entra com `?ref=...`, o codigo de convite e salvo em local storage.
+- [x] Apos o cadastro do lead convidado, o vinculo e criado na tabela `referrals`.
+- [x] Atribuida recompensa no Ranking Global:
+  - Quem convida ganha: +15 pontos (evento `friend_invited`).
+  - Quem e convidado e se cadastra ganha: +15 pontos (evento `invited_by_friend`).
+
+### Banco
+- [x] Adicionada coluna `ref_code` na tabela de `leads` no `supabase_schema.sql`.
+- [x] Adicionada tabela `referrals` e suas restricoes no `supabase_schema.sql`.
+- [x] Políticas de RLS de insert e select publicas criadas para `referrals`.
+
+### Arquivos alterados nesta prioridade
+- `src/pages/index.astro`
+- `src/pages/ranking.astro`
+- `supabase_schema.sql`
+- `brain.md`
+
+### Validacao
+- [x] Build validado com `npm run build`.

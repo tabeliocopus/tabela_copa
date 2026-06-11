@@ -70,3 +70,19 @@ create policy "Permitir leitura pública em grupos" on public.grupos for select 
 create policy "Permitir inserções públicas em membros" on public.grupo_membros for insert with check (true);
 create policy "Permitir leitura pública em membros" on public.grupo_membros for select using (true);
 create policy "Permitir exclusões públicas em membros" on public.grupo_membros for delete using (true);
+
+-- 5. Adições da Prioridade 4 (Indicação)
+alter table if exists public.leads add column if not exists ref_code text unique;
+
+create table if not exists public.referrals (
+  id uuid default gen_random_uuid() primary key,
+  referrer_id uuid references public.leads(id) on delete cascade not null,
+  invited_id uuid references public.leads(id) on delete cascade not null,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  unique (referrer_id, invited_id)
+);
+
+alter table public.referrals enable row level security;
+create policy "Permitir insercoes publicas em referrals" on public.referrals for insert with check (true);
+create policy "Permitir leitura publica em referrals" on public.referrals for select using (true);
+
