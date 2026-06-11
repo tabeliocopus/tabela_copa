@@ -424,27 +424,30 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
           const homeTeam = teams[match.homeId];
           const awayTeam = teams[match.awayId];
 
-          const matchDiv = document.createElement('div');
-          matchDiv.className = 'match-row';
-          matchDiv.innerHTML = `
-            <div class="match-team home">
-              <span class="team-name" data-team-id="${match.homeId}">${homeTeam.name}</span>
-              <img src="${getFlagUrl(homeTeam.code)}" alt="${homeTeam.name}" class="flag-emoji" />
-            </div>
-            <div class="match-scores-inputs">
-              <input type="number" min="0" class="score-input" id="${match.id}-home" data-match-id="${match.id}" data-side="home" value="${match.homeScore !== null ? match.homeScore : ''}" />
-              <button class="goal-scorer-btn" data-match-id="${match.id}" data-side="home" style="background:none; border:none; cursor:pointer; font-size:0.8rem; display: ${match.homeScore > 0 ? 'inline' : 'none'};">⚽</button>
-              <span class="match-vs">x</span>
-              <button class="goal-scorer-btn" data-match-id="${match.id}" data-side="away" style="background:none; border:none; cursor:pointer; font-size:0.8rem; display: ${match.awayScore > 0 ? 'inline' : 'none'};">⚽</button>
-              <input type="number" min="0" class="score-input" id="${match.id}-away" data-match-id="${match.id}" data-side="away" value="${match.awayScore !== null ? match.awayScore : ''}" />
-            </div>
-            <div class="match-team away">
-              <img src="${getFlagUrl(awayTeam.code)}" alt="${awayTeam.name}" class="flag-emoji" />
-              <span class="team-name" data-team-id="${match.awayId}">${awayTeam.name}</span>
+          const matchCard = document.createElement('div');
+          matchCard.className = 'match-card';
+          matchCard.innerHTML = `
+            <div class="match-datetime">📅 ${match.datetime || ''}</div>
+            <div class="match-row">
+              <div class="match-team home">
+                <span class="team-name" data-team-id="${match.homeId}">${homeTeam.name}</span>
+                <img src="${getFlagUrl(homeTeam.code)}" alt="${homeTeam.name}" class="flag-emoji" />
+              </div>
+              <div class="match-scores-inputs">
+                <input type="number" min="0" class="score-input" id="${match.id}-home" data-match-id="${match.id}" data-side="home" value="${match.homeScore !== null ? match.homeScore : ''}" />
+                <button class="goal-scorer-btn" data-match-id="${match.id}" data-side="home" style="background:none; border:none; cursor:pointer; font-size:0.8rem; display: ${match.homeScore > 0 ? 'inline' : 'none'};">⚽</button>
+                <span class="match-vs">x</span>
+                <button class="goal-scorer-btn" data-match-id="${match.id}" data-side="away" style="background:none; border:none; cursor:pointer; font-size:0.8rem; display: ${match.awayScore > 0 ? 'inline' : 'none'};">⚽</button>
+                <input type="number" min="0" class="score-input" id="${match.id}-away" data-match-id="${match.id}" data-side="away" value="${match.awayScore !== null ? match.awayScore : ''}" />
+              </div>
+              <div class="match-team away">
+                <img src="${getFlagUrl(awayTeam.code)}" alt="${awayTeam.name}" class="flag-emoji" />
+                <span class="team-name" data-team-id="${match.awayId}">${awayTeam.name}</span>
+              </div>
             </div>
           `;
 
-          matchesContainer.appendChild(matchDiv);
+          matchesContainer.appendChild(matchCard);
         });
       });
 

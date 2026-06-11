@@ -108,6 +108,27 @@ export const generateMatches = () => {
       { home: t2, away: t3, round: 3 }
     ];
 
+    // Calculate match date/time based on group batch and round
+    const groupIndex = groupLetter.charCodeAt(0) - 65; // A=0 ... L=11
+    const batch = Math.floor(groupIndex / 3); // 0, 1, 2, 3
+    const daysOfWeek = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+
+    function getMatchDateTime(round, pairingIdx) {
+      let day;
+      if (round === 1) {
+        day = 11 + batch * 2 + pairingIdx; // June 11-18
+      } else if (round === 2) {
+        day = 19 + batch * 2 + pairingIdx; // June 19-26
+      } else {
+        day = 27 + batch; // June 27-30 (simultaneous)
+      }
+      const dateObj = new Date(2026, 5, day); // month is 0-indexed (5 = June)
+      const dayName = daysOfWeek[dateObj.getDay()];
+      const dayStr = String(day).padStart(2, '0');
+      const timeStr = round === 3 ? '16:00' : (pairingIdx === 0 ? '14:00' : '17:00');
+      return `${dayStr}/06 (${dayName}) – ${timeStr}`;
+    }
+
     pairings.forEach((p, idx) => {
       matches.push({
         id: `${groupLetter}_M${idx + 1}`,
@@ -117,7 +138,8 @@ export const generateMatches = () => {
         awayId: p.away.id,
         homeScore: null,
         awayScore: null,
-        scorers: { home: [], away: [] } // format: [{name: "Vini Jr", minute: 45}]
+        scorers: { home: [], away: [] },
+        datetime: getMatchDateTime(p.round, idx % 2)
       });
     });
   });

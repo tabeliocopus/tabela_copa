@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { teams as allTeams, generateMatches } from '../data/worldCupData';
 
 interface Props {
   letter: string;
@@ -12,15 +13,8 @@ interface Props {
 
 const { letter, title, description, h1, teams: groupTeams, jsonLd } = Astro.props;
 
-// Generate round-robin schedule for 4 teams
-const schedule = [
-  { home: 0, away: 1, round: 1 },
-  { home: 2, away: 3, round: 1 },
-  { home: 0, away: 2, round: 2 },
-  { home: 1, away: 3, round: 2 },
-  { home: 3, away: 0, round: 3 },
-  { home: 1, away: 2, round: 3 }
-];
+const allMatches = generateMatches();
+const groupMatches = allMatches.filter(m => m.group === letter);
 ---
 
 <Layout title={title} description={description}>
@@ -64,25 +58,33 @@ const schedule = [
             <th class="align-left">Mandante</th>
             <th>vs</th>
             <th class="align-left">Visitante</th>
+            <th>Data / Horário</th>
           </tr>
         </thead>
         <tbody>
-          {schedule.map(s => (
-            <tr>
-              <td style="text-align:center; font-weight:700; color:var(--color-accent);">
-                {s.round}ª
-              </td>
-              <td class="align-left">
-                <img src={`https://flagcdn.com/20x15/${groupTeams[s.home].code}.png`} alt="" width="20" height="15" style="vertical-align:middle; margin-right:0.4rem;" loading="lazy" />
-                {groupTeams[s.home].name}
-              </td>
-              <td style="text-align:center; color:var(--text-muted);">×</td>
-              <td class="align-left">
-                <img src={`https://flagcdn.com/20x15/${groupTeams[s.away].code}.png`} alt="" width="20" height="15" style="vertical-align:middle; margin-right:0.4rem;" loading="lazy" />
-                {groupTeams[s.away].name}
-              </td>
-            </tr>
-          ))}
+          {groupMatches.map(m => {
+            const home = allTeams[m.homeId];
+            const away = allTeams[m.awayId];
+            return (
+              <tr>
+                <td style="text-align:center; font-weight:700; color:var(--color-accent);">
+                  {m.round}ª
+                </td>
+                <td class="align-left">
+                  <img src={`https://flagcdn.com/20x15/${home.code}.png`} alt="" width="20" height="15" style="vertical-align:middle; margin-right:0.4rem;" loading="lazy" />
+                  {home.name}
+                </td>
+                <td style="text-align:center; color:var(--text-muted);">×</td>
+                <td class="align-left">
+                  <img src={`https://flagcdn.com/20x15/${away.code}.png`} alt="" width="20" height="15" style="vertical-align:middle; margin-right:0.4rem;" loading="lazy" />
+                  {away.name}
+                </td>
+                <td style="text-align:center; font-size:0.8rem; color:var(--color-accent); font-weight:600;">
+                  {m.datetime}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </section>

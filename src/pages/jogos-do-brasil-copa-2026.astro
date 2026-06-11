@@ -67,6 +67,7 @@ const jsonLd = {
             <th class="align-left">Mandante</th>
             <th>vs</th>
             <th class="align-left">Visitante</th>
+            <th>Data / Horário</th>
           </tr>
         </thead>
         <tbody>
@@ -84,6 +85,9 @@ const jsonLd = {
                 <td class="align-left">
                   <img src={`https://flagcdn.com/20x15/${away.code}.png`} alt="" width="20" height="15" style="vertical-align:middle; margin-right:0.4rem;" loading="lazy" />
                   <strong>{away.name}</strong>
+                </td>
+                <td style="text-align:center; font-size:0.8rem; color:var(--color-accent); font-weight:600;">
+                  {m.datetime}
                 </td>
               </tr>
             );
