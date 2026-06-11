@@ -734,6 +734,11 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
         document.getElementById('champion-flag-img').src = getFlagUrl(teams[champId].code);
         document.getElementById('champion-team-name').textContent = teams[champId].name;
         champDisplay.style.display = 'flex';
+
+        // Trigger lead modal automatically after a tiny delay
+        setTimeout(() => {
+          triggerLeadCaptureModal('champion_selected');
+        }, 1000);
       } else {
         champDisplay.style.display = 'none';
       }
@@ -969,6 +974,28 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
 
     // COMPARTILHAR / LEAD GATE
     let pendingAction = null; // 'share' or 'download'
+    let leadModalTriggered = false;
+
+    function triggerLeadCaptureModal(reason = '') {
+      if (leadModalTriggered) return;
+      if (localStorage.getItem('lead_cadastrado')) return;
+
+      leadModalTriggered = true;
+      console.log('Lead capture modal triggered due to:', reason);
+      leadModal.classList.add('active');
+    }
+
+    // Exit Intent Detection
+    document.addEventListener('mouseleave', (e) => {
+      if (e.clientY < 0) {
+        triggerLeadCaptureModal('exit_intent');
+      }
+    });
+
+    // 45 seconds Timer trigger
+    setTimeout(() => {
+      triggerLeadCaptureModal('timer_45s');
+    }, 45000);
 
     function checkRegistrationAndExecute(action) {
       const isRegistered = localStorage.getItem('lead_cadastrado');
@@ -976,7 +1003,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
         executeAction(action);
       } else {
         pendingAction = action;
-        leadModal.classList.add('active');
+        triggerLeadCaptureModal('user_action_' + action);
       }
     }
 

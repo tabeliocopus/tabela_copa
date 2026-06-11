@@ -391,7 +391,7 @@ Edição Local → git add . → git commit → git push origin main
 - [x] Build validado com `npm run build`.
 
 ### Proxima prioridade
-- Prioridade 7 - Captura Avançada de Leads (Disparo do modal no chaveamento e exit intent).
+- Prioridade 8 - Testes de Estresse, Carga e Simulações (Scripts de automação com K6/Autocannon).
 
 ---
 
@@ -430,3 +430,30 @@ Edição Local → git add . → git commit → git push origin main
 
 ### Validacao
 - [x] Build completo gerou com sucesso todos os arquivos HTML na pasta dist.
+
+---
+
+## Atualizacao Prioridade 7 - Captura Avançada de Leads
+
+**Status:** Implementado e compilado.
+
+### Recursos e Gatilhos adicionados
+- **Variável de controle (`leadModalTriggered`):** Garante que o modal de cadastro seja aberto no máximo 1 vez por sessão para não prejudicar a experiência do usuário.
+- **Função unificada (`triggerLeadCaptureModal(reason)`):** Centraliza a abertura do modal verificando se o usuário já está cadastrado (`localStorage.getItem('lead_cadastrado')`).
+- **Gatilho de Finalização de Chaveamento:**
+  - Disparado automaticamente 1 segundo após o usuário preencher o placar da final e determinar o Campeão.
+- **Gatilho de Exit Intent (Intenção de Saída):**
+  - Monitora o movimento do mouse (`mouseleave` no document). Caso o cursor saia do topo da janela (coordenada `clientY < 0`), o modal é ativado instantaneamente.
+- **Gatilho por Tempo (Timer):**
+  - Abre o modal após 45 segundos de navegação ininterrupta na página principal.
+
+### Arquivos alterados/criados nesta prioridade
+- `src/pages/index.astro`
+- `brain.md`
+
+### Validacao
+- [x] Build verificado com sucesso.
+
+### Proxima prioridade
+- Prioridade 8 - Testes de Estresse, Carga e Simulações.
+
