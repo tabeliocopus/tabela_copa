@@ -32,6 +32,50 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       </div>
     </header>
 
+    <!-- HOW IT WORKS INSTRUCTIONS -->
+    <div class="instructions-card glass-card expanded" id="instructions-container">
+      <div class="instructions-header" id="toggle-instructions">
+        <span>💡 Como funciona este Simulador?</span>
+        <span class="toggle-icon">▼</span>
+      </div>
+      <div class="instructions-content active" id="instructions-body">
+        <div class="steps-grid">
+          <div class="step-item">
+            <div class="step-number">1</div>
+            <p>
+              <strong>Preencha os Placares</strong>
+              Preencha os gols dos jogos nos grupos. A classificação e os classificados do mata-mata atualizam na hora!
+            </p>
+          </div>
+          <div class="step-item">
+            <div class="step-number">2</div>
+            <p>
+              <strong>Escolha os Artilheiros</strong>
+              Clique no ícone de bola de futebol ⚽ ao lado do placar para cadastrar quem fez os gols e ver a tabela de Artilharia.
+            </p>
+          </div>
+          <div class="step-item">
+            <div class="step-number">3</div>
+            <p>
+              <strong>Simule o Mata-Mata</strong>
+              Na aba <strong>Mata-Mata</strong>, clique em cima da bandeira da seleção que você deseja fazer avançar até definir o grande Campeão!
+            </p>
+          </div>
+          <div class="step-item">
+            <div class="step-number">4</div>
+            <p>
+              <strong>Salve e Baixe</strong>
+              Ao final, clique em "Baixar Imagem" para salvar um print do seu chaveamento ou em "Compartilhar" para enviar aos amigos.
+            </p>
+          </div>
+        </div>
+        
+        <div class="auto-fill-box">
+          <button class="btn" id="auto-fill-btn">⚡ Simulação Rápida (Preencher placares aleatórios)</button>
+        </div>
+      </div>
+    </div>
+
     <!-- MONETIZATION BANNER -->
     <div class="ads-banner">
       <div class="ads-content">
@@ -989,6 +1033,50 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       if (e.target === scorerModal) scorerModal.classList.remove('active');
       if (e.target === squadModal) squadModal.classList.remove('active');
     });
+
+    // Instructions Accordion Toggle
+    const toggleInstructions = document.getElementById('toggle-instructions');
+    const instructionsContainer = document.getElementById('instructions-container');
+    const instructionsBody = document.getElementById('instructions-body');
+
+    if (toggleInstructions && instructionsContainer && instructionsBody) {
+      toggleInstructions.addEventListener('click', () => {
+        const isExpanded = instructionsContainer.classList.toggle('expanded');
+        instructionsBody.classList.toggle('active', isExpanded);
+      });
+    }
+
+    // Auto-fill random scores
+    const autoFillBtn = document.getElementById('auto-fill-btn');
+    if (autoFillBtn) {
+      autoFillBtn.addEventListener('click', () => {
+        if (confirm('Deseja preencher todos os placares da fase de grupos com resultados aleatórios? Os palpites atuais serão substituídos.')) {
+          matches.forEach(m => {
+            m.homeScore = Math.floor(Math.random() * 4); // 0 a 3 gols
+            m.awayScore = Math.floor(Math.random() * 4);
+            
+            // Update UI elements
+            const homeInput = document.getElementById(`${m.id}-home`);
+            const awayInput = document.getElementById(`${m.id}-away`);
+            if (homeInput) homeInput.value = m.homeScore;
+            if (awayInput) awayInput.value = m.awayScore;
+
+            // Update scorer button visibility
+            const homeScorerBtn = document.querySelector(`.goal-scorer-btn[data-match-id="${m.id}"][data-side="home"]`);
+            const awayScorerBtn = document.querySelector(`.goal-scorer-btn[data-match-id="${m.id}"][data-side="away"]`);
+            if (homeScorerBtn) homeScorerBtn.style.display = m.homeScore > 0 ? 'inline' : 'none';
+            if (awayScorerBtn) awayScorerBtn.style.display = m.awayScore > 0 ? 'inline' : 'none';
+          });
+
+          // Recalculate standings, update UI, and propagate bracket
+          groups.forEach(g => updateGroupStandings(g));
+          calculateQualifiedTeams();
+          saveLocalState();
+          
+          alert('Placares gerados! Agora vá na aba "Mata-Mata" para palpitar na fase eliminatória.');
+        }
+      });
+    }
 
     // Start everything
     loadLocalState();

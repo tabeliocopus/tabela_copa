@@ -714,3 +714,108 @@ footer a:hover {
     justify-content: center;
   }
 }
+
+/* Collapsible Instructions Card Styles */
+.instructions-card {
+  margin-bottom: 2rem;
+  overflow: hidden;
+}
+
+.instructions-header {
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  font-weight: 700;
+  color: var(--color-secondary);
+  transition: var(--transition-smooth);
+}
+
+.instructions-header:hover {
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text-main);
+}
+
+.instructions-content {
+  padding: 0 1.5rem 1.5rem;
+  border-top: 1px solid var(--border-glass);
+  display: none; /* Controlled via JS toggle class */
+}
+
+.instructions-content.active {
+  display: block;
+}
+
+.toggle-icon {
+  transition: transform 0.3s ease;
+  font-size: 0.8rem;
+}
+
+.instructions-card.expanded .toggle-icon {
+  transform: rotate(180deg);
+}
+
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.step-item {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.step-number {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: var(--bg-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-neon);
+}
+
+.step-item p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.step-item p strong {
+  color: var(--text-main);
+  display: block;
+  margin-bottom: 0.2rem;
+}
+
+.auto-fill-box {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.03);
+  display: flex;
+  justify-content: center;
+}
+
+#auto-fill-btn {
+  max-width: 400px;
+  background: linear-gradient(90deg, rgba(0, 255, 135, 0.15) 0%, rgba(96, 165, 250, 0.15) 100%);
+  border: 1px solid var(--border-glass-active);
+  color: var(--color-primary);
+  box-shadow: 0 4px 15px rgba(0, 255, 135, 0.05);
+}
+
+#auto-fill-btn:hover {
+  background: linear-gradient(90deg, rgba(0, 255, 135, 0.25) 0%, rgba(96, 165, 250, 0.25) 100%);
+  color: var(--text-main);
+  transform: translateY(-2px);
+}
+
