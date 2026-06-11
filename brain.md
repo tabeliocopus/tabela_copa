@@ -325,7 +325,7 @@ Edição Local → git add . → git commit → git push origin main
 - [x] Build validado com `npm.cmd run build`.
 
 ### Proxima prioridade
-- Prioridade 5 - Conquistas/Badges baseadas em eventos e indicacoes.
+- Prioridade 6 - SEO Programatico (paginas estaticas por grupo, jogos do brasil, etc).
 
 ---
 
@@ -358,3 +358,37 @@ Edição Local → git add . → git commit → git push origin main
 
 ### Validacao
 - [x] Build validado com `npm run build`.
+
+---
+
+## Atualizacao Prioridade 5 - Conquistas (Gamificacao & Badges)
+
+**Status:** Implementado e commitado.
+
+### Badges implementados
+1. **Palpiteiro** (⚽) — Fez a primeira simulacao.
+2. **Fundador** (👥) — Criou um grupo no Bolao.
+3. **Divulgador** (📢) — Compartilhou a simulacao.
+4. **Influenciador** (🔥) — Convidou 5 ou mais amigos.
+5. **Embaixador** (👑) — Convidou 10 ou mais amigos.
+6. **Elite** (🏆) — Esta no Top 100 do Ranking Global.
+
+### Onde aparecem
+- **Ranking Global (`/ranking`):** Badges calculados server-side, exibidos ao lado do nome de cada participante na tabela.
+- **Aba Bolao (index):** Card "Minhas Conquistas" carrega eventos e indicacoes do usuario via Supabase e renderiza badges desbloqueados (coloridos, com borda neon) e bloqueados (opacidade reduzida).
+
+### Logica
+- No ranking, badges sao calculados a partir dos dados ja carregados (`eventsByLeadId`, `leadMap`, posicao no ranking).
+- No client-side, `initBolao()` faz 2 fetches paralelos: `engagement_events` do usuario e `referrals` onde ele e referrer.
+- Funcao `renderUserBadges(events, inviteCount)` gera HTML dinamico com cards glass-card.
+
+### Arquivos alterados nesta prioridade
+- `src/pages/index.astro`
+- `src/pages/ranking.astro`
+- `brain.md`
+
+### Validacao
+- [x] Build validado com `npm run build`.
+
+### Proxima prioridade
+- Prioridade 6 - SEO Programatico.

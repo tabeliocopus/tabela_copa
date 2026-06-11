@@ -246,6 +246,20 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
             </p>
           </div>
 
+          <!-- Card de Conquistas/Badges -->
+          <div class="glass-card bolao-action-card" id="card-conquistas" style="margin-top: 1.5rem; display: block; max-width: 100%;">
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+              <div class="bolao-action-icon">🏅</div>
+              <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--text-main);">Minhas Conquistas</h3>
+            </div>
+            <p class="text-muted" style="margin-bottom: 1rem; font-size: 0.9rem;">
+              Complete desafios para liberar insígnias exclusivas e subir no Ranking Global!
+            </p>
+            <div class="badges-grid" id="user-badges-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 0.75rem;">
+              <!-- Badges loaded dynamically -->
+            </div>
+          </div>
+
           <!-- Meus grupos -->
           <div id="bolao-my-groups" class="bolao-my-groups">
             <h3 class="bolao-section-title">🏅 Meus Grupos</h3>
@@ -1516,8 +1530,62 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
           refCodeDisplay.textContent = refCode;
           refLinkInput.value = `${window.location.origin}${window.location.pathname}?ref=${refCode}`;
         }
+
+        // Load achievements dynamically
+        if (supabaseUrl && supabaseAnonKey && lead.leadId) {
+          const cleanUrl = getCleanSupabaseUrl();
+          Promise.all([
+            fetch(`${cleanUrl}/rest/v1/engagement_events?lead_id=eq.${lead.leadId}&select=event_type`, {
+              headers: { 'apikey': supabaseAnonKey, 'Authorization': `Bearer ${supabaseAnonKey}` }
+            }).then(r => r.ok ? r.json() : []),
+            fetch(`${cleanUrl}/rest/v1/referrals?referrer_id=eq.${lead.leadId}&select=id`, {
+              headers: { 'apikey': supabaseAnonKey, 'Authorization': `Bearer ${supabaseAnonKey}` }
+            }).then(r => r.ok ? r.json() : [])
+          ]).then(([events, referrals]) => {
+            renderUserBadges(events, referrals.length);
+          }).catch(err => {
+            console.warn('Erro ao carregar conquistas:', err);
+            renderUserBadges([], 0);
+          });
+        } else {
+          renderUserBadges([], 0);
+        }
       }
       else { gate.style.display = 'flex'; panel.style.display = 'none'; }
+    }
+
+    function renderUserBadges(events, inviteCount) {
+      const container = document.getElementById('user-badges-container');
+      if (!container) return;
+
+      const eventTypes = new Set(events.map(e => e.event_type));
+
+      const badgesList = [
+        { key: 'palpiteiro', label: 'Palpiteiro', icon: '⚽', desc: 'Fez a primeira simulação', unlocked: eventTypes.has('simulation_created') || events.length > 0, isEliteCheck: false, progress: '' },
+        { key: 'criador', label: 'Fundador', icon: '👥', desc: 'Criou um grupo no Bolão', unlocked: eventTypes.has('group_created'), isEliteCheck: false, progress: '' },
+        { key: 'propagador', label: 'Divulgador', icon: '📢', desc: 'Compartilhou a simulação', unlocked: eventTypes.has('simulation_shared'), isEliteCheck: false, progress: '' },
+        { key: 'influenciador', label: 'Influenciador', icon: '🔥', desc: 'Convidou 5 amigos', unlocked: inviteCount >= 5, isEliteCheck: false, progress: inviteCount + '/5' },
+        { key: 'embaixador', label: 'Embaixador', icon: '👑', desc: 'Convidou 10 amigos', unlocked: inviteCount >= 10, isEliteCheck: false, progress: inviteCount + '/10' },
+        { key: 'elite', label: 'Elite', icon: '🏆', desc: 'Top 100 no Ranking Global', unlocked: false, isEliteCheck: true, progress: '' }
+      ];
+
+      container.innerHTML = badgesList.map(b => {
+        const opacity = b.unlocked ? '1' : '0.4';
+        const border = b.unlocked ? 'border: 2px solid var(--color-primary);' : 'border: 1px solid rgba(255,255,255,0.1);';
+        const shadow = b.unlocked ? 'box-shadow: 0 0 10px rgba(0,255,135,0.25);' : '';
+        const labelColor = b.unlocked ? 'color: var(--color-primary);' : 'color: var(--text-muted);';
+        const sub = b.progress ? '<div style="font-size:0.65rem; color:var(--color-primary); font-weight:700; margin-top:0.25rem;">' + b.progress + '</div>' : '';
+        const descText = b.isEliteCheck ? 'Clique para ver o Ranking' : b.desc;
+        const clickStyle = b.isEliteCheck ? ' cursor:pointer;' : '';
+        const clickHandler = b.isEliteCheck ? ' onclick="window.location.href=\'/ranking\'"' : '';
+
+        return '<div class="glass-card" style="padding:0.75rem; text-align:center; border-radius:12px; ' + border + ' ' + shadow + ' opacity:' + opacity + ';' + clickStyle + '" title="' + b.desc + '"' + clickHandler + '>' +
+          '<div style="font-size:1.75rem; margin-bottom:0.25rem;">' + b.icon + '</div>' +
+          '<div style="font-size:0.8rem; font-weight:700; ' + labelColor + '">' + b.label + '</div>' +
+          '<div style="font-size:0.65rem; color:var(--text-muted); margin-top:0.25rem; line-height:1.2;">' + descText + '</div>' +
+          sub +
+          '</div>';
+      }).join('');
     }
     function renderMyGroups() {
       const grps = getSavedGroups();

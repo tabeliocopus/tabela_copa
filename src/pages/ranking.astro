@@ -96,12 +96,62 @@ leads.forEach(lead => {
   }
 });
 
-const ranking = Array.from(scoreMap.values())
+const rawRanking = Array.from(scoreMap.values())
   .filter(row => row.points > 0)
   .sort((a, b) => b.points - a.points || a.nome.localeCompare(b.nome));
 
-const totalPoints = ranking.reduce((sum, row) => sum + row.points, 0);
-const leader = ranking[0] || null;
+const totalPoints = rawRanking.reduce((sum, row) => sum + row.points, 0);
+const leader = rawRanking[0] || null;
+
+const badgesDefinition: Record<string, { label: string; icon: string; desc: string }> = {
+  palpiteiro: { label: 'Palpiteiro', icon: '⚽', desc: 'Fez a primeira simulação' },
+  criador: { label: 'Fundador', icon: '👥', desc: 'Criou um grupo no Bolão' },
+  propagador: { label: 'Divulgador', icon: '📢', desc: 'Compartilhou a simulação' },
+  influenciador: { label: 'Influenciador', icon: '🔥', desc: 'Convidou 5 ou mais amigos' },
+  embaixador: { label: 'Embaixador', icon: '👑', desc: 'Convidou 10 ou mais amigos' },
+  elite: { label: 'Elite', icon: '🏆', desc: 'Está no Top 100 Global' }
+};
+
+const eventsByLeadId = new Map<string, string[]>();
+events.forEach(event => {
+  if (!event.lead_id) return;
+  if (!eventsByLeadId.has(event.lead_id)) {
+    eventsByLeadId.set(event.lead_id, []);
+  }
+  eventsByLeadId.get(event.lead_id)!.push(event.event_type);
+});
+
+const ranking = rawRanking.map((row, index) => {
+  const userEvents = eventsByLeadId.get(row.leadId) || [];
+  const lead = leadMap.get(row.leadId);
+  const badgeKeys = [];
+  const inviteCount = userEvents.filter(t => t === 'friend_invited').length;
+
+  if (lead?.simulacao_data || userEvents.includes('simulation_created')) {
+    badgeKeys.push('palpiteiro');
+  }
+  if (userEvents.includes('group_created')) {
+    badgeKeys.push('criador');
+  }
+  if (userEvents.includes('simulation_shared')) {
+    badgeKeys.push('propagador');
+  }
+  if (inviteCount >= 5) {
+    badgeKeys.push('influenciador');
+  }
+  if (inviteCount >= 10) {
+    badgeKeys.push('embaixador');
+  }
+  if (index < 100) {
+    badgeKeys.push('elite');
+  }
+
+  const badges = badgeKeys.map(k => badgesDefinition[k]);
+  return {
+    ...row,
+    badges
+  };
+});
 
 const eventLabels: Record<string, { label: string; points: number }> = {
   simulation_created: { label: 'Criou simulacao', points: 10 },
@@ -165,7 +215,14 @@ const eventLabels: Record<string, { label: string; points: number }> = {
                   {ranking.map((row, index) => (
                     <tr>
                       <td class="ranking-position">{index + 1}</td>
-                      <td class="align-left"><strong>{row.nome}</strong></td>
+                      <td class="align-left">
+                        <strong>{row.nome}</strong>
+                        <span class="user-badges">
+                          {row.badges.map(b => (
+                            <span class="badge-icon" title={`${b.label}: ${b.desc}`}>{b.icon}</span>
+                          ))}
+                        </span>
+                      </td>
                       <td><strong>{row.points}</strong></td>
                     </tr>
                   ))}
@@ -336,6 +393,22 @@ const eventLabels: Record<string, { label: string; points: number }> = {
       .ranking-stat-card .ranking-leader-name {
         font-size: 1.25rem;
       }
+    }
+
+    .user-badges {
+      display: inline-flex;
+      gap: 0.35rem;
+      margin-left: 0.5rem;
+      vertical-align: middle;
+    }
+    .badge-icon {
+      font-size: 0.95rem;
+      cursor: help;
+      filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.2));
+      transition: transform 0.2s ease;
+    }
+    .badge-icon:hover {
+      transform: scale(1.3);
     }
   </style>
 </Layout>
