@@ -956,7 +956,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       checkRegistrationAndExecute('download');
     });
 
-    function getShareUrl() {
+    function getLegacyShareUrl() {
       let payload = '';
       matches.forEach(m => {
         if (m.homeScore !== null && m.awayScore !== null) {
@@ -966,8 +966,165 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       return `${window.location.origin}${window.location.pathname}?sim=${btoa(payload)}`;
     }
 
-    function executeAction(action) {
-      const shareUrl = getShareUrl();
+    function getShareUrl() {
+      const lead = getSavedLead();
+      return lead?.predictionUrl || lead?.url || getLegacyShareUrl();
+    }
+
+    function getCleanSupabaseUrl() {
+      return (supabaseUrl || '').trim().replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
+    }
+
+    function generatePredictionSlug() {
+      const randomPart = Math.random().toString(36).slice(2, 8);
+      const timePart = Date.now().toString(36).slice(-4);
+      return `${randomPart}${timePart}`.toLowerCase();
+    }
+
+    function getTeamName(teamId) {
+      return teamId && teams[teamId] ? teams[teamId].name : null;
+    }
+
+    function getSimulationSnapshot() {
+      const finalMatch = bracket[30];
+      const championId = getMatchWinner(finalMatch);
+      let runnerUpId = null;
+
+      if (finalMatch && championId) {
+        runnerUpId = championId === finalMatch.homeId ? finalMatch.awayId : finalMatch.homeId;
+      }
+
+      const rounds = [
+        { name: 'Rodada de 32', start: 0, count: 16 },
+        { name: 'Oitavas de Final', start: 16, count: 8 },
+        { name: 'Quartas de Final', start: 24, count: 4 },
+        { name: 'Semifinais', start: 28, count: 2 },
+        { name: 'Final', start: 30, count: 1 }
+      ];
+
+      const bracketSummary = rounds.map(round => {
+        const roundMatches = [];
+        for (let i = 0; i < round.count; i++) {
+          const match = bracket[round.start + i];
+          if (!match) continue;
+
+          roundMatches.push({
+            home: getTeamName(match.homeId),
+            away: getTeamName(match.awayId),
+            homeScore: match.homeScore,
+            awayScore: match.awayScore,
+            winner: getTeamName(getMatchWinner(match))
+          });
+        }
+
+        return {
+          name: round.name,
+          teams: roundMatches
+            .flatMap(match => [match.home, match.away])
+            .filter(Boolean),
+          matches: roundMatches
+        };
+      });
+
+      const topScorers = Object.keys(scorersDb)
+        .map(player => ({
+          player,
+          team: scorersDb[player].teamName,
+          goals: scorersDb[player].goals
+        }))
+        .sort((a, b) => b.goals - a.goals)
+        .slice(0, 5);
+
+      return {
+        champion: getTeamName(championId),
+        runnerUp: getTeamName(runnerUpId),
+        topScorers,
+        bracketSummary,
+        matches,
+        bracket,
+        scorers: scorersDb
+      };
+    }
+
+    async function findLeadIdByEmail(email) {
+      const cleanUrl = getCleanSupabaseUrl();
+      if (!cleanUrl || !supabaseAnonKey || !email) return null;
+
+      const res = await fetch(`${cleanUrl}/rest/v1/leads?email=eq.${encodeURIComponent(email)}&select=id&order=created_at.desc&limit=1`, {
+        headers: {
+          'apikey': supabaseAnonKey,
+          'Authorization': `Bearer ${supabaseAnonKey}`
+        }
+      });
+
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data?.[0]?.id || null;
+    }
+
+    async function createSharedPrediction(leadId) {
+      const cleanUrl = getCleanSupabaseUrl();
+      if (!cleanUrl || !supabaseAnonKey) return null;
+
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const slug = generatePredictionSlug();
+        const res = await fetch(`${cleanUrl}/rest/v1/shared_predictions`, {
+          method: 'POST',
+          headers: {
+            'apikey': supabaseAnonKey,
+            'Authorization': `Bearer ${supabaseAnonKey}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=representation'
+          },
+          body: JSON.stringify({
+            slug,
+            lead_id: leadId,
+            simulation_data: getSimulationSnapshot()
+          })
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          const savedSlug = data?.[0]?.slug || slug;
+          return {
+            slug: savedSlug,
+            url: `${window.location.origin}/palpite/${savedSlug}`
+          };
+        }
+
+        if (res.status !== 409) break;
+      }
+
+      return null;
+    }
+
+    async function ensurePublicPredictionUrl() {
+      const lead = getSavedLead();
+      if (lead?.predictionUrl) return lead.predictionUrl;
+      if (!lead) return getLegacyShareUrl();
+
+      let leadId = lead.leadId || null;
+      if (!leadId) {
+        leadId = await findLeadIdByEmail(lead.email);
+      }
+
+      const prediction = await createSharedPrediction(leadId);
+      if (!prediction) return getLegacyShareUrl();
+
+      const updatedLead = {
+        ...lead,
+        leadId,
+        predictionSlug: prediction.slug,
+        predictionUrl: prediction.url,
+        url: prediction.url
+      };
+      localStorage.setItem('lead_cadastrado', JSON.stringify(updatedLead));
+
+      return prediction.url;
+    }
+
+    async function executeAction(action) {
+      const shareUrl = action === 'share' ? await ensurePublicPredictionUrl() : getShareUrl();
       const winnerName = document.getElementById('champion-team-name').textContent || 'Brasil';
       const text = `Meu simulador da Copa 2026 deu que o campeão será o(a) *${winnerName}*! 🏆 Faça seu palpite e me desafie: ${shareUrl}`;
 
@@ -1030,7 +1187,8 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       const nome = document.getElementById('lead-name').value;
       const email = document.getElementById('lead-email').value;
       const whatsapp = document.getElementById('lead-phone').value;
-      const shareUrl = getShareUrl();
+      let shareUrl = getLegacyShareUrl();
+      const simulationSnapshot = getSimulationSnapshot();
 
       // Save Lead Data Locally
       const leadData = { nome, email, whatsapp, url: shareUrl };
@@ -1046,23 +1204,32 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
             nome: nome,
             email: email,
             whatsapp: whatsapp,
-            simulacao_data: { matches, bracket, scorers: scorersDb },
+            simulacao_data: simulationSnapshot,
             url_compartilhamento: shareUrl
           };
 
           // Sanitize url to remove trailing slashes or /rest/v1/ suffix
-          let cleanUrl = supabaseUrl.trim().replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
+          let cleanUrl = getCleanSupabaseUrl();
 
-          await fetch(`${cleanUrl}/rest/v1/leads`, {
+          const leadRes = await fetch(`${cleanUrl}/rest/v1/leads`, {
             method: 'POST',
             headers: {
               'apikey': supabaseAnonKey,
               'Authorization': `Bearer ${supabaseAnonKey}`,
               'Content-Type': 'application/json',
-              'Prefer': 'return=minimal'
+              'Prefer': 'return=representation'
             },
             body: JSON.stringify(payload)
           });
+
+          if (leadRes.ok) {
+            const savedLeads = await leadRes.json();
+            const savedLeadId = savedLeads?.[0]?.id || null;
+            if (savedLeadId) {
+              const updatedLeadData = { ...leadData, leadId: savedLeadId };
+              localStorage.setItem('lead_cadastrado', JSON.stringify(updatedLeadData));
+            }
+          }
           console.log("Lead sincronizado com Supabase com sucesso.");
         } catch (err) {
           console.error("Erro ao sincronizar com Supabase:", err);
@@ -1071,7 +1238,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
 
       // Execute action
       if (pendingAction) {
-        executeAction(pendingAction);
+        await executeAction(pendingAction);
         pendingAction = null;
       }
       

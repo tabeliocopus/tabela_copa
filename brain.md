@@ -248,3 +248,46 @@ Edição Local → git add . → git commit → git push origin main
 | GitHub | `https://github.com/tabeliocopus/tabela_copa` |
 | Supabase | `https://supabase.com/dashboard/project/lxmzkemrtbdburygyjxj` |
 | Vercel | Conectado ao repo GitHub (deploy automático no push para `main`) |
+---
+
+## Atualizacao Fase 2 - Crescimento e Viralizacao
+
+**Status local:** Implementado no workspace, ainda nao commitado/pushado para o GitHub.
+
+### Prioridade 1 - Pagina publica de palpites
+- [x] Criada rota dinamica `src/pages/palpite/[slug].astro`.
+- [x] Rota publica `/palpite/[slug]` busca dados no Supabase pela tabela `shared_predictions`.
+- [x] Exibe campeao, vice-campeao, top 5 artilheiros, resumo do chaveamento e data de criacao.
+- [x] CTA "Criar Minha Simulacao" aponta para a home.
+- [x] Compartilhamento da home passou a tentar gerar URL publica `/palpite/[slug]`.
+- [x] Mantido fallback legado `?sim=...` caso a criacao do palpite publico falhe.
+- [x] Tabela `shared_predictions` adicionada ao `supabase_schema.sql` e ja executada manualmente no Supabase pelo usuario.
+
+### Prioridade 2 - Estatisticas da Galera
+- [x] Criada rota `src/pages/estatisticas.astro`.
+- [x] Pagina `/estatisticas` busca dados da tabela `leads`.
+- [x] Exibe total de simulacoes, total de usuarios unicos, campeoes computados e artilheiros computados.
+- [x] Exibe percentual de Brasil, Argentina e Franca campeoes.
+- [x] Exibe top 10 campeoes mais escolhidos.
+- [x] Exibe top 10 artilheiros mais escolhidos.
+- [x] Nao exigiu SQL novo alem do que ja existia em `leads`.
+
+### Infra/Build
+- [x] Instalado `@astrojs/vercel` para suportar rotas server-rendered no deploy da Vercel.
+- [x] `astro.config.mjs` configurado com adapter da Vercel.
+- [x] `.vercel/` adicionado ao `.gitignore`.
+- [x] Build validado com `npm.cmd run build`.
+
+### Arquivos alterados nesta etapa
+- `.gitignore`
+- `astro.config.mjs`
+- `package.json`
+- `package-lock.json`
+- `src/pages/index.astro`
+- `src/pages/palpite/[slug].astro`
+- `src/pages/estatisticas.astro`
+- `supabase_schema.sql`
+- `brain.md`
+
+### Proxima prioridade
+- Prioridade 3 - Ranking Global (`/ranking`) com pontuacao por engajamento.

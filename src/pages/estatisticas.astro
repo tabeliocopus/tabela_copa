@@ -1,0 +1,361 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+export const prerender = false;
+
+const supabaseUrl = (import.meta.env.PUBLIC_SUPABASE_URL || '').replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
+const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
+
+type LeadRow = {
+  id?: string;
+  email?: string;
+  simulacao_data?: any;
+};
+
+type RankingItem = {
+  name: string;
+  count: number;
+  percentage: number;
+};
+
+const featuredChampions = ['Brasil', 'Argentina', 'França'];
+let leads: LeadRow[] = [];
+let errorMsg = '';
+
+function addCount(map: Map<string, number>, key?: string | null) {
+  if (!key) return;
+  map.set(key, (map.get(key) || 0) + 1);
+}
+
+function getTopScorerName(sim: any) {
+  if (Array.isArray(sim?.topScorers) && sim.topScorers.length > 0) {
+    return sim.topScorers[0]?.player || sim.topScorers[0]?.name || null;
+  }
+
+  if (sim?.scorers && typeof sim.scorers === 'object') {
+    const scorers = Object.keys(sim.scorers)
+      .map(player => ({ player, goals: Number(sim.scorers[player]?.goals || 0) }))
+      .filter(item => item.goals > 0)
+      .sort((a, b) => b.goals - a.goals);
+
+    return scorers[0]?.player || null;
+  }
+
+  return null;
+}
+
+function toRanking(map: Map<string, number>, total: number): RankingItem[] {
+  return Array.from(map.entries())
+    .map(([name, count]) => ({
+      name,
+      count,
+      percentage: total > 0 ? Math.round((count / total) * 1000) / 10 : 0
+    }))
+    .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+}
+
+if (supabaseUrl && supabaseAnonKey) {
+  try {
+    const res = await fetch(
+      `${supabaseUrl}/rest/v1/leads?select=id,email,simulacao_data&order=created_at.desc&limit=5000`,
+      { headers: { apikey: supabaseAnonKey, Authorization: `Bearer ${supabaseAnonKey}` } }
+    );
+
+    if (!res.ok) {
+      throw new Error('Erro ao buscar dados do Supabase.');
+    }
+
+    leads = await res.json();
+  } catch (e) {
+    errorMsg = 'Não foi possível carregar as estatísticas agora.';
+  }
+} else {
+  errorMsg = 'Supabase não configurado para carregar estatísticas.';
+}
+
+const simulations = leads.filter(lead => Boolean(lead.simulacao_data));
+const uniqueUsers = new Set(leads.map(lead => lead.email).filter(Boolean));
+const championCounts = new Map<string, number>();
+const scorerCounts = new Map<string, number>();
+
+simulations.forEach(lead => {
+  const sim = lead.simulacao_data || {};
+  addCount(championCounts, sim.champion);
+  addCount(scorerCounts, getTopScorerName(sim));
+});
+
+const championTotal = Array.from(championCounts.values()).reduce((sum, count) => sum + count, 0);
+const scorerTotal = Array.from(scorerCounts.values()).reduce((sum, count) => sum + count, 0);
+const topChampions = toRanking(championCounts, championTotal).slice(0, 10);
+const topScorers = toRanking(scorerCounts, scorerTotal).slice(0, 10);
+
+const featuredStats = featuredChampions.map(name => {
+  const count = championCounts.get(name) || 0;
+  return {
+    name,
+    count,
+    percentage: championTotal > 0 ? Math.round((count / championTotal) * 1000) / 10 : 0
+  };
+});
+---
+
+<Layout
+  title="Estatísticas da Galera | Simulador Copa 2026"
+  description="Veja quais seleções mais aparecem como campeãs nas simulações da Copa 2026, os artilheiros mais escolhidos e os números gerais dos palpites."
+>
+  <main class="container estatisticas-page">
+    <header>
+      <div class="logo-badge">Estatísticas da Galera</div>
+      <h1>O PALPITE DO BRASIL PARA A COPA 2026</h1>
+      <p class="subtitle">Dados agregados das simulações salvas pelos usuários do Tabelio Copus.</p>
+      <div class="stats-actions">
+        <a href="/" class="btn btn-primary">CRIAR MINHA SIMULAÇÃO</a>
+      </div>
+    </header>
+
+    {errorMsg ? (
+      <section class="glass-card stats-empty">
+        <h2>Estatísticas indisponíveis</h2>
+        <p class="text-muted">{errorMsg}</p>
+      </section>
+    ) : (
+      <>
+        <section class="stats-summary-grid">
+          <div class="glass-card stat-card">
+            <span class="stat-label">Total de simulações</span>
+            <strong>{simulations.length}</strong>
+          </div>
+          <div class="glass-card stat-card">
+            <span class="stat-label">Total de usuários</span>
+            <strong>{uniqueUsers.size}</strong>
+          </div>
+          <div class="glass-card stat-card">
+            <span class="stat-label">Campeões computados</span>
+            <strong>{championTotal}</strong>
+          </div>
+          <div class="glass-card stat-card">
+            <span class="stat-label">Artilheiros computados</span>
+            <strong>{scorerTotal}</strong>
+          </div>
+        </section>
+
+        <section class="featured-champions-grid">
+          {featuredStats.map(item => (
+            <article class="glass-card featured-champion">
+              <span>{item.name} campeão</span>
+              <strong>{item.percentage}%</strong>
+              <small>{item.count} simulação{item.count === 1 ? '' : 'ões'}</small>
+              <div class="stats-bar" aria-hidden="true">
+                <span style={`width:${Math.min(item.percentage, 100)}%`}></span>
+              </div>
+            </article>
+          ))}
+        </section>
+
+        <section class="stats-rankings-grid">
+          <div class="glass-card stats-ranking-card">
+            <h2>Top 10 Campeões Mais Escolhidos</h2>
+            {topChampions.length > 0 ? (
+              <table class="standing-table stats-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th class="align-left">Seleção</th>
+                    <th>Votos</th>
+                    <th>%</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {topChampions.map((item, index) => (
+                    <tr>
+                      <td>{index + 1}</td>
+                      <td class="align-left"><strong>{item.name}</strong></td>
+                      <td>{item.count}</td>
+                      <td>{item.percentage}%</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <p class="text-muted">Ainda não há campeões computados.</p>
+            )}
+          </div>
+
+          <div class="glass-card stats-ranking-card">
+            <h2>Top 10 Artilheiros Mais Escolhidos</h2>
+            {topScorers.length > 0 ? (
+              <table class="standing-table stats-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th class="align-left">Jogador</th>
+                    <th>Votos</th>
+                    <th>%</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {topScorers.map((item, index) => (
+                    <tr>
+                      <td>{index + 1}</td>
+                      <td class="align-left"><strong>{item.name}</strong></td>
+                      <td>{item.count}</td>
+                      <td>{item.percentage}%</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <p class="text-muted">Ainda não há artilheiros computados.</p>
+            )}
+          </div>
+        </section>
+      </>
+    )}
+  </main>
+
+  <style>
+    .estatisticas-page {
+      padding-bottom: 5rem;
+    }
+
+    .stats-actions {
+      display: flex;
+      justify-content: center;
+      margin-top: 1.5rem;
+    }
+
+    .stats-actions .btn {
+      max-width: 280px;
+      text-align: center;
+      text-decoration: none;
+    }
+
+    .stats-summary-grid,
+    .featured-champions-grid,
+    .stats-rankings-grid {
+      display: grid;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .stats-summary-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .featured-champions-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .stats-rankings-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-items: start;
+    }
+
+    .stat-card,
+    .featured-champion,
+    .stats-ranking-card,
+    .stats-empty {
+      padding: 1.5rem;
+    }
+
+    .stat-card {
+      min-height: 112px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .stat-label,
+    .featured-champion span {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .stat-card strong {
+      color: var(--color-primary);
+      font-size: 2.3rem;
+      line-height: 1;
+    }
+
+    .featured-champion {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .featured-champion strong {
+      color: var(--color-accent);
+      font-size: 2.75rem;
+      line-height: 1;
+    }
+
+    .featured-champion small {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .stats-bar {
+      width: 100%;
+      height: 8px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .stats-bar span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+    }
+
+    .stats-ranking-card h2,
+    .stats-empty h2 {
+      margin-bottom: 1rem;
+      color: var(--color-secondary);
+      font-size: 1.2rem;
+      font-weight: 800;
+    }
+
+    .stats-table {
+      margin-bottom: 0;
+      font-size: 0.95rem;
+    }
+
+    .stats-table td,
+    .stats-table th {
+      padding: 0.7rem 0.4rem;
+    }
+
+    .stats-empty {
+      max-width: 560px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    @media (max-width: 900px) {
+      .stats-summary-grid,
+      .featured-champions-grid,
+      .stats-rankings-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .stat-card,
+      .featured-champion,
+      .stats-ranking-card,
+      .stats-empty {
+        padding: 1.1rem;
+      }
+
+      .stat-card strong,
+      .featured-champion strong {
+        font-size: 2rem;
+      }
+    }
+  </style>
+</Layout>
