@@ -1062,6 +1062,52 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       return data?.[0]?.id || null;
     }
 
+    async function ensureLeadId() {
+      const lead = getSavedLead();
+      if (!lead) return null;
+      if (lead.leadId) return lead.leadId;
+
+      const leadId = await findLeadIdByEmail(lead.email);
+      if (leadId) {
+        localStorage.setItem('lead_cadastrado', JSON.stringify({ ...lead, leadId }));
+      }
+
+      return leadId;
+    }
+
+    async function recordEngagementEvent(eventType, points, eventKey, metadata = {}) {
+      const cleanUrl = getCleanSupabaseUrl();
+      if (!cleanUrl || !supabaseAnonKey || !eventType || !eventKey) return;
+
+      try {
+        const leadId = metadata.leadId || await ensureLeadId();
+        if (!leadId) return;
+
+        const res = await fetch(`${cleanUrl}/rest/v1/engagement_events`, {
+          method: 'POST',
+          headers: {
+            'apikey': supabaseAnonKey,
+            'Authorization': `Bearer ${supabaseAnonKey}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal'
+          },
+          body: JSON.stringify({
+            lead_id: leadId,
+            event_type: eventType,
+            event_key: eventKey,
+            points,
+            metadata
+          })
+        });
+
+        if (!res.ok && res.status !== 409) {
+          console.warn('Evento de ranking nao registrado:', eventType, await res.text());
+        }
+      } catch (err) {
+        console.warn('Erro ao registrar evento de ranking:', err);
+      }
+    }
+
     async function createSharedPrediction(leadId) {
       const cleanUrl = getCleanSupabaseUrl();
       if (!cleanUrl || !supabaseAnonKey) return null;
@@ -1129,6 +1175,15 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       const text = `Meu simulador da Copa 2026 deu que o campeão será o(a) *${winnerName}*! 🏆 Faça seu palpite e me desafie: ${shareUrl}`;
 
       if (action === 'share') {
+        const lead = getSavedLead();
+        if (lead?.leadId) {
+          const shareKey = lead.predictionSlug || btoa(shareUrl).replace(/=+$/, '');
+          recordEngagementEvent('simulation_shared', 20, `share:${lead.leadId}:${shareKey}`, {
+            leadId: lead.leadId,
+            shareUrl
+          });
+        }
+
         const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
         if (navigator.share) {
           navigator.share({
@@ -1228,6 +1283,9 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
             if (savedLeadId) {
               const updatedLeadData = { ...leadData, leadId: savedLeadId };
               localStorage.setItem('lead_cadastrado', JSON.stringify(updatedLeadData));
+              await recordEngagementEvent('simulation_created', 10, `simulation:${savedLeadId}`, {
+                leadId: savedLeadId
+              });
             }
           }
           console.log("Lead sincronizado com Supabase com sucesso.");
@@ -1405,6 +1463,12 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
             const gr = await fetch(cleanUrl+'/rest/v1/grupos', { method:'POST', headers:{'apikey':anonKey,'Authorization':'Bearer '+anonKey,'Content-Type':'application/json','Prefer':'return=representation'}, body: JSON.stringify({nome:groupName,codigo_acesso:codigo,criador_id:leadId}) });
             const gd = await gr.json(); groupId = gd[0]&&gd[0].id;
             await fetch(cleanUrl+'/rest/v1/grupo_membros', { method:'POST', headers:{'apikey':anonKey,'Authorization':'Bearer '+anonKey,'Content-Type':'application/json','Prefer':'return=minimal'}, body: JSON.stringify({grupo_id:groupId,lead_id:leadId}) });
+            await recordEngagementEvent('group_created', 30, `group_created:${leadId}:${groupId || codigo}`, {
+              leadId,
+              groupId: groupId || codigo,
+              groupName,
+              codigo
+            });
           }
         } catch(err) { console.error('Erro criar grupo:', err); }
         const sg = getSavedGroups(); sg.push({nome:groupName,codigo,id:groupId||codigo}); saveGroups(sg);
@@ -1432,6 +1496,12 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
             const ld = await lr.json(); const leadId = ld[0]&&ld[0].id;
             if (!leadId) throw new Error('Lead nao encontrado.');
             await fetch(cleanUrl+'/rest/v1/grupo_membros', { method:'POST', headers:{'apikey':anonKey,'Authorization':'Bearer '+anonKey,'Content-Type':'application/json','Prefer':'return=minimal'}, body: JSON.stringify({grupo_id:groupId,lead_id:leadId}) });
+            await recordEngagementEvent('group_joined', 5, `group_joined:${leadId}:${groupId}`, {
+              leadId,
+              groupId,
+              groupName,
+              codigo: code
+            });
           }
         } catch(err) { console.error('Erro entrar grupo:', err); }
         const sg = getSavedGroups(); if (!sg.some(g => g.codigo===code)) { sg.push({nome:groupName,codigo:code,id:groupId||code}); saveGroups(sg); }

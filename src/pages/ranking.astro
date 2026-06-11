@@ -1,0 +1,340 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+export const prerender = false;
+
+const supabaseUrl = (import.meta.env.PUBLIC_SUPABASE_URL || '').replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
+const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
+
+type LeadRow = {
+  id: string;
+  nome?: string;
+  email?: string;
+  simulacao_data?: any;
+};
+
+type EventRow = {
+  lead_id: string;
+  event_type: string;
+  points: number;
+};
+
+type RankingRow = {
+  leadId: string;
+  nome: string;
+  points: number;
+  events: number;
+};
+
+let leads: LeadRow[] = [];
+let events: EventRow[] = [];
+let errorMsg = '';
+
+if (supabaseUrl && supabaseAnonKey) {
+  try {
+    const [leadsRes, eventsRes] = await Promise.all([
+      fetch(`${supabaseUrl}/rest/v1/leads?select=id,nome,email,simulacao_data&order=created_at.asc&limit=5000`, {
+        headers: { apikey: supabaseAnonKey, Authorization: `Bearer ${supabaseAnonKey}` }
+      }),
+      fetch(`${supabaseUrl}/rest/v1/engagement_events?select=lead_id,event_type,points&limit=10000`, {
+        headers: { apikey: supabaseAnonKey, Authorization: `Bearer ${supabaseAnonKey}` }
+      })
+    ]);
+
+    if (!leadsRes.ok) throw new Error('Erro ao buscar leads.');
+    leads = await leadsRes.json();
+
+    if (eventsRes.ok) {
+      events = await eventsRes.json();
+    }
+  } catch (e) {
+    errorMsg = 'Nao foi possivel carregar o ranking agora.';
+  }
+} else {
+  errorMsg = 'Supabase nao configurado para carregar o ranking.';
+}
+
+const leadMap = new Map<string, LeadRow>();
+leads.forEach(lead => leadMap.set(lead.id, lead));
+
+const scoreMap = new Map<string, RankingRow>();
+const eventTypesByLead = new Map<string, Set<string>>();
+
+function getRankingRow(leadId: string) {
+  const lead = leadMap.get(leadId);
+  if (!scoreMap.has(leadId)) {
+    scoreMap.set(leadId, {
+      leadId,
+      nome: lead?.nome || 'Participante',
+      points: 0,
+      events: 0
+    });
+  }
+
+  return scoreMap.get(leadId)!;
+}
+
+events.forEach(event => {
+  if (!event.lead_id) return;
+
+  const row = getRankingRow(event.lead_id);
+  row.points += Number(event.points || 0);
+  row.events += 1;
+
+  if (!eventTypesByLead.has(event.lead_id)) {
+    eventTypesByLead.set(event.lead_id, new Set());
+  }
+  eventTypesByLead.get(event.lead_id)!.add(event.event_type);
+});
+
+leads.forEach(lead => {
+  const hasSimulationCreated = eventTypesByLead.get(lead.id)?.has('simulation_created');
+  if (lead.simulacao_data && !hasSimulationCreated) {
+    const row = getRankingRow(lead.id);
+    row.points += 10;
+    row.events += 1;
+  }
+});
+
+const ranking = Array.from(scoreMap.values())
+  .filter(row => row.points > 0)
+  .sort((a, b) => b.points - a.points || a.nome.localeCompare(b.nome));
+
+const totalPoints = ranking.reduce((sum, row) => sum + row.points, 0);
+const leader = ranking[0] || null;
+
+const eventLabels: Record<string, { label: string; points: number }> = {
+  simulation_created: { label: 'Criou simulacao', points: 10 },
+  simulation_shared: { label: 'Compartilhou', points: 20 },
+  group_created: { label: 'Criou grupo', points: 30 },
+  friend_invited: { label: 'Convidou amigo', points: 15 },
+  group_joined: { label: 'Entrou em grupo', points: 5 }
+};
+---
+
+<Layout
+  title="Ranking Global | Simulador Copa 2026"
+  description="Veja o ranking geral dos participantes do Simulador da Copa 2026, com pontuacao por simulacoes, compartilhamentos e grupos."
+>
+  <main class="container ranking-page">
+    <header>
+      <div class="logo-badge">Ranking Global</div>
+      <h1>QUEM MAIS MOVIMENTA A COPA 2026</h1>
+      <p class="subtitle">Pontuacao por engajamento: simulacoes, compartilhamentos, grupos e participacao no bolao.</p>
+      <div class="ranking-actions">
+        <a href="/" class="btn btn-primary">CRIAR MINHA SIMULAÇÃO</a>
+      </div>
+    </header>
+
+    {errorMsg ? (
+      <section class="glass-card ranking-empty">
+        <h2>Ranking indisponivel</h2>
+        <p class="text-muted">{errorMsg}</p>
+      </section>
+    ) : (
+      <>
+        <section class="ranking-summary-grid">
+          <div class="glass-card ranking-stat-card">
+            <span>Participantes pontuando</span>
+            <strong>{ranking.length}</strong>
+          </div>
+          <div class="glass-card ranking-stat-card">
+            <span>Pontos distribuidos</span>
+            <strong>{totalPoints}</strong>
+          </div>
+          <div class="glass-card ranking-stat-card">
+            <span>Lider atual</span>
+            <strong class="ranking-leader-name">{leader?.nome || '-'}</strong>
+          </div>
+        </section>
+
+        <section class="ranking-layout">
+          <div class="glass-card ranking-table-card">
+            <h2>Classificacao Geral</h2>
+            {ranking.length > 0 ? (
+              <table class="standing-table ranking-table">
+                <thead>
+                  <tr>
+                    <th>Pos.</th>
+                    <th class="align-left">Nome</th>
+                    <th>Pontos</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {ranking.map((row, index) => (
+                    <tr>
+                      <td class="ranking-position">{index + 1}</td>
+                      <td class="align-left"><strong>{row.nome}</strong></td>
+                      <td><strong>{row.points}</strong></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <p class="text-muted">Ainda nao ha participantes pontuando.</p>
+            )}
+          </div>
+
+          <aside class="glass-card ranking-rules-card">
+            <h2>Como Pontua</h2>
+            <div class="ranking-rules-list">
+              {Object.values(eventLabels).map(rule => (
+                <div class="ranking-rule">
+                  <span>{rule.label}</span>
+                  <strong>+{rule.points}</strong>
+                </div>
+              ))}
+            </div>
+          </aside>
+        </section>
+      </>
+    )}
+  </main>
+
+  <style>
+    .ranking-page {
+      padding-bottom: 5rem;
+    }
+
+    .ranking-actions {
+      display: flex;
+      justify-content: center;
+      margin-top: 1.5rem;
+    }
+
+    .ranking-actions .btn {
+      max-width: 280px;
+      text-align: center;
+      text-decoration: none;
+    }
+
+    .ranking-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .ranking-stat-card,
+    .ranking-table-card,
+    .ranking-rules-card,
+    .ranking-empty {
+      padding: 1.5rem;
+    }
+
+    .ranking-stat-card {
+      min-height: 118px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .ranking-stat-card span,
+    .ranking-rule span {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .ranking-stat-card strong {
+      color: var(--color-primary);
+      font-size: 2.3rem;
+      line-height: 1.05;
+    }
+
+    .ranking-stat-card .ranking-leader-name {
+      color: var(--color-accent);
+      font-size: 1.5rem;
+    }
+
+    .ranking-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 340px;
+      gap: 1rem;
+      align-items: start;
+    }
+
+    .ranking-table-card h2,
+    .ranking-rules-card h2,
+    .ranking-empty h2 {
+      margin-bottom: 1rem;
+      color: var(--color-secondary);
+      font-size: 1.2rem;
+      font-weight: 800;
+    }
+
+    .ranking-table {
+      margin-bottom: 0;
+      font-size: 1rem;
+    }
+
+    .ranking-table td,
+    .ranking-table th {
+      padding: 0.8rem 0.4rem;
+    }
+
+    .ranking-position {
+      color: var(--color-accent);
+      font-weight: 800;
+      font-size: 1.1rem;
+    }
+
+    .ranking-rules-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .ranking-rule {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding-bottom: 0.75rem;
+    }
+
+    .ranking-rule:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .ranking-rule strong {
+      color: var(--color-primary);
+      font-size: 1.2rem;
+      white-space: nowrap;
+    }
+
+    .ranking-empty {
+      max-width: 560px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    @media (max-width: 900px) {
+      .ranking-summary-grid,
+      .ranking-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .ranking-stat-card,
+      .ranking-table-card,
+      .ranking-rules-card,
+      .ranking-empty {
+        padding: 1.1rem;
+      }
+
+      .ranking-stat-card strong {
+        font-size: 2rem;
+      }
+
+      .ranking-stat-card .ranking-leader-name {
+        font-size: 1.25rem;
+      }
+    }
+  </style>
+</Layout>

@@ -291,3 +291,38 @@ Edição Local → git add . → git commit → git push origin main
 
 ### Proxima prioridade
 - Prioridade 3 - Ranking Global (`/ranking`) com pontuacao por engajamento.
+
+---
+
+## Atualizacao Prioridade 3 - Ranking Global
+
+**Status local:** Implementado no workspace, ainda nao commitado/pushado para o GitHub.
+
+### Ranking Global
+- [x] Criada rota `src/pages/ranking.astro`.
+- [x] Pagina `/ranking` mostra posicao, nome e pontuacao.
+- [x] Ranking agrega dados da tabela `engagement_events`.
+- [x] Leads antigos com `simulacao_data` recebem fallback visual de +10 pontos quando ainda nao existe evento `simulation_created`.
+- [x] Regras iniciais implementadas no codigo:
+  - Criou simulacao: +10
+  - Compartilhou: +20
+  - Criou grupo: +30
+  - Entrou em grupo: +5
+  - Convidou amigo: +15 preparado na lista de regras para a proxima prioridade
+
+### Banco
+- [x] Adicionada tabela `engagement_events` ao `supabase_schema.sql`.
+- [x] Eventos usam `event_key` unico para reduzir pontuacao duplicada.
+- [x] RLS e policies publicas de insert/select adicionadas para chamadas client-side.
+
+### Arquivos alterados nesta prioridade
+- `src/pages/index.astro`
+- `src/pages/ranking.astro`
+- `supabase_schema.sql`
+- `brain.md`
+
+### Validacao
+- [x] Build validado com `npm.cmd run build`.
+
+### Proxima prioridade
+- Prioridade 4 - Sistema de Indicacao (`ref_code`, `?ref=...`, tabela `referrals`).

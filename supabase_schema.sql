@@ -36,14 +36,29 @@ create table if not exists public.shared_predictions (
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
+-- 5. Eventos de pontuacao para ranking global
+create table if not exists public.engagement_events (
+  id uuid default gen_random_uuid() primary key,
+  lead_id uuid references public.leads(id) on delete cascade not null,
+  event_type text not null,
+  event_key text unique not null,
+  points integer not null,
+  metadata jsonb,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
 -- 4. Habilitação de Políticas de Segurança (RLS)
 alter table public.leads enable row level security;
 alter table public.grupos enable row level security;
 alter table public.grupo_membros enable row level security;
 alter table public.shared_predictions enable row level security;
+alter table public.engagement_events enable row level security;
 
 create policy "Permitir insercoes publicas em palpites compartilhados" on public.shared_predictions for insert with check (true);
 create policy "Permitir leitura publica em palpites compartilhados" on public.shared_predictions for select using (true);
+
+create policy "Permitir insercoes publicas em eventos de ranking" on public.engagement_events for insert with check (true);
+create policy "Permitir leitura publica em eventos de ranking" on public.engagement_events for select using (true);
 
 -- Políticas de inserção/leitura pública para facilitar chamadas no client-side
 create policy "Permitir inserções públicas em leads" on public.leads for insert with check (true);
