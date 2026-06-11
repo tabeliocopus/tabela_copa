@@ -1,17 +1,1000 @@
 ---
+import Layout from '../layouts/Layout.astro';
+import { teams, groups, generateMatches } from '../data/worldCupData';
 
+const initialMatches = generateMatches();
+
+// Supabase environment variables from server environment
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || '';
+const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Layout title="Simulador da Copa do Mundo 2026 | Tabela Interativa & Leads">
+  <main class="container">
+    
+    <!-- HEADER -->
+    <header>
+      <div class="logo-badge">Qatar & USA 2026</div>
+      <h1>SIMULADOR DA COPA DO MUNDO 2026</h1>
+      <p class="subtitle">Simule a fase de grupos, defina a classificação dos melhores terceiros colocados e monte o chaveamento do mata-mata até a grande final!</p>
+      
+      <!-- NAV TABS -->
+      <div class="tabs-container">
+        <button class="tab-btn active" data-tab="fase-grupos">
+          ⚽ Fase de Grupos
+        </button>
+        <button class="tab-btn" data-tab="mata-mata">
+          🏆 Mata-Mata
+        </button>
+        <button class="tab-btn" data-tab="artilharia">
+          👟 Artilharia
+        </button>
+      </div>
+    </header>
+
+    <!-- MONETIZATION BANNER -->
+    <div class="ads-banner">
+      <div class="ads-content">
+        <h3>🎁 Ganhe até R$ 500 de Bônus para apostar!</h3>
+        <p>Curtiu os seus palpites da Copa? Cadastre-se na parceira oficial com o cupom <strong>NINJA2026</strong> e ganhe bônus no primeiro depósito!</p>
+      </div>
+      <a href="https://betano.com" target="_blank" rel="noopener noreferrer" class="betting-btn">Apostar Agora ➜</a>
+    </div>
+
+    <!-- VIEW 1: FASE DE GRUPOS -->
+    <section id="fase-grupos" class="view-panel active">
+      <div class="groups-grid">
+        {groups.map(groupLetter => (
+          <div class="glass-card group-card" data-group={groupLetter}>
+            <div class="group-title">
+              Grupo {groupLetter}
+              <span class="text-xs text-muted">Copa 2026</span>
+            </div>
+            
+            <!-- Standings Table -->
+            <table class="standing-table">
+              <thead>
+                <tr>
+                  <th class="align-left">Sel.</th>
+                  <th>P</th>
+                  <th>J</th>
+                  <th>V</th>
+                  <th>SG</th>
+                </tr>
+              </thead>
+              <tbody class="group-standings-body" id={`standings-${groupLetter}`}>
+                <!-- Populated via JS -->
+              </tbody>
+            </table>
+
+            <!-- Group Matches -->
+            <div class="matches-list" id={`matches-${groupLetter}`}>
+              <!-- Populated via JS -->
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- VIEW 2: MATA-MATA -->
+    <section id="mata-mata" class="view-panel">
+      <div class="bracket-wrapper" id="bracket-container">
+        
+        <!-- Round of 32 -->
+        <div class="bracket-round" id="round-32">
+          <h3 class="text-center text-muted text-xs font-bold uppercase tracking-wider mb-2">Dezesseis-avos (32)</h3>
+          <!-- Populated via JS -->
+        </div>
+
+        <!-- Round of 16 -->
+        <div class="bracket-round" id="round-16">
+          <h3 class="text-center text-muted text-xs font-bold uppercase tracking-wider mb-2">Oitavas de Final</h3>
+          <!-- Populated via JS -->
+        </div>
+
+        <!-- Quarter Finals -->
+        <div class="bracket-round" id="round-8">
+          <h3 class="text-center text-muted text-xs font-bold uppercase tracking-wider mb-2">Quartas de Final</h3>
+          <!-- Populated via JS -->
+        </div>
+
+        <!-- Semi Finals -->
+        <div class="bracket-round" id="round-4">
+          <h3 class="text-center text-muted text-xs font-bold uppercase tracking-wider mb-2">Semifinais</h3>
+          <!-- Populated via JS -->
+        </div>
+
+        <!-- Final -->
+        <div class="bracket-round" id="round-2">
+          <h3 class="text-center text-muted text-xs font-bold uppercase tracking-wider mb-2">Grande Final</h3>
+          <!-- Populated via JS -->
+        </div>
+
+      </div>
+
+      <!-- Champion Display Banner -->
+      <div class="champion-banner" id="champion-display">
+        <h3 class="text-xs text-muted font-bold tracking-widest uppercase">👑 Campeão do Mundo 2026 👑</h3>
+        <img src="" alt="Bandeira do Campeão" class="champion-flag" id="champion-flag-img" />
+        <div class="champion-name" id="champion-team-name">Brasil</div>
+        <p class="text-muted text-sm mt-2">Parabéns! Sua simulação da Copa do Mundo foi concluída com sucesso.</p>
+      </div>
+    </section>
+
+    <!-- VIEW 3: ARTILHARIA -->
+    <section id="artilharia" class="view-panel">
+      <div class="glass-card" style="max-width: 600px; margin: 0 auto; padding: 2rem;">
+        <h2 class="text-center mb-6" style="color: var(--color-primary); font-weight: 700;">👟 Chuteira de Ouro (Artilharia)</h2>
+        <table class="standing-table" style="font-size: 1rem;">
+          <thead>
+            <tr>
+              <th class="align-left">Jogador</th>
+              <th class="align-left">Seleção</th>
+              <th>Gols</th>
+            </tr>
+          </thead>
+          <tbody id="artilharia-body">
+            <!-- Populated via JS -->
+          </tbody>
+        </table>
+        <div id="no-scorers-msg" class="text-center text-muted py-6">
+          Nenhum gol marcado ainda. Digite placares nos jogos e clique no ícone de bola de futebol ⚽ ao lado do placar para cadastrar os gols!
+        </div>
+      </div>
+    </section>
+
+    <!-- ACTION FLOATING BAR -->
+    <div class="action-bar">
+      <button class="action-btn" id="share-btn">
+        <span>📢 Compartilhar</span>
+      </button>
+      <button class="action-btn secondary-action" id="download-btn">
+        <span>🖼️ Baixar Imagem</span>
+      </button>
+      <button class="action-btn secondary-action" id="reset-btn">
+        <span>🔄 Reiniciar</span>
+      </button>
+    </div>
+
+    <!-- MODAL 1: LEAD CAPTURE (CADASTRO) -->
+    <div class="modal-overlay" id="lead-modal">
+      <div class="glass-card modal-content">
+        <button class="close-modal-btn" id="close-lead-modal">&times;</button>
+        <h2 style="font-weight: 800; margin-bottom: 0.5rem; text-align: center; color: var(--color-primary);">QUASE LÁ!</h2>
+        <p class="text-muted text-center text-sm mb-6">Cadastre-se rapidamente para salvar sua simulação, gerar seu link único de compartilhamento e receber atualizações!</p>
+        
+        <form id="lead-form">
+          <div class="form-group">
+            <label class="form-label" for="lead-name">Nome Completo</label>
+            <input type="text" id="lead-name" class="form-input" placeholder="Seu nome" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="lead-email">E-mail</label>
+            <input type="email" id="lead-email" class="form-input" placeholder="seu@email.com" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="lead-phone">WhatsApp</label>
+            <input type="tel" id="lead-phone" class="form-input" placeholder="(11) 99999-9999" required />
+          </div>
+          <button type="submit" class="btn btn-primary mt-2">Salvar & Gerar Link ➜</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL 2: SELECT SCORER (ARTILHARIA SELECTION) -->
+    <div class="modal-overlay" id="scorer-modal">
+      <div class="glass-card modal-content" style="max-width: 400px;">
+        <button class="close-modal-btn" id="close-scorer-modal">&times;</button>
+        <h3 style="font-weight: 700; margin-bottom: 1rem; text-align: center; color: var(--color-secondary);" id="scorer-modal-title">Quem marcou o gol?</h3>
+        
+        <div class="squad-modal-grid" id="scorer-players-list">
+          <!-- Populated via JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL 3: SQUAD DETAILS (ELENCO DETAILS) -->
+    <div class="modal-overlay" id="squad-modal">
+      <div class="glass-card modal-content" style="max-width: 450px;">
+        <button class="close-modal-btn" id="close-squad-modal">&times;</button>
+        <h3 style="font-weight: 800; margin-bottom: 1rem; text-align: center; color: var(--color-primary);" id="squad-modal-title">Elenco</h3>
+        
+        <div class="squad-modal-grid" id="squad-players-list">
+          <!-- Populated via JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+      <p>&copy; 2026 Simulador da Copa do Mundo 2026. Desenvolvido por <a href="https://github.com" target="_blank">Lucro Ninja</a>.</p>
+    </footer>
+  </main>
+
+  <!-- CLIENT-SIDE LOGIC -->
+  <script is:inline define:vars={{ initialMatches, teams, groups, supabaseUrl, supabaseAnonKey }}>
+    // We pass JSON variables safely from Astro metadata to browser JS
+    let matches = JSON.parse(JSON.stringify(initialMatches));
+    let scorersDb = {}; // { "Cristiano Ronaldo": { goals: 2, teamCode: "pt", teamName: "Portugal" } }
+    let bracket = Array(31).fill(null); // Bracket slots: R32 (0-15), R16 (16-23), QF (24-27), SF (28-29), Final (30)
+
+    // Selectors
+    const tabs = document.querySelectorAll('.tab-btn');
+    const panels = document.querySelectorAll('.view-panel');
+    const leadModal = document.getElementById('lead-modal');
+    const closeLeadModal = document.getElementById('close-lead-modal');
+    const leadForm = document.getElementById('lead-form');
+    const shareBtn = document.getElementById('share-btn');
+    const downloadBtn = document.getElementById('download-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    
+    const scorerModal = document.getElementById('scorer-modal');
+    const closeScorerModal = document.getElementById('close-scorer-modal');
+    
+    const squadModal = document.getElementById('squad-modal');
+    const closeSquadModal = document.getElementById('close-squad-modal');
+    
+    // Tab switching
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        panels.forEach(p => p.classList.remove('active'));
+        
+        tab.classList.add('active');
+        const targetPanel = document.getElementById(tab.dataset.tab);
+        if (targetPanel) targetPanel.classList.add('active');
+      });
+    });
+
+    // Helper: Country Flags URL
+    function getFlagUrl(code) {
+      if (code === 'gb-eng') return 'https://flagcdn.com/w40/gb-eng.png';
+      return `https://flagcdn.com/w40/${code.toLowerCase()}.png`;
+    }
+
+    // Initialize/Render phase of the groups matches
+    function initGroups() {
+      groups.forEach(groupLetter => {
+        // Render empty standings first
+        updateGroupStandings(groupLetter);
+
+        // Render matches
+        const matchesContainer = document.getElementById(`matches-${groupLetter}`);
+        matchesContainer.innerHTML = '';
+
+        const groupMatches = matches.filter(m => m.group === groupLetter);
+        groupMatches.forEach(match => {
+          const homeTeam = teams[match.homeId];
+          const awayTeam = teams[match.awayId];
+
+          const matchDiv = document.createElement('div');
+          matchDiv.className = 'match-row';
+          matchDiv.innerHTML = `
+            <div class="match-team home">
+              <span class="team-name" data-team-id="${match.homeId}">${homeTeam.name}</span>
+              <img src="${getFlagUrl(homeTeam.code)}" alt="${homeTeam.name}" class="flag-emoji" />
+            </div>
+            <div class="match-scores-inputs">
+              <input type="number" min="0" class="score-input" id="${match.id}-home" data-match-id="${match.id}" data-side="home" value="${match.homeScore !== null ? match.homeScore : ''}" />
+              <button class="goal-scorer-btn" data-match-id="${match.id}" data-side="home" style="background:none; border:none; cursor:pointer; font-size:0.8rem; display: ${match.homeScore > 0 ? 'inline' : 'none'};">⚽</button>
+              <span class="match-vs">x</span>
+              <button class="goal-scorer-btn" data-match-id="${match.id}" data-side="away" style="background:none; border:none; cursor:pointer; font-size:0.8rem; display: ${match.awayScore > 0 ? 'inline' : 'none'};">⚽</button>
+              <input type="number" min="0" class="score-input" id="${match.id}-away" data-match-id="${match.id}" data-side="away" value="${match.awayScore !== null ? match.awayScore : ''}" />
+            </div>
+            <div class="match-team away">
+              <img src="${getFlagUrl(awayTeam.code)}" alt="${awayTeam.name}" class="flag-emoji" />
+              <span class="team-name" data-team-id="${match.awayId}">${awayTeam.name}</span>
+            </div>
+          `;
+
+          matchesContainer.appendChild(matchDiv);
+        });
+      });
+
+      // Bind input events
+      document.querySelectorAll('.score-input').forEach(input => {
+        input.addEventListener('input', (e) => {
+          const matchId = e.target.dataset.matchId;
+          const side = e.target.dataset.side;
+          const scoreVal = e.target.value === '' ? null : parseInt(e.target.value, 10);
+          
+          const match = matches.find(m => m.id === matchId);
+          if (match) {
+            match[`${side}Score`] = scoreVal;
+            
+            // Show/Hide goal scorer selector button based on score value
+            const btn = document.querySelector(`.goal-scorer-btn[data-match-id="${matchId}"][data-side="${side}"]`);
+            if (btn) {
+              btn.style.display = scoreVal > 0 ? 'inline' : 'none';
+            }
+
+            // Recalculate group table & update bracket
+            updateGroupStandings(match.group);
+            calculateQualifiedTeams();
+            saveLocalState();
+          }
+        });
+      });
+
+      // Bind Team Name clicks to show squad modal
+      document.querySelectorAll('.team-name').forEach(el => {
+        el.addEventListener('click', () => {
+          showSquadModal(el.dataset.teamId);
+        });
+      });
+
+      // Bind Goal Scorer buttons
+      document.querySelectorAll('.goal-scorer-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          openScorerModal(btn.dataset.matchId, btn.dataset.side);
+        });
+      });
+    }
+
+    // Recalculate Group Standings
+    function updateGroupStandings(groupLetter) {
+      const groupTeams = Object.keys(teams)
+        .filter(key => teams[key].group === groupLetter)
+        .map(key => ({
+          id: key,
+          name: teams[key].name,
+          code: teams[key].code,
+          p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, gd: 0, pts: 0, games: 0
+        }));
+
+      const groupMatches = matches.filter(m => m.group === groupLetter);
+
+      groupMatches.forEach(m => {
+        if (m.homeScore !== null && m.awayScore !== null) {
+          const home = groupTeams.find(t => t.id === m.homeId);
+          const away = groupTeams.find(t => t.id === m.awayId);
+
+          home.games += 1;
+          away.games += 1;
+          home.gf += m.homeScore;
+          home.ga += m.awayScore;
+          away.gf += m.awayScore;
+          away.ga += m.homeScore;
+          
+          home.gd = home.gf - home.ga;
+          away.gd = away.gf - away.ga;
+
+          if (m.homeScore > m.awayScore) {
+            home.pts += 3;
+            home.w += 1;
+            away.l += 1;
+          } else if (m.homeScore < m.awayScore) {
+            away.pts += 3;
+            away.w += 1;
+            home.l += 1;
+          } else {
+            home.pts += 1;
+            away.pts += 1;
+            home.d += 1;
+            away.d += 1;
+          }
+        }
+      });
+
+      // Sort standing rules: Points -> GD -> GF -> Alphabetical
+      groupTeams.sort((a, b) => {
+        if (b.pts !== a.pts) return b.pts - a.pts;
+        if (b.gd !== a.gd) return b.gd - a.gd;
+        if (b.gf !== a.gf) return b.gf - a.gf;
+        return a.name.localeCompare(b.name);
+      });
+
+      // Render standings HTML
+      const tableBody = document.getElementById(`standings-${groupLetter}`);
+      if (tableBody) {
+        tableBody.innerHTML = '';
+        groupTeams.forEach((team, idx) => {
+          let qualifyClass = '';
+          if (idx < 2) qualifyClass = 'qualify-direct'; // Top 2 qualify
+          
+          const tr = document.createElement('tr');
+          tr.className = qualifyClass;
+          tr.innerHTML = `
+            <td class="align-left">
+              <span class="text-xs text-muted font-bold mr-1">${idx + 1}</span>
+              <img src="${getFlagUrl(team.code)}" alt="" class="flag-emoji" />
+              <span class="team-name" data-team-id="${team.id}">${team.name}</span>
+            </td>
+            <td><strong>${team.pts}</strong></td>
+            <td>${team.games}</td>
+            <td>${team.w}</td>
+            <td>${team.gd}</td>
+          `;
+          tableBody.appendChild(tr);
+        });
+      }
+    }
+
+    // Calculate qualified teams from Group Stage
+    function calculateQualifiedTeams() {
+      // 1. Gather all group placements
+      const groupWinners = []; // 1st places (12 teams)
+      const groupRunnersUp = []; // 2nd places (12 teams)
+      const groupThirds = []; // 3rd places (12 teams)
+
+      groups.forEach(groupLetter => {
+        const groupTeams = Object.keys(teams)
+          .filter(key => teams[key].group === groupLetter)
+          .map(key => ({
+            id: key,
+            name: teams[key].name,
+            code: teams[key].code,
+            pts: 0, gd: 0, gf: 0, w: 0
+          }));
+
+        const groupMatches = matches.filter(m => m.group === groupLetter);
+        groupMatches.forEach(m => {
+          if (m.homeScore !== null && m.awayScore !== null) {
+            const home = groupTeams.find(t => t.id === m.homeId);
+            const away = groupTeams.find(t => t.id === m.awayId);
+            
+            home.gf += m.homeScore;
+            home.ga = (home.ga || 0) + m.awayScore;
+            away.gf += m.awayScore;
+            away.ga = (away.ga || 0) + m.homeScore;
+
+            if (m.homeScore > m.awayScore) { home.pts += 3; home.w += 1; }
+            else if (m.homeScore < m.awayScore) { away.pts += 3; away.w += 1; }
+            else { home.pts += 1; away.pts += 1; }
+          }
+        });
+
+        groupTeams.forEach(t => t.gd = t.gf - (t.ga || 0));
+
+        groupTeams.sort((a, b) => {
+          if (b.pts !== a.pts) return b.pts - a.pts;
+          if (b.gd !== a.gd) return b.gd - a.gd;
+          if (b.gf !== a.gf) return b.gf - a.gf;
+          return a.name.localeCompare(b.name);
+        });
+
+        groupWinners.push(groupTeams[0]);
+        groupRunnersUp.push(groupTeams[1]);
+        groupThirds.push(groupTeams[2]);
+      });
+
+      // 2. Select 8 best third-placed teams
+      groupThirds.sort((a, b) => {
+        if (b.pts !== a.pts) return b.pts - a.pts;
+        if (b.gd !== a.gd) return b.gd - a.gd;
+        if (b.gf !== a.gf) return b.gf - a.gf;
+        return a.name.localeCompare(b.name);
+      });
+
+      const bestThirds = groupThirds.slice(0, 8);
+
+      // Pairings list for the Round of 32 (16 matches):
+      // Winners: 1A-1L (12 teams)
+      // Runners-up: 2A-2L (12 teams)
+      // Best Thirds: T1-T8 (8 teams)
+      
+      const pairings = [
+        // 1. Winner vs Best Third (8 matches)
+        { home: groupWinners[0], away: bestThirds[0] }, // 1A vs T1
+        { home: groupWinners[1], away: bestThirds[1] }, // 1B vs T2
+        { home: groupWinners[2], away: bestThirds[2] }, // 1C vs T3
+        { home: groupWinners[3], away: bestThirds[3] }, // 1D vs T4
+        { home: groupWinners[4], away: bestThirds[4] }, // 1E vs T5
+        { home: groupWinners[5], away: bestThirds[5] }, // 1F vs T6
+        { home: groupWinners[6], away: bestThirds[6] }, // 1G vs T7
+        { home: groupWinners[7], away: bestThirds[7] }, // 1H vs T8
+        
+        // 2. Winner vs Runner-up (4 matches)
+        { home: groupWinners[8], away: groupRunnersUp[0] }, // 1I vs 2A
+        { home: groupWinners[9], away: groupRunnersUp[1] }, // 1J vs 2B
+        { home: groupWinners[10], away: groupRunnersUp[2] }, // 1K vs 2C
+        { home: groupWinners[11], away: groupRunnersUp[3] }, // 1L vs 2D
+        
+        // 3. Runner-up vs Runner-up (4 matches)
+        { home: groupRunnersUp[4], away: groupRunnersUp[5] }, // 2E vs 2F
+        { home: groupRunnersUp[6], away: groupRunnersUp[7] }, // 2G vs 2H
+        { home: groupRunnersUp[8], away: groupRunnersUp[9] }, // 2I vs 2J
+        { home: groupRunnersUp[10], away: groupRunnersUp[11] } // 2K vs 2L
+      ];
+
+      // Update bracket inputs for Round of 32 (indices 0 to 15)
+      for (let i = 0; i < 16; i++) {
+        const pair = pairings[i];
+        if (!bracket[i]) {
+          bracket[i] = { homeId: null, awayId: null, homeScore: null, awayScore: null };
+        }
+        bracket[i].homeId = pair.home ? pair.home.id : null;
+        bracket[i].awayId = pair.away ? pair.away.id : null;
+      }
+
+      // Propagate bracket winner updates
+      updateBracketFlow();
+      renderBracket();
+    }
+
+    // Propagate winners from R32 -> R16 -> QF -> SF -> Final
+    function updateBracketFlow() {
+      // Indices:
+      // R32: 0-15
+      // R16: 16-23 (derived from R32)
+      // QF: 24-27 (derived from R16)
+      // SF: 28-29 (derived from QF)
+      // Final: 30 (derived from SF)
+
+      // R16 Propagation (indices 16 to 23)
+      for (let i = 0; i < 8; i++) {
+        const matchLeft = bracket[i * 2];
+        const matchRight = bracket[i * 2 + 1];
+        
+        if (!bracket[16 + i]) {
+          bracket[16 + i] = { homeId: null, awayId: null, homeScore: null, awayScore: null };
+        }
+        
+        bracket[16 + i].homeId = getMatchWinner(matchLeft);
+        bracket[16 + i].awayId = getMatchWinner(matchRight);
+      }
+
+      // QF Propagation (indices 24 to 27)
+      for (let i = 0; i < 4; i++) {
+        const matchLeft = bracket[16 + i * 2];
+        const matchRight = bracket[16 + i * 2 + 1];
+        
+        if (!bracket[24 + i]) {
+          bracket[24 + i] = { homeId: null, awayId: null, homeScore: null, awayScore: null };
+        }
+        
+        bracket[24 + i].homeId = getMatchWinner(matchLeft);
+        bracket[24 + i].awayId = getMatchWinner(matchRight);
+      }
+
+      // SF Propagation (indices 28 to 29)
+      for (let i = 0; i < 2; i++) {
+        const matchLeft = bracket[24 + i * 2];
+        const matchRight = bracket[24 + i * 2 + 1];
+        
+        if (!bracket[28 + i]) {
+          bracket[28 + i] = { homeId: null, awayId: null, homeScore: null, awayScore: null };
+        }
+        
+        bracket[28 + i].homeId = getMatchWinner(matchLeft);
+        bracket[28 + i].awayId = getMatchWinner(matchRight);
+      }
+
+      // Final Propagation (index 30)
+      const sfLeft = bracket[28];
+      const sfRight = bracket[29];
+      if (!bracket[30]) {
+        bracket[30] = { homeId: null, awayId: null, homeScore: null, awayScore: null };
+      }
+      bracket[30].homeId = getMatchWinner(sfLeft);
+      bracket[30].awayId = getMatchWinner(sfRight);
+
+      // Determine Champion
+      const champId = getMatchWinner(bracket[30]);
+      const champDisplay = document.getElementById('champion-display');
+      
+      if (champId) {
+        document.getElementById('champion-flag-img').src = getFlagUrl(teams[champId].code);
+        document.getElementById('champion-team-name').textContent = teams[champId].name;
+        champDisplay.style.display = 'flex';
+      } else {
+        champDisplay.style.display = 'none';
+      }
+    }
+
+    function getMatchWinner(match) {
+      if (!match || match.homeId === null || match.awayId === null) return null;
+      if (match.homeScore === null || match.awayScore === null) return null;
+      if (match.homeScore > match.awayScore) return match.homeId;
+      if (match.homeScore < match.awayScore) return match.awayId;
+      return match.homeId; // Tie default to home team
+    }
+
+    // Render Bracket Tree
+    function renderBracket() {
+      const rounds = [
+        { id: 'round-32', start: 0, count: 16, title: 'Rodada de 32' },
+        { id: 'round-16', start: 16, count: 8, title: 'Oitavas de Final' },
+        { id: 'round-8', start: 24, count: 4, title: 'Quartas de Final' },
+        { id: 'round-4', start: 28, count: 2, title: 'Semifinais' },
+        { id: 'round-2', start: 30, count: 1, title: 'Final' }
+      ];
+
+      rounds.forEach(r => {
+        const container = document.getElementById(r.id);
+        // Clear all except title
+        const titleHtml = container.querySelector('h3').outerHTML;
+        container.innerHTML = titleHtml;
+
+        for (let i = 0; i < r.count; i++) {
+          const bracketIdx = r.start + i;
+          const match = bracket[bracketIdx];
+          
+          const homeTeam = match.homeId ? teams[match.homeId] : { name: 'A definir', code: 'placeholder' };
+          const awayTeam = match.awayId ? teams[match.awayId] : { name: 'A definir', code: 'placeholder' };
+
+          const isHomeWinner = match.homeScore !== null && match.awayScore !== null && match.homeScore >= match.awayScore;
+          const isAwayWinner = match.homeScore !== null && match.awayScore !== null && match.awayScore > match.homeScore;
+
+          const matchDiv = document.createElement('div');
+          matchDiv.className = 'glass-card bracket-match';
+          matchDiv.innerHTML = `
+            <div class="bracket-match-title">${r.title} - Jogo ${i + 1}</div>
+            <div class="bracket-team-row ${isHomeWinner ? 'winner' : ''}">
+              <div class="bracket-team-info">
+                ${match.homeId ? `<img src="${getFlagUrl(homeTeam.code)}" class="flag-emoji" />` : ''}
+                <span>${homeTeam.name}</span>
+              </div>
+              <input type="number" min="0" class="score-input bracket-score" 
+                data-idx="${bracketIdx}" data-side="home" 
+                value="${match.homeScore !== null ? match.homeScore : ''}" 
+                ${!match.homeId || !match.awayId ? 'disabled' : ''} />
+            </div>
+            <div class="bracket-team-row ${isAwayWinner ? 'winner' : ''}">
+              <div class="bracket-team-info">
+                ${match.awayId ? `<img src="${getFlagUrl(awayTeam.code)}" class="flag-emoji" />` : ''}
+                <span>${awayTeam.name}</span>
+              </div>
+              <input type="number" min="0" class="score-input bracket-score" 
+                data-idx="${bracketIdx}" data-side="away" 
+                value="${match.awayScore !== null ? match.awayScore : ''}" 
+                ${!match.homeId || !match.awayId ? 'disabled' : ''} />
+            </div>
+          `;
+          container.appendChild(matchDiv);
+        }
+      });
+
+      // Bind bracket inputs
+      document.querySelectorAll('.bracket-score').forEach(input => {
+        input.addEventListener('input', (e) => {
+          const idx = parseInt(e.target.dataset.idx, 10);
+          const side = e.target.dataset.side;
+          const scoreVal = e.target.value === '' ? null : parseInt(e.target.value, 10);
+
+          if (bracket[idx]) {
+            bracket[idx][`${side}Score`] = scoreVal;
+            updateBracketFlow();
+            renderBracket();
+            saveLocalState();
+          }
+        });
+      });
+    }
+
+    // Modal: Elenco (Squad) Detail
+    function showSquadModal(teamId) {
+      const team = teams[teamId];
+      if (!team) return;
+
+      document.getElementById('squad-modal-title').textContent = `Elenco - ${team.name}`;
+      const listContainer = document.getElementById('squad-players-list');
+      listContainer.innerHTML = '';
+
+      team.players.forEach(pName => {
+        const div = document.createElement('div');
+        div.className = 'player-card';
+        div.innerHTML = `
+          <div class="player-info">
+            <div class="player-avatar">${pName.charAt(0)}</div>
+            <div>
+              <div class="player-name">${pName}</div>
+              <div class="player-role">Jogador da Seleção</div>
+            </div>
+          </div>
+        `;
+        listContainer.appendChild(div);
+      });
+
+      squadModal.classList.add('active');
+    }
+
+    // Modal: Goal Scorer Modal (Artilharia Selector)
+    let activeMatchScorer = null;
+    let activeSideScorer = null;
+
+    function openScorerModal(matchId, side) {
+      const match = matches.find(m => m.id === matchId);
+      if (!match) return;
+
+      activeMatchScorer = matchId;
+      activeSideScorer = side;
+
+      const teamId = side === 'home' ? match.homeId : match.awayId;
+      const team = teams[teamId];
+
+      document.getElementById('scorer-modal-title').textContent = `Quem marcou por ${team.name}?`;
+      const listContainer = document.getElementById('scorer-players-list');
+      listContainer.innerHTML = '';
+
+      team.players.forEach(pName => {
+        const div = document.createElement('div');
+        div.className = 'player-card';
+        div.style.cursor = 'pointer';
+        
+        const currentGoals = (match.scorers[side] || []).filter(name => name === pName).length;
+        
+        div.innerHTML = `
+          <div class="player-info">
+            <div class="player-avatar">${pName.charAt(0)}</div>
+            <div>
+              <div class="player-name">${pName}</div>
+              <div class="player-role">${currentGoals > 0 ? `⚽ Marcou ${currentGoals} gol(s)` : 'Adicionar Gol'}</div>
+            </div>
+          </div>
+        `;
+
+        div.addEventListener('click', () => {
+          // Increment goal for this player
+          if (!match.scorers[side]) match.scorers[side] = [];
+          match.scorers[side].push(pName);
+
+          // Update Scorers DB
+          if (!scorersDb[pName]) {
+            scorersDb[pName] = { goals: 0, teamCode: team.code, teamName: team.name };
+          }
+          scorersDb[pName].goals += 1;
+
+          renderArtilharia();
+          saveLocalState();
+          
+          // Re-render modal to show incremented goal count
+          openScorerModal(matchId, side);
+        });
+
+        listContainer.appendChild(div);
+      });
+
+      scorerModal.classList.add('active');
+    }
+
+    // Render Golden Boot / Artilharia list
+    function renderArtilharia() {
+      const tbody = document.getElementById('artilharia-body');
+      const noMsg = document.getElementById('no-scorers-msg');
+      tbody.innerHTML = '';
+
+      const list = Object.keys(scorersDb)
+        .map(pName => ({ name: pName, ...scorersDb[pName] }))
+        .sort((a, b) => b.goals - a.goals);
+
+      if (list.length > 0) {
+        noMsg.style.display = 'none';
+        list.forEach(p => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td class="align-left">🏃‍♂️ ${p.name}</td>
+            <td class="align-left">
+              <img src="${getFlagUrl(p.teamCode)}" class="flag-emoji" /> ${p.teamName}
+            </td>
+            <td><strong>${p.goals}</strong></td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } else {
+        noMsg.style.display = 'block';
+      }
+    }
+
+    // Save state locally
+    function saveLocalState() {
+      localStorage.setItem('sim_matches', JSON.stringify(matches));
+      localStorage.setItem('sim_bracket', JSON.stringify(bracket));
+      localStorage.setItem('sim_scorers', JSON.stringify(scorersDb));
+    }
+
+    // Load state locally
+    function loadLocalState() {
+      const savedMatches = localStorage.getItem('sim_matches');
+      const savedBracket = localStorage.getItem('sim_bracket');
+      const savedScorers = localStorage.getItem('sim_scorers');
+
+      if (savedMatches) matches = JSON.parse(savedMatches);
+      if (savedBracket) bracket = JSON.parse(savedBracket);
+      if (savedScorers) scorersDb = JSON.parse(savedScorers);
+    }
+
+    // Reset simulator
+    function resetSimulation() {
+      if (confirm('Tem certeza de que deseja apagar todos os palpites e reiniciar a simulação?')) {
+        localStorage.clear();
+        matches = JSON.parse(JSON.stringify(initialMatches));
+        bracket = Array(31).fill(null);
+        scorersDb = {};
+        
+        initGroups();
+        calculateQualifiedTeams();
+        renderArtilharia();
+        
+        alert('Simulador resetado com sucesso!');
+      }
+    }
+
+    // COMPARTILHAR / LEAD GATE
+    let pendingAction = null; // 'share' or 'download'
+
+    function checkRegistrationAndExecute(action) {
+      const isRegistered = localStorage.getItem('lead_cadastrado');
+      if (isRegistered) {
+        executeAction(action);
+      } else {
+        pendingAction = action;
+        leadModal.classList.add('active');
+      }
+    }
+
+    shareBtn.addEventListener('click', () => {
+      checkRegistrationAndExecute('share');
+    });
+
+    downloadBtn.addEventListener('click', () => {
+      checkRegistrationAndExecute('download');
+    });
+
+    function getShareUrl() {
+      let payload = '';
+      matches.forEach(m => {
+        if (m.homeScore !== null && m.awayScore !== null) {
+          payload += `${m.id}-${m.homeScore}-${m.awayScore}_`;
+        }
+      });
+      return `${window.location.origin}${window.location.pathname}?sim=${btoa(payload)}`;
+    }
+
+    function executeAction(action) {
+      const shareUrl = getShareUrl();
+      const winnerName = document.getElementById('champion-team-name').textContent || 'Brasil';
+      const text = `Meu simulador da Copa 2026 deu que o campeão será o(a) *${winnerName}*! 🏆 Faça seu palpite e me desafie: ${shareUrl}`;
+
+      if (action === 'share') {
+        const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+        if (navigator.share) {
+          navigator.share({
+            title: 'Simulador Copa 2026',
+            text: text,
+            url: shareUrl,
+          }).catch(() => {
+            window.open(waUrl, '_blank');
+          });
+        } else {
+          window.open(waUrl, '_blank');
+        }
+      } else if (action === 'download') {
+        // Switch to mata-mata tab so the elements are rendered in DOM for html2canvas
+        const mataMataTab = document.querySelector('.tab-btn[data-tab="mata-mata"]');
+        if (mataMataTab) mataMataTab.click();
+
+        // Show loading state
+        const originalText = downloadBtn.innerHTML;
+        downloadBtn.innerHTML = '<span>⏳ Gerando Imagem...</span>';
+        downloadBtn.disabled = true;
+
+        setTimeout(() => {
+          const container = document.getElementById('bracket-container');
+          
+          html2canvas(container, {
+            backgroundColor: '#060913',
+            scale: 2,
+            logging: false,
+            useCORS: true,
+            scrollX: 0,
+            scrollY: -window.scrollY,
+            windowWidth: container.scrollWidth + 100, // ensure full width is captured
+            windowHeight: container.scrollHeight + 100
+          }).then(canvas => {
+            const link = document.createElement('a');
+            link.download = `simulacao-copa-2026-${winnerName.toLowerCase()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            
+            downloadBtn.innerHTML = originalText;
+            downloadBtn.disabled = false;
+          }).catch(err => {
+            console.error('Erro ao gerar imagem:', err);
+            alert('Não foi possível gerar a imagem automaticamente. Experimente tirar um print da tela!');
+            downloadBtn.innerHTML = originalText;
+            downloadBtn.disabled = false;
+          });
+        }, 300); // short delay to ensure rendering completes
+      }
+    }
+
+    leadForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const nome = document.getElementById('lead-name').value;
+      const email = document.getElementById('lead-email').value;
+      const whatsapp = document.getElementById('lead-phone').value;
+      const shareUrl = getShareUrl();
+
+      // Save Lead Data Locally
+      const leadData = { nome, email, whatsapp, url: shareUrl };
+      localStorage.setItem('lead_cadastrado', JSON.stringify(leadData));
+
+      // Close modal
+      leadModal.classList.remove('active');
+
+      // Send to Supabase (REST api) if credentials exist
+      if (supabaseUrl && supabaseAnonKey) {
+        try {
+          const payload = {
+            nome: nome,
+            email: email,
+            whatsapp: whatsapp,
+            simulacao_data: { matches, bracket, scorers: scorersDb },
+            url_compartilhamento: shareUrl
+          };
+
+          // Sanitize url to remove trailing slashes or /rest/v1/ suffix
+          let cleanUrl = supabaseUrl.trim().replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
+
+          await fetch(`${cleanUrl}/rest/v1/leads`, {
+            method: 'POST',
+            headers: {
+              'apikey': supabaseAnonKey,
+              'Authorization': `Bearer ${supabaseAnonKey}`,
+              'Content-Type': 'application/json',
+              'Prefer': 'return=minimal'
+            },
+            body: JSON.stringify(payload)
+          });
+          console.log("Lead sincronizado com Supabase com sucesso.");
+        } catch (err) {
+          console.error("Erro ao sincronizar com Supabase:", err);
+        }
+      }
+
+      // Execute action
+      if (pendingAction) {
+        executeAction(pendingAction);
+        pendingAction = null;
+      }
+      
+      alert('Cadastro concluído com sucesso!');
+    });
+
+    // Parse URL simulation params if they exist
+    function parseUrlParams() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const simData = urlParams.get('sim');
+      if (simData) {
+        try {
+          const decoded = atob(simData);
+          const parts = decoded.split('_');
+          parts.forEach(part => {
+            if (!part) return;
+            const [id, home, away] = part.split('-');
+            const match = matches.find(m => m.id === id);
+            if (match) {
+              match.homeScore = parseInt(home, 10);
+              match.awayScore = parseInt(away, 10);
+            }
+          });
+          calculateQualifiedTeams();
+        } catch (err) {
+          console.error("Erro ao carregar simulação da URL", err);
+        }
+      }
+    }
+
+    // Modal closures
+    closeLeadModal.addEventListener('click', () => leadModal.classList.remove('active'));
+    closeScorerModal.addEventListener('click', () => scorerModal.classList.remove('active'));
+    closeSquadModal.addEventListener('click', () => squadModal.classList.remove('active'));
+    resetBtn.addEventListener('click', resetSimulation);
+
+    // Close on overlay click
+    window.addEventListener('click', (e) => {
+      if (e.target === leadModal) leadModal.classList.remove('active');
+      if (e.target === scorerModal) scorerModal.classList.remove('active');
+      if (e.target === squadModal) squadModal.classList.remove('active');
+    });
+
+    // Start everything
+    loadLocalState();
+    initGroups();
+    calculateQualifiedTeams();
+    renderArtilharia();
+    parseUrlParams();
+  </script>
+</Layout>
