@@ -1,75 +1,75 @@
 export const teams = {
   // Group A
-  "CA": { name: "Canadá", code: "ca", group: "A", players: ["Alfonso Davies", "Jonathan David", "Cyle Larin"] },
-  "HN": { name: "Honduras", code: "hn", group: "A", players: ["Luis Palma", "Antony Lozano", "Alberth Elis"] },
-  "DZ": { name: "Argélia", code: "dz", group: "A", players: ["Riyad Mahrez", "Said Benrahma", "Amine Gouiri"] },
-  "DK": { name: "Dinamarca", code: "dk", group: "A", players: ["Christian Eriksen", "Rasmus Højlund", "Pierre-Emile Højbjerg"] },
+  "MX": { name: "México", code: "mx", group: "A", players: ["Santiago Giménez", "Edson Álvarez", "Chucky Lozano"] },
+  "ZA": { name: "África do Sul", code: "za", group: "A", players: ["Percy Tau", "Teboho Mokoena", "Themba Zwane"] },
+  "KR": { name: "Coreia do Sul", code: "kr", group: "A", players: ["Heung-min Son", "Kim Min-jae", "Hwang Hee-chan"] },
+  "CZ": { name: "República Tcheca", code: "cz", group: "A", players: ["Patrik Schick", "Tomas Soucek", "Adam Hlozek"] },
 
   // Group B
-  "MX": { name: "México", code: "mx", group: "B", players: ["Santiago Giménez", "Edson Álvarez", "Chucky Lozano"] },
-  "PE": { name: "Peru", code: "pe", group: "B", players: ["Gianluca Lapadula", "Luis Advíncula", "Renato Tapia"] },
-  "CM": { name: "Camarões", code: "cm", group: "B", players: ["André Onana", "Vincent Aboubakar", "Bryan Mbeumo"] },
+  "CA": { name: "Canadá", code: "ca", group: "B", players: ["Alfonso Davies", "Jonathan David", "Cyle Larin"] },
+  "BA": { name: "Bósnia e Hering.", code: "ba", group: "B", players: ["Edin Dzeko", "Sead Kolasinac", "Miralem Pjanic"] },
+  "QA": { name: "Catar", code: "qa", group: "B", players: ["Akram Afif", "Almoez Ali", "Hassan Al-Haydos"] },
   "CH": { name: "Suíça", code: "ch", group: "B", players: ["Granit Xhaka", "Manuel Akanji", "Xherdan Shaqiri"] },
 
   // Group C
-  "US": { name: "Estados Unidos", code: "us", group: "C", players: ["Christian Pulisic", "Weston McKennie", "Timothy Weah"] },
-  "CL": { name: "Chile", code: "cl", group: "C", players: ["Alexis Sánchez", "Ben Brereton", "Arturo Vidal"] },
-  "GH": { name: "Gana", code: "gh", group: "C", players: ["Mohammed Kudus", "Inaki Williams", "Jordan Ayew"] },
-  "KR": { name: "Coreia do Sul", code: "kr", group: "C", players: ["Heung-min Son", "Kim Min-jae", "Hwang Hee-chan"] },
+  "BR": { name: "Brasil", code: "br", group: "C", players: ["Vinícius Júnior", "Rodrygo", "Endrick"] },
+  "MA": { name: "Marrocos", code: "ma", group: "C", players: ["Achraf Hakimi", "Brahim Díaz", "Yassine Bounou"] },
+  "HT": { name: "Haiti", code: "ht", group: "C", players: ["Duckens Nazon", "Frantzdy Pierrot", "Derrick Etienne"] },
+  "GB-SCT": { name: "Escócia", code: "gb-sct", group: "C", players: ["Scott McTominay", "Andy Robertson", "John McGinn"] },
 
   // Group D
-  "BR": { name: "Brasil", code: "br", group: "D", players: ["Vinícius Júnior", "Rodrygo", "Endrick"] },
-  "EC": { name: "Equador", code: "ec", group: "D", players: ["Enner Valencia", "Moisés Caicedo", "Piero Hincapié"] },
-  "ML": { name: "Mali", code: "ml", group: "D", players: ["Yves Bissouma", "Amadou Haidara", "Hamari Traoré"] },
-  "JP": { name: "Japão", code: "jp", group: "D", players: ["Kaoru Mitoma", "Wataru Endo", "Takefusa Kubo"] },
+  "US": { name: "Estados Unidos", code: "us", group: "D", players: ["Christian Pulisic", "Weston McKennie", "Timothy Weah"] },
+  "PY": { name: "Paraguai", code: "py", group: "D", players: ["Miguel Almirón", "Julio Enciso", "Ramón Sosa"] },
+  "AU": { name: "Austrália", code: "au", group: "D", players: ["Mathew Ryan", "Harry Souttar", "Craig Goodwin"] },
+  "TR": { name: "Turquia", code: "tr", group: "D", players: ["Arda Güler", "Hakan Çalhanoğlu", "Kenan Yıldız"] },
 
   // Group E
-  "AR": { name: "Argentina", code: "ar", group: "E", players: ["Lionel Messi", "Lautaro Martínez", "Julián Álvarez"] },
-  "CO": { name: "Colômbia", code: "co", group: "E", players: ["Luis Díaz", "James Rodríguez", "Jhon Durán"] },
-  "SN": { name: "Senegal", code: "sn", group: "E", players: ["Sadio Mané", "Nicolas Jackson", "Kalidou Koulibaly"] },
-  "AU": { name: "Austrália", code: "au", group: "E", players: ["Mathew Ryan", "Harry Souttar", "Craig Goodwin"] },
+  "DE": { name: "Alemanha", code: "de", group: "E", players: ["Jamal Musiala", "Florian Wirtz", "Kai Havertz"] },
+  "CW": { name: "Curaçao", code: "cw", group: "E", players: ["Juninho Bacuna", "Leandro Bacuna", "Kenji Gorré"] },
+  "CI": { name: "Costa do Marfim", code: "ci", group: "E", players: ["Sébastien Haller", "Simon Adingra", "Franck Kessié"] },
+  "EC": { name: "Equador", code: "ec", group: "E", players: ["Enner Valencia", "Moisés Caicedo", "Piero Hincapié"] },
 
   // Group F
-  "FR": { name: "França", code: "fr", group: "F", players: ["Kylian Mbappé", "Antoine Griezmann", "Ousmane Dembélé"] },
-  "PL": { name: "Polônia", code: "pl", group: "F", players: ["Robert Lewandowski", "Piotr Zieliński", "Matty Cash"] },
-  "MA": { name: "Marrocos", code: "ma", group: "F", players: ["Achraf Hakimi", "Hakim Ziyech", "Yassine Bounou"] },
-  "SA": { name: "Arábia Saudita", code: "sa", group: "F", players: ["Salem Al-Dawsari", "Firas Al-Buraikan", "Saud Abdulhamid"] },
+  "NL": { name: "Holanda", code: "nl", group: "F", players: ["Cody Gakpo", "Virgil van Dijk", "Xavi Simons"] },
+  "JP": { name: "Japão", code: "jp", group: "F", players: ["Kaoru Mitoma", "Wataru Endo", "Takefusa Kubo"] },
+  "SE": { name: "Suécia", code: "se", group: "F", players: ["Viktor Gyökeres", "Alexander Isak", "Dejan Kulusevski"] },
+  "TN": { name: "Tunísia", code: "tn", group: "F", players: ["Elyes Skhiri", "Youssef Msakni", "Hannibal Mejbri"] },
 
   // Group G
-  "DE": { name: "Alemanha", code: "de", group: "G", players: ["Jamal Musiala", "Florian Wirtz", "Kai Havertz"] },
-  "UY": { name: "Uruguai", code: "uy", group: "G", players: ["Darwin Núñez", "Federico Valverde", "Luis Suárez"] },
-  "CR": { name: "Costa Rica", code: "cr", group: "G", players: ["Joel Campbell", "Francisco Calvo", "Manfred Ugalde"] },
+  "BE": { name: "Bélgica", code: "be", group: "G", players: ["Kevin De Bruyne", "Romelu Lukaku", "Jérémy Doku"] },
+  "EG": { name: "Egito", code: "eg", group: "G", players: ["Mohamed Salah", "Mostafa Mohamed", "Omar Marmoush"] },
   "IR": { name: "Irã", code: "ir", group: "G", players: ["Mehdi Taremi", "Sardar Azmoun", "Alireza Jahanbakhsh"] },
+  "NZ": { name: "Nova Zelândia", code: "nz", group: "G", players: ["Chris Wood", "Sarpreet Singh", "Liberato Cacace"] },
 
   // Group H
+  "CV": { name: "Cabo Verde", code: "cv", group: "H", players: ["Ryan Mendes", "Garry Rodrigues", "Jovane Cabral"] },
+  "SA": { name: "Arábia Saudita", code: "sa", group: "H", players: ["Salem Al-Dawsari", "Firas Al-Buraikan", "Saud Abdulhamid"] },
   "ES": { name: "Espanha", code: "es", group: "H", players: ["Lamine Yamal", "Nico Williams", "Rodri"] },
-  "HR": { name: "Croácia", code: "hr", group: "H", players: ["Luka Modrić", "Mateo Kovačić", "Joško Gvardiol"] },
-  "NG": { name: "Nigéria", code: "ng", group: "H", players: ["Victor Osimhen", "Ademola Lookman", "Victor Boniface"] },
-  "NZ": { name: "Nova Zelândia", code: "nz", group: "H", players: ["Chris Wood", "Sarpreet Singh", "Liberato Cacace"] },
+  "UY": { name: "Uruguai", code: "uy", group: "H", players: ["Darwin Núñez", "Federico Valverde", "Luis Suárez"] },
 
   // Group I
-  "GB-ENG": { name: "Inglaterra", code: "gb-eng", group: "I", players: ["Harry Kane", "Jude Bellingham", "Bukayo Saka"] },
-  "SE": { name: "Suécia", code: "se", group: "I", players: ["Viktor Gyökeres", "Alexander Isak", "Dejan Kulusevski"] },
-  "EG": { name: "Egito", code: "eg", group: "I", players: ["Mohamed Salah", "Mostafa Mohamed", "Omar Marmoush"] },
-  "CN": { name: "China", code: "cn", group: "I", players: ["Wu Lei", "Zhang Yuning", "Wei Shihao"] },
+  "FR": { name: "França", code: "fr", group: "I", players: ["Kylian Mbappé", "Antoine Griezmann", "Ousmane Dembélé"] },
+  "IQ": { name: "Iraque", code: "iq", group: "I", players: ["Aymen Hussein", "Ali Jasim", "Ibrahim Bayesh"] },
+  "NO": { name: "Noruega", code: "no", group: "I", players: ["Erling Haaland", "Martin Ødegaard", "Oscar Bobb"] },
+  "SN": { name: "Senegal", code: "sn", group: "I", players: ["Sadio Mané", "Nicolas Jackson", "Kalidou Koulibaly"] },
 
   // Group J
-  "PT": { name: "Portugal", code: "pt", group: "J", players: ["Cristiano Ronaldo", "Bruno Fernandes", "Rafael Leão"] },
-  "BE": { name: "Bélgica", code: "be", group: "J", players: ["Kevin De Bruyne", "Romelu Lukaku", "Jérémy Doku"] },
-  "TN": { name: "Tunísia", code: "tn", group: "J", players: ["Elyes Skhiri", "Youssef Msakni", "Hannibal Mejbri"] },
-  "JM": { name: "Jamaica", code: "jm", group: "J", players: ["Leon Bailey", "Michail Antonio", "Demarai Gray"] },
+  "DZ": { name: "Argélia", code: "dz", group: "J", players: ["Riyad Mahrez", "Said Benrahma", "Amine Gouiri"] },
+  "AR": { name: "Argentina", code: "ar", group: "J", players: ["Lionel Messi", "Lautaro Martínez", "Julián Álvarez"] },
+  "AT": { name: "Áustria", code: "at", group: "J", players: ["David Alaba", "Marcel Sabitzer", "Konrad Laimer"] },
+  "JO": { name: "Jordânia", code: "jo", group: "J", players: ["Musa Al-Taamari", "Yazan Al-Naimat", "Ali Olwan"] },
 
   // Group K
-  "NL": { name: "Holanda", code: "nl", group: "K", players: ["Cody Gakpo", "Virgil van Dijk", "Xavi Simons"] },
-  "IT": { name: "Itália", code: "it", group: "K", players: ["Federico Chiesa", "Nicolò Barella", "Gianluigi Donnarumma"] },
-  "ZA": { name: "África do Sul", code: "za", group: "K", players: ["Percy Tau", "Teboho Mokoena", "Themba Zwane"] },
-  "PA": { name: "Panamá", code: "pa", group: "K", players: ["Adalberto Carrasquilla", "José Fajardo", "Aníbal Godoy"] },
+  "CO": { name: "Colômbia", code: "co", group: "K", players: ["Luis Díaz", "James Rodríguez", "Jhon Durán"] },
+  "CD": { name: "RD Congo", code: "cd", group: "K", players: ["Yoane Wissa", "Chancel Mbemba", "Arthur Masuaku"] },
+  "PT": { name: "Portugal", code: "pt", group: "K", players: ["Cristiano Ronaldo", "Bruno Fernandes", "Rafael Leão"] },
+  "UZ": { name: "Uzbequistão", code: "uz", group: "K", players: ["Eldor Shomurodov", "Abbosbek Fayzullaev", "Oston Urunov"] },
 
   // Group L
-  "UA": { name: "Ucrânia", code: "ua", group: "L", players: ["Artem Dovbyk", "Mykhailo Mudryk", "Oleksandr Zinchenko"] },
-  "TR": { name: "Turquia", code: "tr", group: "L", players: ["Arda Güler", "Hakan Çalhanoğlu", "Kenan Yıldız"] },
-  "CI": { name: "Costa do Marfim", code: "ci", group: "L", players: ["Sébastien Haller", "Simon Adingra", "Franck Kessié"] },
-  "PY": { name: "Paraguai", code: "py", group: "L", players: ["Miguel Almirón", "Julio Enciso", "Ramón Sosa"] }
+  "HR": { name: "Croácia", code: "hr", group: "L", players: ["Luka Modrić", "Mateo Kovačić", "Joško Gvardiol"] },
+  "GB-ENG": { name: "Inglaterra", code: "gb-eng", group: "L", players: ["Harry Kane", "Jude Bellingham", "Bukayo Saka"] },
+  "GH": { name: "Gana", code: "gh", group: "L", players: ["Mohammed Kudus", "Inaki Williams", "Jordan Ayew"] },
+  "PA": { name: "Panamá", code: "pa", group: "L", players: ["Adalberto Carrasquilla", "José Fajardo", "Aníbal Godoy"] }
 };
 
 export const groups = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
@@ -110,19 +110,37 @@ export const generateMatches = () => {
 
     // Calculate match date/time based on group batch and round
     const groupIndex = groupLetter.charCodeAt(0) - 65; // A=0 ... L=11
-    const batch = Math.floor(groupIndex / 3); // 0, 1, 2, 3
     const daysOfWeek = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
     function getMatchDateTime(round, pairingIdx) {
+      // Custom schedule for Brazil's actual Group C matches
+      if (groupLetter === 'C') {
+        if (round === 1) {
+          if (pairingIdx === 0) return '13/06 (Sáb) – 19:00'; // Brasil x Marrocos
+          if (pairingIdx === 1) return '13/06 (Sáb) – 16:00'; // Haiti x Escócia
+        } else if (round === 2) {
+          if (pairingIdx === 0) return '19/06 (Sex) – 21:30'; // Brasil x Haiti
+          if (pairingIdx === 1) return '19/06 (Sex) – 18:00'; // Marrocos x Escócia
+        } else if (round === 3) {
+          if (pairingIdx === 0) return '24/06 (Qua) – 19:00'; // Escócia x Brasil
+          if (pairingIdx === 1) return '24/06 (Qua) – 19:00'; // Marrocos x Haiti
+        }
+      }
+
+      const startOffset = Math.floor(groupIndex / 2);
       let day;
       if (round === 1) {
-        day = 11 + batch * 2 + pairingIdx; // June 11-18
+        day = 11 + startOffset + pairingIdx;
       } else if (round === 2) {
-        day = 19 + batch * 2 + pairingIdx; // June 19-26
+        day = 17 + startOffset + pairingIdx;
       } else {
-        day = 27 + batch; // June 27-30 (simultaneous)
+        day = 23 + Math.floor(groupIndex / 3);
       }
-      const dateObj = new Date(2026, 5, day); // month is 0-indexed (5 = June)
+
+      // Cap group stage at June 27
+      day = Math.min(day, 27);
+
+      const dateObj = new Date(2026, 5, day); // month 5 = June
       const dayName = daysOfWeek[dateObj.getDay()];
       const dayStr = String(day).padStart(2, '0');
       const timeStr = round === 3 ? '16:00' : (pairingIdx === 0 ? '14:00' : '17:00');

@@ -6,9 +6,9 @@ import { teams, generateMatches } from '../data/worldCupData';
 const allMatches = generateMatches();
 const brazilMatches = allMatches.filter(m => m.homeId === 'BR' || m.awayId === 'BR');
 
-// Get Group D teams
-const groupDTeams = Object.entries(teams)
-  .filter(([_, t]) => t.group === 'D')
+// Get Group C teams
+const groupCTeams = Object.entries(teams)
+  .filter(([_, t]) => t.group === 'C')
   .map(([id, t]) => ({ id, ...t }));
 
 const jsonLd = {
@@ -25,7 +25,7 @@ const jsonLd = {
 
 <Layout
   title="Jogos do Brasil na Copa 2026 — Tabela, Adversários e Simulador"
-  description="Veja todos os jogos da Seleção Brasileira na Copa do Mundo 2026! Confira o Grupo D, adversários, jogadores e simule os resultados. Quem será campeão?"
+  description="Veja todos os jogos da Seleção Brasileira na Copa do Mundo 2026! Confira o Grupo C, adversários, jogadores e simule os resultados. Quem será campeão?"
 >
   <main class="container seo-group-page">
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
@@ -37,12 +37,12 @@ const jsonLd = {
     </header>
 
     <section class="glass-card seo-section">
-      <h2>🇧🇷 Brasil no Grupo D</h2>
+      <h2>🇧🇷 Brasil no Grupo C</h2>
       <p style="color:var(--text-muted); margin-bottom:1rem;">
-        A Seleção Brasileira está no <strong>Grupo D</strong> da Copa do Mundo 2026 ao lado de {groupDTeams.filter(t => t.id !== 'BR').map(t => t.name).join(', ')}.
+        A Seleção Brasileira está no <strong>Grupo C</strong> da Copa do Mundo 2026 ao lado de {groupCTeams.filter(t => t.id !== 'BR').map(t => t.name).join(', ')}.
       </p>
       <div class="seo-teams-grid">
-        {groupDTeams.map(team => (
+        {groupCTeams.map(team => (
           <div class={`seo-team-card glass-card ${team.id === 'BR' ? 'seo-team-highlight' : ''}`}>
             <img
               src={`https://flagcdn.com/64x48/${team.code}.png`}

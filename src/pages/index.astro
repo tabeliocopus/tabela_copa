@@ -954,9 +954,44 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       const savedBracket = localStorage.getItem('sim_bracket');
       const savedScorers = localStorage.getItem('sim_scorers');
 
-      if (savedMatches) matches = JSON.parse(savedMatches);
-      if (savedBracket) bracket = JSON.parse(savedBracket);
-      if (savedScorers) scorersDb = JSON.parse(savedScorers);
+      let isValid = true;
+      if (savedMatches) {
+        try {
+          const parsed = JSON.parse(savedMatches);
+          const teamsExist = Array.isArray(parsed) && parsed.length === initialMatches.length && parsed.every(m => teams[m.homeId] && teams[m.awayId]);
+          if (teamsExist) {
+            matches = parsed;
+          } else {
+            isValid = false;
+          }
+        } catch (e) {
+          isValid = false;
+        }
+      }
+
+      if (isValid) {
+        if (savedBracket) {
+          try {
+            const parsedBracket = JSON.parse(savedBracket);
+            if (Array.isArray(parsedBracket) && parsedBracket.length === 31) {
+              bracket = parsedBracket;
+            }
+          } catch (e) {}
+        }
+        if (savedScorers) {
+          try {
+            const parsedScorers = JSON.parse(savedScorers);
+            if (parsedScorers && typeof parsedScorers === 'object') {
+              scorersDb = parsedScorers;
+            }
+          } catch (e) {}
+        }
+      } else {
+        console.warn("Outdated simulation state detected. Resetting local storage for compatibility.");
+        localStorage.removeItem('sim_matches');
+        localStorage.removeItem('sim_bracket');
+        localStorage.removeItem('sim_scorers');
+      }
     }
 
     // Reset simulator

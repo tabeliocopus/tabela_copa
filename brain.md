@@ -476,3 +476,40 @@ Edição Local → git add . → git commit → git push origin main
 
 ### Conclusao Geral
 - Todas as Prioridades de 1 a 8 do plano de crescimento e viralização do Tabélio Copus foram concluídas, validadas e commitadas com sucesso!
+
+---
+
+## Atualizacao Adicional — Correção dos Grupos e Calendário Oficial da Copa 2026
+
+**Status:** Implementado, validado e compilado com sucesso.
+
+### Correções Realizadas
+1. **Seleções e Grupos Oficiais (Fase de Grupos):**
+   - Substituídas as 48 seleções genéricas/mockadas do arquivo `src/data/worldCupData.js` pelos times oficiais que compõem os 12 grupos reais (A a L) do sorteio da Copa do Mundo 2026.
+   - O Brasil foi realocado corretamente para o **Grupo C** (composto por Brasil, Marrocos, Haiti e Escócia) — corrigindo o erro onde estava no Grupo D com times incorretos.
+   - Adicionados jogadores reais destacados para cada seleção no array `players`.
+
+2. **Datas e Horários Oficiais das Partidas:**
+   - Atualizado o gerador de partidas em `src/data/worldCupData.js` para usar a rotação oficial de dias do torneio (Fase de grupos de 11 a 27 de Junho de 2026).
+   - Inseridas as datas, horários e dias da semana oficiais (Brasília) de estreia do Brasil:
+     - **Brasil x Marrocos:** 13/06 (Sábado) às 19:00
+     - **Brasil x Haiti:** 19/06 (Sexta-feira) às 21:30
+     - **Escócia x Brasil:** 24/06 (Quarta-feira) às 19:00 (Simultâneo)
+   - Adicionado um cap automático (`Math.min(day, 27)`) para garantir que nenhum jogo da fase de grupos ultrapasse o dia 27 de Junho.
+
+3. **Validação de Estado Local (Prevenção de Crash):**
+   - Adicionada uma verificação de integridade no helper client-side `loadLocalState()` em `src/pages/index.astro`.
+   - Caso o navegador tente carregar palpites salvos no `localStorage` de versões anteriores que continham IDs de seleções deletadas (como `CL` para Chile ou `HN` para Honduras), o script detecta a incompatibilidade de dados, limpa o estado desatualizado de forma segura e reinicia com o novo mapa oficial sem quebrar a renderização da página.
+
+4. **Página de Jogos do Brasil (`/jogos-do-brasil-copa-2026`):**
+   - Atualizados os textos de metadados, títulos e o filtro de consulta para o **Grupo C** para refletir o novo grupo oficial da Seleção Brasileira de forma 100% dinâmica.
+
+### Arquivos alterados nesta prioridade
+- `src/data/worldCupData.js` (atualização de seleções, grupos, jogadores e datas de jogos)
+- `src/pages/index.astro` (sanitização de dados carregados do localStorage)
+- `src/pages/jogos-do-brasil-copa-2026.astro` (referências e metadados atualizados para o Grupo C)
+- `brain.md` (documentação de controle de versão)
+
+### Validação Técnica
+- Executado `npm run build` confirmando que todas as rotas estáticas (incluindo as rotas dinâmicas `/grupo-[a-l]-copa-2026`) geraram corretamente sem erros de compilação ou referências undefined.
+
