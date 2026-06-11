@@ -1,4 +1,4 @@
----
+﻿---
 import Layout from '../layouts/Layout.astro';
 import { teams, groups, generateMatches } from '../data/worldCupData';
 
@@ -28,6 +28,9 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
         </button>
         <button class="tab-btn" data-tab="artilharia">
           👟 Artilharia
+        </button>
+        <button class="tab-btn" data-tab="bolao">
+          👥 Bolão
         </button>
       </div>
     </header>
@@ -183,6 +186,84 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
         </table>
         <div id="no-scorers-msg" class="text-center text-muted py-6">
           Nenhum gol marcado ainda. Digite placares nos jogos e clique no ícone de bola de futebol ⚽ ao lado do placar para cadastrar os gols!
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 4: BOLÃO -->
+    <section id="bolao" class="view-panel">
+      <div class="bolao-wrapper">
+
+        <!-- Se não tiver cadastro ainda -->
+        <div id="bolao-gate" class="bolao-gate glass-card">
+          <div class="bolao-gate-icon">👥</div>
+          <h2>Mini-Bolão da Copa 2026</h2>
+          <p class="text-muted">Crie um grupo com amigos e vejam quem acerta mais! Primeiro, salve sua simulação clicando no botão <strong>Compartilhar</strong> para se cadastrar.</p>
+          <button class="btn btn-primary" id="bolao-goto-share" style="max-width:340px; margin-top:1rem;">📢 Salvar minha Simulação primeiro</button>
+        </div>
+
+        <!-- Painel principal do bolão (visível após cadastro) -->
+        <div id="bolao-panel" style="display:none;">
+
+          <!-- Ações do grupo -->
+          <div class="bolao-actions">
+            <div class="glass-card bolao-action-card" id="card-criar">
+              <div class="bolao-action-icon">✨</div>
+              <h3>Criar Novo Grupo</h3>
+              <p class="text-muted">Gere um código único e convide seus amigos para competir!</p>
+              <div class="bolao-form-row">
+                <input type="text" id="bolao-group-name" class="form-input" placeholder="Nome do grupo (ex: Família Silva)" maxlength="40" />
+                <button class="btn btn-primary" id="bolao-create-btn" style="white-space:nowrap;">Criar Grupo</button>
+              </div>
+            </div>
+
+            <div class="glass-card bolao-action-card" id="card-entrar">
+              <div class="bolao-action-icon">🔑</div>
+              <h3>Entrar em um Grupo</h3>
+              <p class="text-muted">Tem um código de um amigo? Cole aqui e entre na disputa!</p>
+              <div class="bolao-form-row">
+                <input type="text" id="bolao-join-code" class="form-input" placeholder="Código (ex: COPA-5984)" maxlength="10" style="text-transform:uppercase;" />
+                <button class="btn btn-primary" id="bolao-join-btn" style="white-space:nowrap;">Entrar</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Meus grupos -->
+          <div id="bolao-my-groups" class="bolao-my-groups">
+            <h3 class="bolao-section-title">🏅 Meus Grupos</h3>
+            <div id="bolao-groups-list" class="bolao-groups-list">
+              <p class="text-muted text-center" style="padding:2rem;">Você ainda não participa de nenhum grupo.<br/>Crie ou entre em um acima!</p>
+            </div>
+          </div>
+
+          <!-- Leaderboard do grupo selecionado -->
+          <div id="bolao-leaderboard-section" style="display:none;">
+            <div class="bolao-leaderboard-header">
+              <button id="bolao-back-btn" class="bolao-back-btn">← Voltar</button>
+              <h3 id="bolao-leaderboard-title">Ranking do Grupo</h3>
+              <div class="bolao-code-badge" id="bolao-leaderboard-code"></div>
+            </div>
+            <div class="glass-card bolao-leaderboard">
+              <table class="standing-table" style="font-size:1rem;">
+                <thead>
+                  <tr>
+                    <th style="text-align:center; width:40px;">#</th>
+                    <th class="align-left">Participante</th>
+                    <th>Simulação</th>
+                    <th>Entrou em</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="bolao-leaderboard-body">
+                  <!-- Populated via JS -->
+                </tbody>
+              </table>
+            </div>
+            <div class="bolao-share-row">
+              <button class="btn" id="bolao-copy-link-btn" style="max-width:360px; background: rgba(0,255,135,0.15); border: 1px solid var(--border-glass-active); color: var(--color-primary);">📋 Copiar Link de Convite</button>
+            </div>
+          </div>
+
         </div>
       </div>
     </section>
@@ -1078,6 +1159,123 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       });
     }
 
+
+    // =============================================
+    // BOLAO LOGIC
+    // =============================================
+    function generateGroupCode() {
+      return 'COPA-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+    }
+    function getSavedLead() {
+      try { return JSON.parse(localStorage.getItem('lead_cadastrado')); } catch(e) { return null; }
+    }
+    function getSavedGroups() {
+      try { return JSON.parse(localStorage.getItem('bolao_grupos')) || []; } catch(e) { return []; }
+    }
+    function saveGroups(grps) {
+      localStorage.setItem('bolao_grupos', JSON.stringify(grps));
+    }
+    function initBolao() {
+      const lead = getSavedLead();
+      const gate = document.getElementById('bolao-gate');
+      const panel = document.getElementById('bolao-panel');
+      if (!gate || !panel) return;
+      if (lead) { gate.style.display = 'none'; panel.style.display = 'block'; renderMyGroups(); }
+      else { gate.style.display = 'flex'; panel.style.display = 'none'; }
+    }
+    function renderMyGroups() {
+      const grps = getSavedGroups();
+      const list = document.getElementById('bolao-groups-list');
+      if (!list) return;
+      if (grps.length === 0) { list.innerHTML = '<p class="text-muted text-center" style="padding:2rem;">Voce ainda nao participa de nenhum grupo.<br/>Crie ou entre em um acima!</p>'; return; }
+      list.innerHTML = grps.map((g, i) => '<div class="bolao-group-item glass-card" data-index="'+i+'"><div class="bolao-group-info"><span class="bolao-group-name">'+g.nome+'</span><span class="bolao-code-pill">'+g.codigo+'</span></div><button class="bolao-view-btn" data-index="'+i+'">Ver Ranking &rarr;</button></div>').join('');
+      list.querySelectorAll('.bolao-view-btn').forEach(btn => { btn.addEventListener('click', () => { openLeaderboard(getSavedGroups()[parseInt(btn.dataset.index)]); }); });
+    }
+    async function openLeaderboard(group) {
+      const section = document.getElementById('bolao-leaderboard-section');
+      const myGroups = document.getElementById('bolao-my-groups');
+      const actions = document.querySelector('.bolao-actions');
+      const title = document.getElementById('bolao-leaderboard-title');
+      const codeBadge = document.getElementById('bolao-leaderboard-code');
+      const tbody = document.getElementById('bolao-leaderboard-body');
+      if (!section || !title || !tbody) return;
+      title.textContent = group.nome; codeBadge.textContent = group.codigo;
+      section.style.display = 'block';
+      if (myGroups) myGroups.style.display = 'none';
+      if (actions) actions.style.display = 'none';
+      tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted" style="padding:2rem;">Carregando...</td></tr>';
+      const copyBtn = document.getElementById('bolao-copy-link-btn');
+      if (copyBtn) { copyBtn.onclick = () => { const link = window.location.origin + window.location.pathname + '?bolao=' + group.codigo; navigator.clipboard.writeText(link).then(() => { copyBtn.textContent = 'Link copiado!'; setTimeout(() => { copyBtn.textContent = 'Copiar Link de Convite'; }, 2500); }); }; }
+      const rawUrl = supabaseUrl || ''; const anonKey = supabaseAnonKey || '';
+      let cleanUrl = rawUrl.trim().replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
+      if (!cleanUrl || !anonKey) { tbody.innerHTML = '<tr><td colspan="5" class="text-muted text-center" style="padding:1rem;">Configure o Supabase para ver participantes.</td></tr>'; return; }
+      try {
+        const res = await fetch(cleanUrl + '/rest/v1/grupo_membros?grupo_id=eq.' + group.id + '&select=joined_at,leads(nome,url_compartilhamento)&order=joined_at.asc', { headers: { 'apikey': anonKey, 'Authorization': 'Bearer ' + anonKey } });
+        const members = await res.json();
+        if (!members || members.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="text-muted text-center" style="padding:1rem;">Nenhum participante ainda. Compartilhe o codigo!</td></tr>'; return; }
+        tbody.innerHTML = members.map((m, i) => { const lead = m.leads || {}; const date = new Date(m.joined_at).toLocaleDateString('pt-BR'); const medal = i===0?'1o':i===1?'2o':i===2?'3o':(i+1)+'o'; return '<tr><td style="text-align:center;font-weight:800;">' + medal + '</td><td class="align-left" style="font-weight:600;">' + (lead.nome||'Anonimo') + '</td><td style="text-align:center;">' + (lead.url_compartilhamento ? '<a href="' + lead.url_compartilhamento + '" target="_blank" style="color:var(--color-secondary);font-size:0.8rem;">Ver palpites</a>' : '-') + '</td><td style="text-align:center;font-size:0.8rem;color:var(--text-muted);">' + date + '</td><td></td></tr>'; }).join('');
+      } catch(err) { tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted" style="padding:1rem;">Erro ao carregar.</td></tr>'; console.error(err); }
+    }
+    const bolaoBackBtn = document.getElementById('bolao-back-btn');
+    if (bolaoBackBtn) { bolaoBackBtn.addEventListener('click', () => { document.getElementById('bolao-leaderboard-section').style.display = 'none'; const mg = document.getElementById('bolao-my-groups'); const act = document.querySelector('.bolao-actions'); if (mg) mg.style.display = 'block'; if (act) act.style.display = 'grid'; }); }
+    const bolaoGotoShare = document.getElementById('bolao-goto-share');
+    if (bolaoGotoShare) { bolaoGotoShare.addEventListener('click', () => { document.querySelector('[data-tab="fase-grupos"]').click(); document.getElementById('lead-modal').classList.add('active'); }); }
+    const bolaoCreateBtn2 = document.getElementById('bolao-create-btn');
+    if (bolaoCreateBtn2) {
+      bolaoCreateBtn2.addEventListener('click', async () => {
+        const lead = getSavedLead(); if (!lead) { alert('Salve sua simulacao primeiro!'); return; }
+        const nameInput = document.getElementById('bolao-group-name'); const groupName = nameInput.value.trim();
+        if (!groupName) { alert('Digite um nome para o grupo!'); nameInput.focus(); return; }
+        bolaoCreateBtn2.textContent = 'Criando...'; bolaoCreateBtn2.disabled = true;
+        const codigo = generateGroupCode(); let groupId = null;
+        const rawUrl = supabaseUrl || ''; const anonKey = supabaseAnonKey || '';
+        let cleanUrl = rawUrl.trim().replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
+        try {
+          if (cleanUrl && anonKey) {
+            const lr = await fetch(cleanUrl+'/rest/v1/leads?email=eq.'+encodeURIComponent(lead.email)+'&select=id&limit=1', { headers: {'apikey':anonKey,'Authorization':'Bearer '+anonKey} });
+            const ld = await lr.json(); const leadId = ld[0]&&ld[0].id;
+            if (!leadId) throw new Error('Lead nao encontrado.');
+            const gr = await fetch(cleanUrl+'/rest/v1/grupos', { method:'POST', headers:{'apikey':anonKey,'Authorization':'Bearer '+anonKey,'Content-Type':'application/json','Prefer':'return=representation'}, body: JSON.stringify({nome:groupName,codigo_acesso:codigo,criador_id:leadId}) });
+            const gd = await gr.json(); groupId = gd[0]&&gd[0].id;
+            await fetch(cleanUrl+'/rest/v1/grupo_membros', { method:'POST', headers:{'apikey':anonKey,'Authorization':'Bearer '+anonKey,'Content-Type':'application/json','Prefer':'return=minimal'}, body: JSON.stringify({grupo_id:groupId,lead_id:leadId}) });
+          }
+        } catch(err) { console.error('Erro criar grupo:', err); }
+        const sg = getSavedGroups(); sg.push({nome:groupName,codigo,id:groupId||codigo}); saveGroups(sg);
+        nameInput.value = ''; bolaoCreateBtn2.textContent = 'Criar Grupo'; bolaoCreateBtn2.disabled = false;
+        renderMyGroups(); alert('Grupo "'+groupName+'" criado!\nCodigo: '+codigo+'\n\nCompartilhe este codigo com seus amigos!');
+      });
+    }
+    const bolaoJoinBtn2 = document.getElementById('bolao-join-btn');
+    if (bolaoJoinBtn2) {
+      bolaoJoinBtn2.addEventListener('click', async () => {
+        const lead = getSavedLead(); if (!lead) { alert('Salve sua simulacao primeiro!'); return; }
+        const codeInput = document.getElementById('bolao-join-code'); const code = codeInput.value.trim().toUpperCase();
+        if (!code) { alert('Digite o codigo do grupo!'); codeInput.focus(); return; }
+        bolaoJoinBtn2.textContent = 'Entrando...'; bolaoJoinBtn2.disabled = true;
+        const rawUrl = supabaseUrl || ''; const anonKey = supabaseAnonKey || '';
+        let cleanUrl = rawUrl.trim().replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
+        let groupId = null; let groupName = code;
+        try {
+          if (cleanUrl && anonKey) {
+            const gr = await fetch(cleanUrl+'/rest/v1/grupos?codigo_acesso=eq.'+code+'&select=id,nome&limit=1', { headers:{'apikey':anonKey,'Authorization':'Bearer '+anonKey} });
+            const gd = await gr.json();
+            if (!gd||gd.length===0) { alert('Codigo invalido. Verifique com quem te convidou!'); bolaoJoinBtn2.textContent='Entrar'; bolaoJoinBtn2.disabled=false; return; }
+            groupId=gd[0].id; groupName=gd[0].nome;
+            const lr = await fetch(cleanUrl+'/rest/v1/leads?email=eq.'+encodeURIComponent(lead.email)+'&select=id&limit=1', { headers:{'apikey':anonKey,'Authorization':'Bearer '+anonKey} });
+            const ld = await lr.json(); const leadId = ld[0]&&ld[0].id;
+            if (!leadId) throw new Error('Lead nao encontrado.');
+            await fetch(cleanUrl+'/rest/v1/grupo_membros', { method:'POST', headers:{'apikey':anonKey,'Authorization':'Bearer '+anonKey,'Content-Type':'application/json','Prefer':'return=minimal'}, body: JSON.stringify({grupo_id:groupId,lead_id:leadId}) });
+          }
+        } catch(err) { console.error('Erro entrar grupo:', err); }
+        const sg = getSavedGroups(); if (!sg.some(g => g.codigo===code)) { sg.push({nome:groupName,codigo:code,id:groupId||code}); saveGroups(sg); }
+        codeInput.value = ''; bolaoJoinBtn2.textContent = 'Entrar'; bolaoJoinBtn2.disabled = false;
+        renderMyGroups(); alert('Voce entrou no grupo "'+groupName+'"!');
+      });
+    }
+    document.querySelectorAll('.tab-btn[data-tab="bolao"]').forEach(btn => { btn.addEventListener('click', initBolao); });
+    const urlBolaoCode = new URLSearchParams(window.location.search).get('bolao');
+    if (urlBolaoCode) { const ji = document.getElementById('bolao-join-code'); if (ji) ji.value = urlBolaoCode.toUpperCase(); const bt = document.querySelector('[data-tab="bolao"]'); if (bt) bt.click(); }
+
     // Start everything
     loadLocalState();
     initGroups();
@@ -1086,3 +1284,4 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
     parseUrlParams();
   </script>
 </Layout>
+

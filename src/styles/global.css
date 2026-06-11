@@ -819,3 +819,209 @@ footer a:hover {
   transform: translateY(-2px);
 }
 
+/* =============================================
+   BOLÃO STYLES
+   ============================================= */
+
+.bolao-wrapper {
+  max-width: 900px;
+  margin: 0 auto;
+  padding-bottom: 6rem;
+}
+
+.bolao-gate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 3rem 2rem;
+  gap: 1rem;
+}
+
+.bolao-gate-icon {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+}
+
+.bolao-gate h2 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--color-primary);
+}
+
+.bolao-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 640px) {
+  .bolao-actions { grid-template-columns: 1fr; }
+}
+
+.bolao-action-card {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.bolao-action-icon {
+  font-size: 1.75rem;
+}
+
+.bolao-action-card h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.bolao-form-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.bolao-form-row .form-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.bolao-form-row .btn {
+  width: auto;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.9rem;
+}
+
+.bolao-section-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-secondary);
+  margin-bottom: 1rem;
+}
+
+.bolao-groups-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.bolao-group-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  gap: 1rem;
+}
+
+.bolao-group-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.bolao-group-name {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--text-main);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bolao-code-pill {
+  background: rgba(0, 255, 135, 0.1);
+  border: 1px solid var(--border-glass-active);
+  color: var(--color-primary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+  white-space: nowrap;
+  font-family: monospace;
+  letter-spacing: 0.05em;
+}
+
+.bolao-view-btn {
+  background: rgba(96, 165, 250, 0.1);
+  border: 1px solid rgba(96, 165, 250, 0.2);
+  color: var(--color-secondary);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  font-family: var(--font-sans);
+  white-space: nowrap;
+}
+
+.bolao-view-btn:hover {
+  background: rgba(96, 165, 250, 0.2);
+  color: var(--text-main);
+  transform: translateY(-1px);
+}
+
+.bolao-leaderboard-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.bolao-back-btn {
+  background: transparent;
+  border: 1px solid var(--border-glass);
+  color: var(--text-muted);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: var(--transition-smooth);
+}
+
+.bolao-back-btn:hover {
+  color: var(--text-main);
+  border-color: rgba(255,255,255,0.2);
+}
+
+.bolao-leaderboard-header h3 {
+  flex: 1;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--color-primary);
+}
+
+.bolao-code-badge {
+  background: rgba(0, 255, 135, 0.1);
+  border: 1px solid var(--border-glass-active);
+  color: var(--color-primary);
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0.35rem 0.9rem;
+  border-radius: 20px;
+  font-family: monospace;
+  letter-spacing: 0.05em;
+}
+
+.bolao-leaderboard {
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.bolao-share-row {
+  display: flex;
+  justify-content: center;
+}
+
+.bolao-my-groups {
+  margin-top: 2rem;
+}
+
+
