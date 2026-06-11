@@ -24,14 +24,14 @@ const jsonLd = {
 ---
 
 <Layout
-  title="Jogos do Brasil na Copa 2026 — Tabela, Adversários e Simulador"
-  description="Veja todos os jogos da Seleção Brasileira na Copa do Mundo 2026! Confira o Grupo C, adversários, jogadores e simule os resultados. Quem será campeão?"
+  title="Jogos do Brasil na Copa do Mundo FIFA 2026 — Tabela e Simulador"
+  description="Veja todos os jogos da Seleção Brasileira na Copa do Mundo FIFA 2026! Confira o Grupo C, adversários, jogadores e simule os resultados."
 >
   <main class="container seo-group-page">
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 
     <header>
-      <div class="logo-badge">Copa do Mundo 2026</div>
+      <div class="logo-badge">FIFA World Cup 2026</div>
       <h1>JOGOS DO BRASIL NA COPA 2026</h1>
       <p class="subtitle">Confira todos os confrontos da Seleção Brasileira na fase de grupos e simule os resultados!</p>
     </header>
@@ -87,7 +87,10 @@ const jsonLd = {
                   <strong>{away.name}</strong>
                 </td>
                 <td style="text-align:center; font-size:0.8rem; color:var(--color-accent); font-weight:600;">
-                  {m.datetime}
+                  <div>{m.datetime}</div>
+                  <div style="font-size:0.7rem; color:var(--text-muted); font-weight:normal; margin-top:0.2rem;">
+                    🏟️ {m.stadium}, {m.city}
+                  </div>
                 </td>
               </tr>
             );

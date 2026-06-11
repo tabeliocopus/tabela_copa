@@ -7,7 +7,7 @@ export const teams = {
 
   // Group B
   "CA": { name: "Canadá", code: "ca", group: "B", players: ["Alfonso Davies", "Jonathan David", "Cyle Larin"] },
-  "BA": { name: "Bósnia e Hering.", code: "ba", group: "B", players: ["Edin Dzeko", "Sead Kolasinac", "Miralem Pjanic"] },
+  "BA": { name: "Bósnia e Herzegovina", code: "ba", group: "B", players: ["Edin Dzeko", "Sead Kolasinac", "Miralem Pjanic"] },
   "QA": { name: "Catar", code: "qa", group: "B", players: ["Akram Afif", "Almoez Ali", "Hassan Al-Haydos"] },
   "CH": { name: "Suíça", code: "ch", group: "B", players: ["Granit Xhaka", "Manuel Akanji", "Xherdan Shaqiri"] },
 
@@ -74,6 +74,76 @@ export const teams = {
 
 export const groups = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
 
+// Helper to get day name dynamically
+export function getWeekDay(date) {
+  const daysOfWeek = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+  return daysOfWeek[date.getUTCDay()];
+}
+
+// Group Stage Host Venues (Geographic Clustering for World Cup 2026)
+const groupVenues = {
+  "A": [
+    { city: "Mexico City", stadium: "Azteca Stadium" },
+    { city: "Guadalajara", stadium: "Guadalajara Stadium" },
+    { city: "Monterrey", stadium: "Monterrey Stadium" }
+  ],
+  "B": [
+    { city: "Toronto", stadium: "Toronto Stadium" },
+    { city: "Vancouver", stadium: "BC Place" },
+    { city: "Seattle", stadium: "Lumen Field" }
+  ],
+  "C": [
+    { city: "New York/New Jersey", stadium: "MetLife Stadium" },
+    { city: "Boston", stadium: "Gillette Stadium" },
+    { city: "Philadelphia", stadium: "Lincoln Financial Field" }
+  ],
+  "D": [
+    { city: "Los Angeles", stadium: "SoFi Stadium" },
+    { city: "San Francisco Bay Area", stadium: "Levi's Stadium" },
+    { city: "Seattle", stadium: "Lumen Field" }
+  ],
+  "E": [
+    { city: "Dallas", stadium: "AT&T Stadium" },
+    { city: "Houston", stadium: "NRG Stadium" },
+    { city: "Atlanta", stadium: "Mercedes-Benz Stadium" }
+  ],
+  "F": [
+    { city: "Kansas City", stadium: "Arrowhead Stadium" },
+    { city: "Miami", stadium: "Hard Rock Stadium" },
+    { city: "Atlanta", stadium: "Mercedes-Benz Stadium" }
+  ],
+  "G": [
+    { city: "Boston", stadium: "Gillette Stadium" },
+    { city: "Philadelphia", stadium: "Lincoln Financial Field" },
+    { city: "New York/New Jersey", stadium: "MetLife Stadium" }
+  ],
+  "H": [
+    { city: "Los Angeles", stadium: "SoFi Stadium" },
+    { city: "San Francisco Bay Area", stadium: "Levi's Stadium" },
+    { city: "Vancouver", stadium: "BC Place" }
+  ],
+  "I": [
+    { city: "Houston", stadium: "NRG Stadium" },
+    { city: "Dallas", stadium: "AT&T Stadium" },
+    { city: "Monterrey", stadium: "Monterrey Stadium" }
+  ],
+  "J": [
+    { city: "Toronto", stadium: "Toronto Stadium" },
+    { city: "Boston", stadium: "Gillette Stadium" },
+    { city: "New York/New Jersey", stadium: "MetLife Stadium" }
+  ],
+  "K": [
+    { city: "Seattle", stadium: "Lumen Field" },
+    { city: "San Francisco Bay Area", stadium: "Levi's Stadium" },
+    { city: "Los Angeles", stadium: "SoFi Stadium" }
+  ],
+  "L": [
+    { city: "Miami", stadium: "Hard Rock Stadium" },
+    { city: "Atlanta", stadium: "Mercedes-Benz Stadium" },
+    { city: "Dallas", stadium: "AT&T Stadium" }
+  ]
+};
+
 // Generate match schedules automatically for each group
 export const generateMatches = () => {
   const matches = [];
@@ -91,7 +161,7 @@ export const generateMatches = () => {
   // Schedule for 4 teams (T1, T2, T3, T4):
   // Round 1: T1 vs T2, T3 vs T4
   // Round 2: T1 vs T3, T2 vs T4
-  // Round 3: T4 vs T1, T2 vs T3
+  // Round 3: T1 vs T4, T2 vs T3 (Simultaneous)
   Object.keys(groupTeams).forEach(groupLetter => {
     const list = groupTeams[groupLetter];
     const t1 = list[0];
@@ -100,54 +170,58 @@ export const generateMatches = () => {
     const t4 = list[3];
 
     const pairings = [
-      { home: t1, away: t2, round: 1 },
-      { home: t3, away: t4, round: 1 },
-      { home: t1, away: t3, round: 2 },
-      { home: t2, away: t4, round: 2 },
-      { home: t4, away: t1, round: 3 },
-      { home: t2, away: t3, round: 3 }
+      { home: t1, away: t2, round: 1, venueIdx: 0 },
+      { home: t3, away: t4, round: 1, venueIdx: 1 },
+      { home: t1, away: t3, round: 2, venueIdx: 0 },
+      { home: t2, away: t4, round: 2, venueIdx: 2 },
+      { home: t1, away: t4, round: 3, venueIdx: 1 },
+      { home: t2, away: t3, round: 3, venueIdx: 2 }
     ];
 
-    // Calculate match date/time based on group batch and round
     const groupIndex = groupLetter.charCodeAt(0) - 65; // A=0 ... L=11
-    const daysOfWeek = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    const venues = groupVenues[groupLetter] || groupVenues["A"];
 
-    function getMatchDateTime(round, pairingIdx) {
+    function getMatchDateTime(round, pairingIdx, day) {
+      // Helper to format date cleanly using UTC to prevent timezone shifts
+      function formatMatchDate(dVal, time) {
+        const dObj = new Date(Date.UTC(2026, 5, dVal, 12, 0, 0));
+        const dName = getWeekDay(dObj);
+        const dStr = String(dVal).padStart(2, '0');
+        return `${dStr}/06/2026 (${dName}) – ${time}`;
+      }
+
       // Custom schedule for Brazil's actual Group C matches
       if (groupLetter === 'C') {
         if (round === 1) {
-          if (pairingIdx === 0) return '13/06 (Sáb) – 19:00'; // Brasil x Marrocos
-          if (pairingIdx === 1) return '13/06 (Sáb) – 16:00'; // Haiti x Escócia
+          if (pairingIdx === 0) return formatMatchDate(13, '19:00'); // Brasil x Marrocos
+          if (pairingIdx === 1) return formatMatchDate(13, '16:00'); // Haiti x Escócia
         } else if (round === 2) {
-          if (pairingIdx === 0) return '19/06 (Sex) – 21:30'; // Brasil x Haiti
-          if (pairingIdx === 1) return '19/06 (Sex) – 18:00'; // Marrocos x Escócia
+          if (pairingIdx === 0) return formatMatchDate(19, '21:30'); // Brasil x Haiti
+          if (pairingIdx === 1) return formatMatchDate(19, '18:00'); // Marrocos x Escócia
         } else if (round === 3) {
-          if (pairingIdx === 0) return '24/06 (Qua) – 19:00'; // Escócia x Brasil
-          if (pairingIdx === 1) return '24/06 (Qua) – 19:00'; // Marrocos x Haiti
+          if (pairingIdx === 0) return formatMatchDate(24, '19:00'); // Escócia x Brasil
+          if (pairingIdx === 1) return formatMatchDate(24, '19:00'); // Marrocos x Haiti
         }
       }
 
-      const startOffset = Math.floor(groupIndex / 2);
-      let day;
-      if (round === 1) {
-        day = 11 + startOffset + pairingIdx;
-      } else if (round === 2) {
-        day = 17 + startOffset + pairingIdx;
-      } else {
-        day = 23 + Math.floor(groupIndex / 3);
-      }
-
-      // Cap group stage at June 27
-      day = Math.min(day, 27);
-
-      const dateObj = new Date(2026, 5, day); // month 5 = June
-      const dayName = daysOfWeek[dateObj.getDay()];
-      const dayStr = String(day).padStart(2, '0');
       const timeStr = round === 3 ? '16:00' : (pairingIdx === 0 ? '14:00' : '17:00');
-      return `${dayStr}/06 (${dayName}) – ${timeStr}`;
+      return formatMatchDate(day, timeStr);
     }
 
     pairings.forEach((p, idx) => {
+      const startOffset = Math.floor(groupIndex / 2);
+      let dayVal;
+      if (p.round === 1) {
+        dayVal = 11 + startOffset + (idx % 2);
+      } else if (p.round === 2) {
+        dayVal = 17 + startOffset + (idx % 2);
+      } else {
+        dayVal = 23 + Math.floor(groupIndex / 3);
+      }
+      dayVal = Math.min(dayVal, 27);
+
+      const venue = venues[p.venueIdx] || venues[0];
+
       matches.push({
         id: `${groupLetter}_M${idx + 1}`,
         group: groupLetter,
@@ -157,10 +231,87 @@ export const generateMatches = () => {
         homeScore: null,
         awayScore: null,
         scorers: { home: [], away: [] },
-        datetime: getMatchDateTime(p.round, idx % 2)
+        datetime: getMatchDateTime(p.round, idx % 2, dayVal),
+        stadium: venue.stadium,
+        city: venue.city
       });
     });
   });
 
   return matches;
 };
+
+// Automatic audit function for build validation
+export function validateWorldCupData() {
+  const matchesList = generateMatches();
+  const errors = [];
+  const teamKeys = Object.keys(teams);
+
+  // Validate quantities
+  if (teamKeys.length !== 48) errors.push(`Expected 48 teams, found ${teamKeys.length}`);
+  if (groups.length !== 12) errors.push(`Expected 12 groups, found ${groups.length}`);
+  if (matchesList.length !== 72) errors.push(`Expected 72 matches, found ${matchesList.length}`);
+
+  // Group counts & match counts
+  const groupTeamsCount = {};
+  const teamMatchesCount = {};
+  const groupMatchesCount = {};
+
+  teamKeys.forEach(k => {
+    const t = teams[k];
+    groupTeamsCount[t.group] = (groupTeamsCount[t.group] || 0) + 1;
+    teamMatchesCount[k] = 0;
+  });
+
+  groups.forEach(g => {
+    if (groupTeamsCount[g] !== 4) {
+      errors.push(`Group ${g} has ${groupTeamsCount[g] || 0} teams instead of 4`);
+    }
+  });
+
+  matchesList.forEach(m => {
+    groupMatchesCount[m.group] = (groupMatchesCount[m.group] || 0) + 1;
+    if (teamMatchesCount[m.homeId] !== undefined) teamMatchesCount[m.homeId]++;
+    if (teamMatchesCount[m.awayId] !== undefined) teamMatchesCount[m.awayId]++;
+
+    if (m.homeId === m.awayId) errors.push(`Match ${m.id} has same team playing against itself: ${m.homeId}`);
+    if (!m.city || m.city.trim() === '') errors.push(`Match ${m.id} has missing city`);
+    if (!m.stadium || m.stadium.trim() === '') errors.push(`Match ${m.id} has missing stadium`);
+
+    const dateRegex = /^\d{2}\/\d{2}\/2026/;
+    if (!dateRegex.test(m.datetime)) {
+      errors.push(`Match ${m.id} has invalid date format: ${m.datetime}`);
+    }
+  });
+
+  groups.forEach(g => {
+    if (groupMatchesCount[g] !== 6) errors.push(`Group ${g} has ${groupMatchesCount[g] || 0} matches instead of 6`);
+  });
+
+  teamKeys.forEach(k => {
+    if (teamMatchesCount[k] !== 3) {
+      errors.push(`Team ${teams[k].name} has ${teamMatchesCount[k]} matches instead of 3`);
+    }
+  });
+
+  console.log("=========================================");
+  console.log("🔍 RELATÓRIO DE AUDITORIA COPA DO MUNDO 2026");
+  console.log(`- Grupos validados: ${groups.length}`);
+  console.log(`- Seleções validadas: ${teamKeys.length}`);
+  console.log(`- Jogos validados: ${matchesList.length}`);
+  if (errors.length > 0) {
+    console.error(`🚨 Inconsistências encontradas: ${errors.length}`);
+    errors.forEach(err => console.error(`  - ${err}`));
+    throw new Error(`Build falhou devido a inconsistências na base de dados da Copa 2026.`);
+  } else {
+    console.log("✅ Nenhuma inconsistência encontrada na base de dados!");
+  }
+  console.log("=========================================");
+
+  return {
+    totalGroups: groups.length,
+    totalTeams: teamKeys.length,
+    totalMatches: matchesList.length,
+    errorsCount: errors.length
+  };
+}

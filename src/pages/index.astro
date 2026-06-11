@@ -1,20 +1,21 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { teams, groups, generateMatches } from '../data/worldCupData';
+import { teams, groups, generateMatches, validateWorldCupData } from '../data/worldCupData';
 
 const initialMatches = generateMatches();
+validateWorldCupData(); // Run build-time self-audit validation
 
 // Supabase environment variables from server environment
 const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
 ---
 
-<Layout title="Simulador da Copa do Mundo 2026 | Tabela Interativa & Leads">
+<Layout title="Simulador da Copa do Mundo FIFA 2026" description="Simule os grupos, o mata-mata, os artilheiros e monte sua própria Copa do Mundo FIFA 2026.">
   <main class="container">
     
     <!-- HEADER -->
     <header>
-      <div class="logo-badge">Qatar & USA 2026</div>
+      <div class="logo-badge">United States • Canada • Mexico 2026</div>
       <h1>SIMULADOR DA COPA DO MUNDO 2026</h1>
       <p class="subtitle">Simule a fase de grupos, defina a classificação dos melhores terceiros colocados e monte o chaveamento do mata-mata até a grande final!</p>
       
@@ -428,6 +429,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
           matchCard.className = 'match-card';
           matchCard.innerHTML = `
             <div class="match-datetime">📅 ${match.datetime || ''}</div>
+            <div class="match-venue" style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-align: center;">🏟️ ${match.stadium || ''}, ${match.city || ''}</div>
             <div class="match-row">
               <div class="match-team home">
                 <span class="team-name" data-team-id="${match.homeId}">${homeTeam.name}</span>
@@ -960,7 +962,12 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
           const parsed = JSON.parse(savedMatches);
           const teamsExist = Array.isArray(parsed) && parsed.length === initialMatches.length && parsed.every(m => teams[m.homeId] && teams[m.awayId]);
           if (teamsExist) {
-            matches = parsed;
+            matches = parsed.map((m, idx) => ({
+              ...m,
+              datetime: initialMatches[idx]?.datetime || m.datetime,
+              stadium: initialMatches[idx]?.stadium || m.stadium,
+              city: initialMatches[idx]?.city || m.city
+            }));
           } else {
             isValid = false;
           }

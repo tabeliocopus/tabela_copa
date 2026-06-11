@@ -22,7 +22,7 @@ const groupMatches = allMatches.filter(m => m.group === letter);
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 
     <header>
-      <div class="logo-badge">Copa do Mundo 2026</div>
+      <div class="logo-badge">FIFA World Cup 2026</div>
       <h1>{h1}</h1>
       <p class="subtitle">Conheça as seleções, os jogos e simule os resultados do Grupo {letter}!</p>
     </header>
@@ -80,7 +80,10 @@ const groupMatches = allMatches.filter(m => m.group === letter);
                   {away.name}
                 </td>
                 <td style="text-align:center; font-size:0.8rem; color:var(--color-accent); font-weight:600;">
-                  {m.datetime}
+                  <div>{m.datetime}</div>
+                  <div style="font-size:0.7rem; color:var(--text-muted); font-weight:normal; margin-top:0.2rem;">
+                    🏟️ {m.stadium}, {m.city}
+                  </div>
                 </td>
               </tr>
             );
