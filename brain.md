@@ -1,6 +1,6 @@
 # 🧠 BRAIN — Simulador da Copa do Mundo 2026
 > Documento vivo com todo o contexto, arquitetura, decisões técnicas e estado atual do projeto.
-> **Última atualização:** Junho 2026
+> **Última atualização:** 12 de Junho de 2026
 
 ---
 
@@ -242,8 +242,9 @@ Edição Local → git add . → git commit → git push origin main
 - [ ] Página protegida `/admin` para inserir resultados reais dos jogos
 - [ ] Dashboard com total de leads, grupos criados e participantes ativos
 
-### Fase 5 — Estatísticas da Simulação
-- [ ] Painel "Curiosidades da sua Copa": maior goleada, confederação com mais times no mata-mata, artilheiro total
+### Fase 5 — Estatísticas Individuais da Simulação
+> Nota: As Estatísticas da Galera (Globais) já foram concluídas na Prioridade 2.
+- [ ] Painel "Curiosidades da sua Copa" (Individual): maior goleada, confederação com mais times no mata-mata, artilheiro total
 - [ ] Shareable card de estatísticas para redes sociais
 
 ---
