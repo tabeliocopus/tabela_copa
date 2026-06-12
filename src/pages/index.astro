@@ -82,14 +82,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       </div>
     </div>
 
-    <!-- MONETIZATION BANNER -->
-    <div class="ads-banner">
-      <div class="ads-content">
-        <h3>🎁 Ganhe até R$ 500 de Bônus para apostar!</h3>
-        <p>Curtiu os seus palpites da Copa? Cadastre-se na parceira oficial com o cupom <strong>NINJA2026</strong> e ganhe bônus no primeiro depósito!</p>
-      </div>
-      <a href="https://betano.com" target="_blank" rel="noopener noreferrer" class="betting-btn">Apostar Agora ➜</a>
-    </div>
+    <!-- MONETIZATION BANNER (Removed) -->
 
     <!-- VIEW 1: FASE DE GRUPOS -->
     <section id="fase-grupos" class="view-panel active">
@@ -258,7 +251,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
             <p class="text-muted" style="margin-bottom: 1rem; font-size: 0.9rem;">
               Complete desafios para liberar insígnias exclusivas e subir no Ranking Global!
             </p>
-            <div class="badges-grid" id="user-badges-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 0.75rem;">
+            <div class="badges-grid" id="user-badges-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 95px), 1fr)); gap: 0.75rem;">
               <!-- Badges loaded dynamically -->
             </div>
           </div>
@@ -875,7 +868,9 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
         const container = document.getElementById(r.id);
         // Clear all except title
         const titleHtml = container.querySelector('h3').outerHTML;
-        container.innerHTML = titleHtml;
+        
+        container.innerHTML = titleHtml + '<div class="bracket-matches"></div>';
+        const matchesContainer = container.querySelector('.bracket-matches');
 
         for (let i = 0; i < r.count; i++) {
           const bracketIdx = r.start + i;
@@ -914,7 +909,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
               </select>
             </div>
           `;
-          container.appendChild(matchDiv);
+          matchesContainer.appendChild(matchDiv);
         }
       });
 
