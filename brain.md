@@ -600,10 +600,15 @@ Edição Local → git add . → git commit → git push origin main
   - Slide 3: Placares Oficiais (sincronização automática em tempo real).
 - [x] **Persistência de UX:** O estado de visualização do onboarding é gravado em `localStorage` (`hasSeenWelcome`) para evitar interrupções repetitivas no fluxo do usuário.
 
+### Viralização e Crescimento Avançado
+- [x] **OG Image Dinâmica na Vercel Edge (`@vercel/og`):** Criada uma rota Serverless (`/api/og/[slug].js`) que intercepta requisições de crawlers (WhatsApp, Twitter, Facebook). Ela busca a simulação no Supabase via o `slug` fornecido, recupera o nome do criador e o Campeão escolhido, e renderiza instantaneamente uma imagem PNG usando Satori. Isso melhora drasticamente o CTR dos links compartilhados.
+
 ### Arquivos alterados/criados nesta prioridade
 - `scripts/sync-results.js` (Lógica de integração com a API esportiva)
 - `scripts/create_resultados_reais.sql` (Schema de gravação)
 - `.github/workflows/sync-results.yml` (Automação programada cron job)
 - `src/pages/index.astro` (Componente visual do Modal Welcome, integração via fetch do Supabase e manipulação de interface nativa)
+- `src/pages/api/og/[slug].js` (Geração de imagem serverless Satori/React JSX no edge)
+- `src/pages/palpite/[slug].astro` (Atualização da meta tag de imagem)
 - `src/styles/global.css` (Transições e estilização para o carousel)
 - `brain.md` (Atualização do documento vivo)
