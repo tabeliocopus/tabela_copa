@@ -369,23 +369,27 @@ select.score-input {
 /* Bracket styling */
 .bracket-wrapper {
   display: flex;
-  gap: 2rem;
+  gap: 0.75rem;
   overflow-x: auto;
-  padding: 2rem 0;
-  min-height: 600px;
+  padding: 1.5rem 0 1.5rem;
+  min-height: 500px;
+  /* On desktop the 5 rounds should fill the 1300px container without scroll */
+  align-items: stretch;
 }
 
 .bracket-wrapper::after {
   content: "";
-  flex: 0 0 2rem;
+  flex: 0 0 0.5rem; /* small trailing padding */
 }
 
 .bracket-round {
   display: flex;
   flex-direction: column;
-  min-width: 260px;
-  gap: 1.5rem;
-  flex-shrink: 0;
+  /* flex:1 makes all 5 columns share space equally inside the container */
+  flex: 1 1 0;
+  min-width: 180px; /* minimum before scroll kicks in */
+  gap: 0.6rem;
+  /* do NOT flex-shrink:0 — let them shrink to fit */
 }
 
 .bracket-matches {
@@ -393,27 +397,30 @@ select.score-input {
   flex-direction: column;
   justify-content: space-around;
   flex: 1;
-  gap: 1.5rem;
+  gap: 0.6rem;
 }
 
 .bracket-match {
-  padding: 0.75rem;
+  padding: 0.5rem 0.6rem;
   position: relative;
 }
 
 .bracket-match-title {
-  font-size: 0.7rem;
+  font-size: 0.6rem;
   color: var(--text-muted);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.3rem;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .bracket-team-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.4rem 0.25rem;
+  padding: 0.3rem 0.2rem;
   border-radius: 6px;
   transition: var(--transition-smooth);
 }
@@ -426,8 +433,16 @@ select.score-input {
 .bracket-team-info {
   display: flex;
   align-items: center;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   font-weight: 500;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.bracket-team-info span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Modal styles */
