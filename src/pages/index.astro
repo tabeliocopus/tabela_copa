@@ -15,6 +15,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
     
     <!-- HEADER -->
     <header>
+      <img src="https://upload.wikimedia.org/wikipedia/en/thumb/e/e3/2026_FIFA_World_Cup_emblem.svg/300px-2026_FIFA_World_Cup_emblem.svg.png" alt="FIFA World Cup 2026 Logo" class="official-logo" style="width: 140px; height: auto; margin: 0 auto 1.5rem auto; display: block;" />
       <div class="logo-badge">United States • Canada • Mexico 2026</div>
       <h1>SIMULADOR DA COPA DO MUNDO 2026</h1>
       <p class="subtitle">Simule a fase de grupos, defina a classificação dos melhores terceiros colocados e monte o chaveamento do mata-mata até a grande final!</p>
@@ -411,6 +412,15 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       return `https://flagcdn.com/w40/${code.toLowerCase()}.png`;
     }
 
+    // Helper: Generate Score Select Options (0 to 15)
+    function generateScoreOptions(selectedVal) {
+      let opts = `<option value="" ${selectedVal === null || selectedVal === '' ? 'selected' : ''}>-</option>`;
+      for (let i = 0; i <= 15; i++) {
+        opts += `<option value="${i}" ${selectedVal === i ? 'selected' : ''}>${i}</option>`;
+      }
+      return opts;
+    }
+
     // Initialize/Render phase of the groups matches
     function initGroups() {
       groups.forEach(groupLetter => {
@@ -437,11 +447,15 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
                 <img src="${getFlagUrl(homeTeam.code)}" alt="${homeTeam.name}" class="flag-emoji" />
               </div>
               <div class="match-scores-inputs">
-                <input type="number" min="0" class="score-input" id="${match.id}-home" data-match-id="${match.id}" data-side="home" value="${match.homeScore !== null ? match.homeScore : ''}" />
+                <select class="score-input" id="${match.id}-home" data-match-id="${match.id}" data-side="home">
+                  ${generateScoreOptions(match.homeScore)}
+                </select>
                 <button class="goal-scorer-btn" data-match-id="${match.id}" data-side="home" style="background:none; border:none; cursor:pointer; font-size:0.8rem; display: ${match.homeScore > 0 ? 'inline' : 'none'};">⚽</button>
                 <span class="match-vs">x</span>
                 <button class="goal-scorer-btn" data-match-id="${match.id}" data-side="away" style="background:none; border:none; cursor:pointer; font-size:0.8rem; display: ${match.awayScore > 0 ? 'inline' : 'none'};">⚽</button>
-                <input type="number" min="0" class="score-input" id="${match.id}-away" data-match-id="${match.id}" data-side="away" value="${match.awayScore !== null ? match.awayScore : ''}" />
+                <select class="score-input" id="${match.id}-away" data-match-id="${match.id}" data-side="away">
+                  ${generateScoreOptions(match.awayScore)}
+                </select>
               </div>
               <div class="match-team away">
                 <img src="${getFlagUrl(awayTeam.code)}" alt="${awayTeam.name}" class="flag-emoji" />
@@ -456,7 +470,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
 
       // Bind input events
       document.querySelectorAll('.score-input').forEach(input => {
-        input.addEventListener('input', (e) => {
+        input.addEventListener('change', (e) => {
           const matchId = e.target.dataset.matchId;
           const side = e.target.dataset.side;
           const scoreVal = e.target.value === '' ? null : parseInt(e.target.value, 10);
@@ -793,20 +807,22 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
                 ${match.homeId ? `<img src="${getFlagUrl(homeTeam.code)}" class="flag-emoji" />` : ''}
                 <span>${homeTeam.name}</span>
               </div>
-              <input type="number" min="0" class="score-input bracket-score" 
+              <select class="score-input bracket-score" 
                 data-idx="${bracketIdx}" data-side="home" 
-                value="${match.homeScore !== null ? match.homeScore : ''}" 
-                ${!match.homeId || !match.awayId ? 'disabled' : ''} />
+                ${!match.homeId || !match.awayId ? 'disabled' : ''}>
+                ${generateScoreOptions(match.homeScore)}
+              </select>
             </div>
             <div class="bracket-team-row ${isAwayWinner ? 'winner' : ''}">
               <div class="bracket-team-info">
                 ${match.awayId ? `<img src="${getFlagUrl(awayTeam.code)}" class="flag-emoji" />` : ''}
                 <span>${awayTeam.name}</span>
               </div>
-              <input type="number" min="0" class="score-input bracket-score" 
+              <select class="score-input bracket-score" 
                 data-idx="${bracketIdx}" data-side="away" 
-                value="${match.awayScore !== null ? match.awayScore : ''}" 
-                ${!match.homeId || !match.awayId ? 'disabled' : ''} />
+                ${!match.homeId || !match.awayId ? 'disabled' : ''}>
+                ${generateScoreOptions(match.awayScore)}
+              </select>
             </div>
           `;
           container.appendChild(matchDiv);
@@ -815,7 +831,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
 
       // Bind bracket inputs
       document.querySelectorAll('.bracket-score').forEach(input => {
-        input.addEventListener('input', (e) => {
+        input.addEventListener('change', (e) => {
           const idx = parseInt(e.target.dataset.idx, 10);
           const side = e.target.dataset.side;
           const scoreVal = e.target.value === '' ? null : parseInt(e.target.value, 10);

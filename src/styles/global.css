@@ -314,6 +314,13 @@ h1 {
   font-size: 0.9rem;
 }
 
+select.score-input {
+  width: 44px; /* A bit wider to fit the dropdown arrow */
+  padding-left: 4px;
+  cursor: pointer;
+  appearance: auto;
+}
+
 .score-input:focus {
   outline: none;
   border-color: var(--color-primary);
