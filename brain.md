@@ -579,3 +579,31 @@ Edição Local → git add . → git commit → git push origin main
 
 ### Validação
 - Testado manualmente, botão possui alert de confirmação e as chaves de storage são excluídas corretamente.
+
+---
+
+## Atualizacao Fase 2 (Concluída) — Sincronização Automática de Placares Reais e UX
+
+**Status:** Implementado, Validado e Publicado (Deploy Automático via Vercel).
+
+### Sincronização Oficial de Jogos (football-data.org)
+- [x] **Banco de Dados (Supabase):** Criada a tabela `resultados_reais` via script SQL para armazenar o ID do jogo, placar (Home x Away) e status oficial da partida (`IN_PLAY`, `FINISHED`).
+- [x] **Script de Sincronização (`sync-results.js`):** Script em Node (ESM) desenvolvido para bater na API oficial (football-data.org), obter dados atualizados, mapear os IDs de times reais para os IDs internos do simulador, corrigir o posicionamento Home/Away dos placares e atualizar a tabela no Supabase via `upsert`.
+- [x] **Automação Completa (GitHub Actions):** Criado o workflow `.github/workflows/sync-results.yml` para disparar a sincronização automaticamente a cada 15 minutos sem a necessidade de instâncias de servidor ligadas.
+- [x] **Bloqueio Automático de Jogos Concluídos:** A engine do client-side (no `index.astro`) consulta a base de dados via `fetch` ao inicializar. Para todo jogo com status de "finalizado", os selects interativos de placar são trocados nativamente por um painel de visualização estática com o selo "✅ Oficial". Os pontos e o mata-mata do site inteiro reagem a isso.
+- [x] **Feedback Gamificado (Gatilho de Retenção):** Antes do script sobrepor os placares com os oficiais, ele lê o palpite antigo salvo no dispositivo do usuário e compara. Se o usuário cravou o placar, mostra um banner verde neon. Se acertou o vencedor, um banner dourado. Se errou (zebra), um banner vermelho. Isso gera um loop forte de engajamento emocional a cada jogo real.
+
+### Onboarding e Experiência do Usuário (UX)
+- [x] **Manual Amigável (Welcome Carousel):** Desenvolvido um modal responsivo no formato de "Stories" (Glassmorphism e CSS vanilla puro) para educar visitantes de primeira viagem sobre as três principais funções do simulador.
+  - Slide 1: Simule a Copa (preenchimento manual e mata-mata automático).
+  - Slide 2: Bolão com Amigos (integração social e ranking).
+  - Slide 3: Placares Oficiais (sincronização automática em tempo real).
+- [x] **Persistência de UX:** O estado de visualização do onboarding é gravado em `localStorage` (`hasSeenWelcome`) para evitar interrupções repetitivas no fluxo do usuário.
+
+### Arquivos alterados/criados nesta prioridade
+- `scripts/sync-results.js` (Lógica de integração com a API esportiva)
+- `scripts/create_resultados_reais.sql` (Schema de gravação)
+- `.github/workflows/sync-results.yml` (Automação programada cron job)
+- `src/pages/index.astro` (Componente visual do Modal Welcome, integração via fetch do Supabase e manipulação de interface nativa)
+- `src/styles/global.css` (Transições e estilização para o carousel)
+- `brain.md` (Atualização do documento vivo)
