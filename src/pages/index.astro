@@ -449,31 +449,54 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
 
           const matchCard = document.createElement('div');
           matchCard.className = 'match-card';
-          matchCard.innerHTML = `
-            <div class="match-datetime">📅 ${match.datetime || ''}</div>
-            <div class="match-venue" style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-align: center;">🏟️ ${match.stadium || ''}, ${match.city || ''}</div>
-            <div class="match-row">
-              <div class="match-team home">
-                <span class="team-name" data-team-id="${match.homeId}">${homeTeam.name}</span>
-                <img src="${getFlagUrl(homeTeam.code)}" alt="${homeTeam.name}" class="flag-emoji" />
+          
+          if (match.isFinished) {
+            matchCard.innerHTML = `
+              <div class="match-datetime">📅 ${match.datetime || ''} <span style="color: var(--color-primary); font-weight: bold; font-size: 0.75rem; margin-left: 0.5rem; border: 1px solid var(--color-primary); padding: 2px 6px; border-radius: 10px; background: rgba(0,255,135,0.1);">✅ Oficial</span></div>
+              <div class="match-venue" style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-align: center;">🏟️ ${match.stadium || ''}, ${match.city || ''}</div>
+              <div class="match-row">
+                <div class="match-team home">
+                  <span class="team-name" data-team-id="${match.homeId}">${homeTeam.name}</span>
+                  <img src="${getFlagUrl(homeTeam.code)}" alt="${homeTeam.name}" class="flag-emoji" />
+                </div>
+                <div class="match-scores-inputs">
+                  <div style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 0.4rem 0.8rem; font-weight: bold; color: white; min-width: 45px; text-align: center;">${match.homeScore}</div>
+                  <span class="match-vs" style="margin: 0 0.5rem; color: var(--color-primary);">x</span>
+                  <div style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 0.4rem 0.8rem; font-weight: bold; color: white; min-width: 45px; text-align: center;">${match.awayScore}</div>
+                </div>
+                <div class="match-team away">
+                  <img src="${getFlagUrl(awayTeam.code)}" alt="${awayTeam.name}" class="flag-emoji" />
+                  <span class="team-name" data-team-id="${match.awayId}">${awayTeam.name}</span>
+                </div>
               </div>
-              <div class="match-scores-inputs">
-                <select class="score-input" id="${match.id}-home" data-match-id="${match.id}" data-side="home">
-                  ${generateScoreOptions(match.homeScore)}
-                </select>
-                <button class="goal-scorer-btn" data-match-id="${match.id}" data-side="home" style="background:none; border:none; cursor:pointer; font-size:0.8rem; display: ${match.homeScore > 0 ? 'inline' : 'none'};">⚽</button>
-                <span class="match-vs">x</span>
-                <button class="goal-scorer-btn" data-match-id="${match.id}" data-side="away" style="background:none; border:none; cursor:pointer; font-size:0.8rem; display: ${match.awayScore > 0 ? 'inline' : 'none'};">⚽</button>
-                <select class="score-input" id="${match.id}-away" data-match-id="${match.id}" data-side="away">
-                  ${generateScoreOptions(match.awayScore)}
-                </select>
+            `;
+          } else {
+            matchCard.innerHTML = `
+              <div class="match-datetime">📅 ${match.datetime || ''}</div>
+              <div class="match-venue" style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-align: center;">🏟️ ${match.stadium || ''}, ${match.city || ''}</div>
+              <div class="match-row">
+                <div class="match-team home">
+                  <span class="team-name" data-team-id="${match.homeId}">${homeTeam.name}</span>
+                  <img src="${getFlagUrl(homeTeam.code)}" alt="${homeTeam.name}" class="flag-emoji" />
+                </div>
+                <div class="match-scores-inputs">
+                  <select class="score-input" id="${match.id}-home" data-match-id="${match.id}" data-side="home">
+                    ${generateScoreOptions(match.homeScore)}
+                  </select>
+                  <button class="goal-scorer-btn" data-match-id="${match.id}" data-side="home" style="background:none; border:none; cursor:pointer; font-size:0.8rem; display: ${match.homeScore > 0 ? 'inline' : 'none'};">⚽</button>
+                  <span class="match-vs">x</span>
+                  <button class="goal-scorer-btn" data-match-id="${match.id}" data-side="away" style="background:none; border:none; cursor:pointer; font-size:0.8rem; display: ${match.awayScore > 0 ? 'inline' : 'none'};">⚽</button>
+                  <select class="score-input" id="${match.id}-away" data-match-id="${match.id}" data-side="away">
+                    ${generateScoreOptions(match.awayScore)}
+                  </select>
+                </div>
+                <div class="match-team away">
+                  <img src="${getFlagUrl(awayTeam.code)}" alt="${awayTeam.name}" class="flag-emoji" />
+                  <span class="team-name" data-team-id="${match.awayId}">${awayTeam.name}</span>
+                </div>
               </div>
-              <div class="match-team away">
-                <img src="${getFlagUrl(awayTeam.code)}" alt="${awayTeam.name}" class="flag-emoji" />
-                <span class="team-name" data-team-id="${match.awayId}">${awayTeam.name}</span>
-              </div>
-            </div>
-          `;
+            `;
+          }
 
           matchesContainer.appendChild(matchCard);
         });
@@ -1845,11 +1868,40 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
     if (urlBolaoCode) { const ji = document.getElementById('bolao-join-code'); if (ji) ji.value = urlBolaoCode.toUpperCase(); const bt = document.querySelector('[data-tab="bolao"]'); if (bt) bt.click(); }
 
     // Start everything
-    loadLocalState();
-    initGroups();
-    calculateQualifiedTeams();
-    renderArtilharia();
-    parseUrlParams();
+    async function initApp() {
+      loadLocalState();
+      
+      try {
+        let cleanUrl = (supabaseUrl || '').trim().replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
+        if (cleanUrl && supabaseAnonKey) {
+          const res = await fetch(cleanUrl + '/rest/v1/resultados_reais?select=*', {
+            headers: { 'apikey': supabaseAnonKey, 'Authorization': 'Bearer ' + supabaseAnonKey }
+          });
+          if (res.ok) {
+            const realData = await res.json();
+            realData.forEach(rr => {
+              if (rr.status === 'FINISHED' || rr.status === 'IN_PLAY') {
+                const m = matches.find(x => x.id === rr.match_id);
+                if (m) {
+                  m.homeScore = rr.home_score;
+                  m.awayScore = rr.away_score;
+                  m.isFinished = (rr.status === 'FINISHED');
+                }
+              }
+            });
+            // Also override the saveLocalState function so it doesn't overwrite real results?
+            // saveLocalState just serializes the current `matches` state, which now includes the real results!
+            // Wait, this means user's local sim_data will start including the real results. This is correct!
+          }
+        }
+      } catch(e) { console.error('Erro ao buscar resultados reais', e); }
+
+      initGroups();
+      calculateQualifiedTeams();
+      renderArtilharia();
+      parseUrlParams();
+    }
+    initApp();
   </script>
 </Layout>
 
