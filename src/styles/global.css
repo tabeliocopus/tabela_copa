@@ -844,14 +844,64 @@ footer a:hover {
     padding: 0.75rem 0.5rem;
   }
   .standing-table {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
   }
   .standing-table th, .standing-table td {
-    padding: 0.4rem 0.15rem;
+    padding: 0.35rem 0.1rem;
   }
+
+  /* ---- Layout 2-linhas para as partidas no mobile ---- */
   .match-row {
+    flex-wrap: wrap;
+    gap: 0.3rem 0;
     font-size: 0.8rem;
   }
+
+  /* Times ficam na 1ª linha, cada um com 50% */
+  .match-team {
+    flex: 0 0 calc(50% - 2px);
+    max-width: calc(50% - 2px);
+  }
+
+  /* Home: vira à esquerda com flag primeiro */
+  .match-team.home {
+    order: 1;
+    justify-content: flex-start;
+    flex-direction: row-reverse;
+    text-align: left;
+  }
+  .match-team.home .flag-emoji {
+    margin-right: 0.35rem;
+    margin-left: 0;
+  }
+  .match-team.home .team-name {
+    text-align: left;
+  }
+
+  /* Away: fica à direita */
+  .match-team.away {
+    order: 2;
+    justify-content: flex-end;
+    text-align: right;
+  }
+  .match-team.away .flag-emoji {
+    margin-right: 0;
+    margin-left: 0.35rem;
+  }
+
+  /* Placar vai para a 2ª linha, centralizado */
+  .match-scores-inputs {
+    order: 3;
+    flex: 0 0 100%;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.2rem 0;
+  }
+
+  .match-vs {
+    margin: 0 0.15rem;
+  }
+
   .score-input {
     width: 26px;
     height: 26px;
@@ -861,6 +911,8 @@ footer a:hover {
     width: 38px;
     padding-left: 2px;
   }
+  /* ---------------------------------------------------- */
+
   .bolao-form-row {
     flex-direction: column;
     align-items: stretch;
