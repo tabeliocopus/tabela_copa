@@ -230,6 +230,9 @@ h1 {
   font-weight: 500;
   cursor: pointer;
   transition: var(--transition-smooth);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .team-name:hover {
@@ -251,6 +254,7 @@ h1 {
   align-items: center;
   justify-content: space-between;
   font-size: 0.85rem;
+  gap: 0.25rem;
 }
 
 .match-card {
@@ -275,7 +279,12 @@ h1 {
 .match-team {
   display: flex;
   align-items: center;
-  width: 40%;
+  flex: 1;
+  min-width: 0;
+}
+
+.match-team .flag-emoji {
+  flex-shrink: 0;
 }
 
 .match-team.home {
@@ -299,6 +308,7 @@ h1 {
   display: flex;
   align-items: center;
   gap: 0.25rem;
+  flex-shrink: 0;
 }
 
 .score-input {
