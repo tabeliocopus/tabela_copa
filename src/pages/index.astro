@@ -485,6 +485,26 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
           matchCard.className = 'match-card';
           
           if (match.isFinished) {
+            let feedbackHtml = '';
+            if (match.userHomeScore !== undefined && match.userHomeScore !== null && match.userAwayScore !== undefined && match.userAwayScore !== null) {
+              const uHome = parseInt(match.userHomeScore);
+              const uAway = parseInt(match.userAwayScore);
+              const rHome = parseInt(match.homeScore);
+              const rAway = parseInt(match.awayScore);
+              
+              if (uHome === rHome && uAway === rAway) {
+                feedbackHtml = `<div style="font-size: 0.75rem; color: var(--bg-main); font-weight: bold; text-align: center; margin-top: 0.75rem; background: var(--color-primary); border-radius: 4px; padding: 4px;">✅ Na mosca! Você cravou ${uHome}x${uAway}</div>`;
+              } else if (
+                (uHome > uAway && rHome > rAway) ||
+                (uHome < uAway && rHome < rAway) ||
+                (uHome === uAway && rHome === rAway)
+              ) {
+                feedbackHtml = `<div style="font-size: 0.75rem; color: var(--bg-main); font-weight: bold; text-align: center; margin-top: 0.75rem; background: var(--color-accent); border-radius: 4px; padding: 4px;">👍 Quase! Acertou o vencedor (Seu palpite: ${uHome}x${uAway})</div>`;
+              } else {
+                feedbackHtml = `<div style="font-size: 0.75rem; color: white; font-weight: bold; text-align: center; margin-top: 0.75rem; background: var(--color-danger); border-radius: 4px; padding: 4px;">❌ Zebra! Seu palpite era ${uHome}x${uAway}</div>`;
+              }
+            }
+
             matchCard.innerHTML = `
               <div class="match-datetime">📅 ${match.datetime || ''} <span style="color: var(--color-primary); font-weight: bold; font-size: 0.75rem; margin-left: 0.5rem; border: 1px solid var(--color-primary); padding: 2px 6px; border-radius: 10px; background: rgba(0,255,135,0.1);">✅ Oficial</span></div>
               <div class="match-venue" style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-align: center;">🏟️ ${match.stadium || ''}, ${match.city || ''}</div>
@@ -503,6 +523,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
                   <span class="team-name" data-team-id="${match.awayId}">${awayTeam.name}</span>
                 </div>
               </div>
+              ${feedbackHtml}
             `;
           } else {
             matchCard.innerHTML = `
@@ -1950,6 +1971,8 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
               if (rr.status === 'FINISHED' || rr.status === 'IN_PLAY') {
                 const m = matches.find(x => x.id === rr.match_id);
                 if (m) {
+                  m.userHomeScore = m.homeScore;
+                  m.userAwayScore = m.awayScore;
                   m.homeScore = rr.home_score;
                   m.awayScore = rr.away_score;
                   m.isFinished = (rr.status === 'FINISHED');
