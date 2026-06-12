@@ -376,6 +376,40 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       </div>
     </div>
 
+    <!-- MODAL 4: WELCOME MANUAL (CAROUSEL) -->
+    <div class="modal-overlay" id="welcome-modal">
+      <div class="glass-card modal-content" style="max-width: 450px; padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+        
+        <div class="carousel-container" id="welcome-carousel">
+          <!-- Slide 1 -->
+          <div class="carousel-slide active" style="padding: 2.5rem 1.5rem; text-align: center;">
+            <div style="font-size: 4rem; margin-bottom: 1rem; animation: float 3s ease-in-out infinite;">🎮</div>
+            <h2 style="color: var(--color-primary); margin-bottom: 1rem; font-weight: 800; font-size: 1.5rem;">Simule a Copa</h2>
+            <p class="text-muted" style="line-height: 1.6;">Preencha os placares dos jogos. A fase de mata-mata se desenha automaticamente até a grande final com base nos seus palpites!</p>
+          </div>
+          <!-- Slide 2 -->
+          <div class="carousel-slide" style="padding: 2.5rem 1.5rem; text-align: center; display: none;">
+            <div style="font-size: 4rem; margin-bottom: 1rem; animation: float 3s ease-in-out infinite;">🏆</div>
+            <h2 style="color: var(--color-secondary); margin-bottom: 1rem; font-weight: 800; font-size: 1.5rem;">Bolão com Amigos</h2>
+            <p class="text-muted" style="line-height: 1.6;">Crie grupos privados para os jogos do Brasil ou compita no Palpitão Geral da Copa com todo mundo!</p>
+          </div>
+          <!-- Slide 3 -->
+          <div class="carousel-slide" style="padding: 2.5rem 1.5rem; text-align: center; display: none;">
+            <div style="font-size: 4rem; margin-bottom: 1rem; animation: float 3s ease-in-out infinite;">⚡</div>
+            <h2 style="color: #00ff87; margin-bottom: 1rem; font-weight: 800; font-size: 1.5rem;">Placares Oficiais</h2>
+            <p class="text-muted" style="line-height: 1.6;">Não se preocupe em atualizar! Nossos robôs travam os placares reais assim que o jogo oficial acaba.</p>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1.2rem 2rem; background: rgba(0,0,0,0.3); border-top: 1px solid var(--border-glass);">
+          <div class="carousel-dots" id="welcome-dots">
+            <span class="dot active"></span><span class="dot"></span><span class="dot"></span>
+          </div>
+          <button class="btn btn-primary" id="welcome-next-btn" style="width: auto; padding: 0.5rem 1.5rem;">Próximo ➔</button>
+        </div>
+      </div>
+    </div>
+
     <!-- FOOTER -->
     <footer>
       <p>&copy; 2026 Simulador da Copa do Mundo 2026. Desenvolvido por <a href="https://github.com" target="_blank">Lucro Ninja</a>.</p>
@@ -1869,6 +1903,39 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
 
     // Start everything
     async function initApp() {
+      // Welcome Carousel Logic
+      const welcomeModal = document.getElementById('welcome-modal');
+      const slides = document.querySelectorAll('.carousel-slide');
+      const dots = document.querySelectorAll('.carousel-dots .dot');
+      const nextBtn = document.getElementById('welcome-next-btn');
+      let currentSlide = 0;
+
+      function showSlide(index) {
+        slides.forEach((s, i) => s.style.display = i === index ? 'block' : 'none');
+        dots.forEach((d, i) => d.classList.toggle('active', i === index));
+        if (index === slides.length - 1) {
+          nextBtn.textContent = 'Começar! 🎉';
+        } else {
+          nextBtn.innerHTML = 'Próximo ➔';
+        }
+      }
+
+      if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+          if (currentSlide < slides.length - 1) {
+            currentSlide++;
+            showSlide(currentSlide);
+          } else {
+            welcomeModal.classList.remove('active');
+            localStorage.setItem('hasSeenWelcome', 'true');
+          }
+        });
+      }
+
+      if (!localStorage.getItem('hasSeenWelcome') && welcomeModal) {
+        setTimeout(() => welcomeModal.classList.add('active'), 800);
+      }
+
       loadLocalState();
       
       try {

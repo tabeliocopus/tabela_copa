@@ -448,6 +448,29 @@ select.score-input {
 /* Modal form controls */
 .form-group {
   margin-bottom: 1.25rem;
+}
+
+/* Carousel Styles for Welcome Modal */
+.carousel-dots {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.carousel-dots .dot {
+  width: 10px;
+  height: 10px;
+  background: var(--text-muted);
+  border-radius: 50%;
+  opacity: 0.5;
+  transition: var(--transition-smooth);
+}
+
+.carousel-dots .dot.active {
+  background: var(--color-primary);
+  opacity: 1;
+  width: 24px;
+  border-radius: 5px;
+}
   text-align: left;
 }
 
