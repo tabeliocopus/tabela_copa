@@ -74,8 +74,9 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
           </div>
         </div>
         
-        <div class="auto-fill-box">
+        <div class="auto-fill-box" style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
           <button class="btn" id="auto-fill-btn">⚡ Simulação Rápida (Preencher placares aleatórios)</button>
+          <button class="btn" id="reset-sim-btn">🗑️ Limpar Palpites</button>
         </div>
       </div>
     </div>
@@ -1543,6 +1544,38 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
           saveLocalState();
           
           alert('Placares gerados! Agora vá na aba "Mata-Mata" para palpitar na fase eliminatória.');
+        }
+      });
+    }
+    // Reset simulator scores & state
+    const resetSimBtn = document.getElementById('reset-sim-btn');
+    if (resetSimBtn) {
+      resetSimBtn.addEventListener('click', () => {
+        if (confirm('Deseja limpar todos os seus palpites e reiniciar o simulador do zero?')) {
+          // 1. Reset match list scores and visibility
+          matches.forEach(m => {
+            m.homeScore = null;
+            m.awayScore = null;
+            m.scorers = { home: [], away: [] };
+
+            const homeInput = document.getElementById(`${m.id}-home`);
+            const awayInput = document.getElementById(`${m.id}-away`);
+            if (homeInput) homeInput.value = '';
+            if (awayInput) awayInput.value = '';
+
+            const homeScorerBtn = document.querySelector(`.goal-scorer-btn[data-match-id="${m.id}"][data-side="home"]`);
+            const awayScorerBtn = document.querySelector(`.goal-scorer-btn[data-match-id="${m.id}"][data-side="away"]`);
+            if (homeScorerBtn) homeScorerBtn.style.display = 'none';
+            if (awayScorerBtn) awayScorerBtn.style.display = 'none';
+          });
+
+          // 2. Clear all local storages
+          localStorage.removeItem('sim_matches');
+          localStorage.removeItem('sim_bracket');
+          localStorage.removeItem('sim_scorers');
+
+          // 3. Reload page to cleanly restore initial state
+          window.location.reload();
         }
       });
     }

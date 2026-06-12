@@ -838,6 +838,20 @@ footer a:hover {
   transform: translateY(-2px);
 }
 
+#reset-sim-btn {
+  max-width: 400px;
+  background: linear-gradient(90deg, rgba(255, 71, 87, 0.1) 0%, rgba(255, 71, 87, 0.15) 100%);
+  border: 1px solid rgba(255, 71, 87, 0.35);
+  color: #ff4757;
+  box-shadow: 0 4px 15px rgba(255, 71, 87, 0.03);
+}
+
+#reset-sim-btn:hover {
+  background: linear-gradient(90deg, rgba(255, 71, 87, 0.2) 0%, rgba(255, 71, 87, 0.3) 100%);
+  color: var(--text-main);
+  transform: translateY(-2px);
+}
+
 /* =============================================
    BOLÃO STYLES
    ============================================= */

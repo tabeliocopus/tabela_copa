@@ -37,23 +37,38 @@
 TABELA COPA/
 ├── src/
 │   ├── pages/
-│   │   └── index.astro         ← Página principal (toda a lógica da app)
+│   │   ├── index.astro                     ← Página principal (simulador, bolão, leads)
+│   │   ├── estatisticas.astro              ← Página de estatísticas globais
+│   │   ├── ranking.astro                   ← Ranking global de engajamento e badges
+│   │   ├── jogos-do-brasil-copa-2026.astro ← Calendário dos jogos do Brasil (SEO)
+│   │   ├── bolao-copa-2026.astro           ← Landing page do Bolão (SEO)
+│   │   ├── simulador-copa-2026.astro       ← Landing page do Simulador (SEO)
+│   │   ├── tabela-copa-2026.astro          ← Tabela geral dos grupos (SEO)
+│   │   ├── grupo-[a-l]-copa-2026.astro     ← Páginas individuais dos 12 grupos (SEO)
+│   │   └── palpite/
+│   │       └── [slug].astro                ← Rota dinâmica para palpites compartilhados
+│   ├── components/
+│   │   └── SeoGroupPage.astro              ← Template para páginas de grupo
 │   ├── layouts/
-│   │   └── Layout.astro        ← Layout base (HTML head, meta tags, SEO)
+│   │   └── Layout.astro                    ← Layout base (HTML head, meta tags, SEO)
 │   ├── data/
-│   │   └── worldCupData.js     ← Base de dados: 48 seleções, 12 grupos, jogadores
+│   │   ├── worldCupData.js                 ← Base de dados: 48 seleções, 12 grupos, jogadores
+│   │   └── seoGroups.js                    ← Metadados e textos para SEO
 │   └── styles/
-│       └── global.css          ← Sistema de design completo (vars, componentes, bolão)
+│       └── global.css                      ← Sistema de design completo (vars, componentes)
+├── scripts/
+│   └── stress_test.js                  ← Teste de carga e estresse de Supabase
 ├── public/
-│   ├── flags/                  ← Bandeiras das seleções (SVG/PNG via CDN)
-│   └── robots.txt              ← Configuração de indexação SEO
-├── .env                        ← Credenciais Supabase (NÃO vai ao Git)
-├── .env.example                ← Template de configuração para novos devs
-├── .gitignore                  ← Ignora .env, node_modules, dist/
-├── supabase_schema.sql         ← Script SQL completo do banco de dados
-├── astro.config.mjs            ← Configuração do Astro
-├── package.json                ← Dependências do projeto
-└── brain.md                    ← Este arquivo
+│   ├── flags/                          ← Bandeiras das seleções
+│   ├── favicon.ico / favicon.svg       ← Favicons do site
+│   └── robots.txt                      ← Configuração de indexação SEO
+├── .env                                ← Credenciais Supabase (NÃO vai ao Git)
+├── .env.example                        ← Template de configuração
+├── .gitignore                          ← Ignora .env, node_modules, dist/
+├── supabase_schema.sql                 ← Script SQL completo do banco de dados
+├── astro.config.mjs                    ← Configuração do Astro
+├── package.json                        ← Dependências do projeto
+└── brain.md                            ← Este arquivo
 ```
 
 ---
@@ -289,9 +304,6 @@ Edição Local → git add . → git commit → git push origin main
 - `supabase_schema.sql`
 - `brain.md`
 
-### Proxima prioridade
-- Prioridade 3 - Ranking Global (`/ranking`) com pontuacao por engajamento.
-
 ---
 
 ## Atualizacao Prioridade 3 - Ranking Global
@@ -323,9 +335,6 @@ Edição Local → git add . → git commit → git push origin main
 
 ### Validacao
 - [x] Build validado com `npm.cmd run build`.
-
-### Proxima prioridade
-- Prioridade 6 - SEO Programatico (paginas estaticas por grupo, jogos do brasil, etc).
 
 ---
 
@@ -389,9 +398,6 @@ Edição Local → git add . → git commit → git push origin main
 
 ### Validacao
 - [x] Build validado com `npm run build`.
-
-### Proxima prioridade
-- Prioridade 8 - Testes de Estresse, Carga e Simulações (Scripts de automação com K6/Autocannon).
 
 ---
 
@@ -553,3 +559,22 @@ Edição Local → git add . → git commit → git push origin main
 - **Inconsistências encontradas:** 0
 - **Status da Compilação:** Sucesso (Astro build concluído sem avisos ou erros).
 
+---
+
+## Atualizacao Adicional — Funcionalidade Limpar Palpites
+
+**Status:** Implementado e commitado.
+
+### Ajustes Realizados
+1. **Botão "Limpar Palpites":**
+   - Adicionado um botão "🗑️ Limpar Palpites" na área de ações, ao lado da Simulação Rápida.
+   - Criada funcionalidade no client-side para limpar os `localStorage` (`sim_matches`, `sim_bracket`, `sim_scorers`) mediante confirmação do usuário.
+   - Reflete a limpeza instantaneamente nos placares visuais e recarrega a página para reiniciar o simulador ao seu estado original de forma limpa.
+
+### Arquivos alterados nesta funcionalidade
+- `src/pages/index.astro` (layout do botão e lógica JS)
+- `src/styles/global.css` (estilização do botão com vermelho neon)
+- `brain.md` (documentação)
+
+### Validação
+- Testado manualmente, botão possui alert de confirmação e as chaves de storage são excluídas corretamente.
