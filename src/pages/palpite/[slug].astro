@@ -47,9 +47,11 @@ const pageTitle = champion
 const pageDesc = champion
   ? `${lead?.nome || 'Um usuário'} simulou a Copa 2026 e escolheu ${champion} como Campeão Mundial! Veja os artilheiros, o mata-mata e crie o seu próprio palpite.`
   : 'Veja esta simulação da Copa do Mundo FIFA 2026 e crie a sua própria!';
+
+const ogImageUrl = new URL(`/api/og/${slug}`, Astro.url).href;
 ---
 
-<Layout title={pageTitle} description={pageDesc}>
+<Layout title={pageTitle} description={pageDesc} image={ogImageUrl}>
   <main class="container palpite-page">
 
     {errorMsg ? (

@@ -13,6 +13,8 @@
   },
   "dependencies": {
     "@astrojs/vercel": "^10.0.8",
-    "astro": "^6.4.6"
+    "@vercel/og": "^0.11.1",
+    "astro": "^6.4.6",
+    "satori-html": "^0.3.2"
   }
 }
