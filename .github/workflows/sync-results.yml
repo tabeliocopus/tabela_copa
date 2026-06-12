@@ -1,0 +1,26 @@
+name: Sync Football Data
+
+on:
+  schedule:
+    # Roda a cada 15 minutos automaticamente
+    - cron: '*/15 * * * *'
+  workflow_dispatch: # Permite rodar manualmente no painel do GitHub
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repositorio
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Executar Sincronizacao
+        env:
+          FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node scripts/sync-results.js
