@@ -1,6 +1,6 @@
 # 🧠 BRAIN — Simulador da Copa do Mundo 2026
 > Documento vivo com todo o contexto, arquitetura, decisões técnicas e estado atual do projeto.
-> **Última atualização:** 12 de Junho de 2026
+> **Última atualização:** 12 de Junho de 2026 — Correções de Layout Responsivo (Mobile + Desktop)
 
 ---
 
@@ -612,3 +612,90 @@ Edição Local → git add . → git commit → git push origin main
 - `src/pages/palpite/[slug].astro` (Atualização da meta tag de imagem)
 - `src/styles/global.css` (Transições e estilização para o carousel)
 - `brain.md` (Atualização do documento vivo)
+
+---
+
+## Atualização — Correções de Layout Responsivo (Mobile + Desktop)
+
+**Data:** 12 de Junho de 2026
+**Status:** Implementado, commitado e publicado no GitHub (branch `main`).
+**Commits:**
+- `6c03df5` — fix: corrige layout responsivo no mobile e desktop
+- `d488ce5` — fix(mobile): restrutura layout de partidas em 2 linhas no mobile
+- `8914d86` — fix(bracket): compacta rounds para caber sem scroll horizontal no desktop
+
+---
+
+### Problema Identificado
+Após testes em dispositivos reais (mobile + desktop), foram identificados os seguintes defeitos visuais:
+
+1. **Nomes de seleções cortados** — times como "Bósnia e Herzegovina" e "África do Sul" apareciam com reticências ou sumiam completamente nas linhas de partida do mobile.
+2. **Barra de ações flutuante bloqueando conteúdo** — os três botões (Compartilhar, Baixar Imagem, Reiniciar) empilhavam verticalmente no mobile, cobrindo grande parte da tela.
+3. **Grid de grupos quebrando** — a grade de grupos usava `minmax(360px, 1fr)` sem proteção para telas menores, gerando overflow.
+4. **Tabela de classificação com overflow** — a tabela de standings sem `table-layout: fixed` estourava a largura do card em telas pequenas.
+5. **Bracket (Mata-Mata) com scroll horizontal no desktop** — cada coluna do chaveamento tinha `min-width: 260px` fixo e `flex-shrink: 0`, impossibilitando que as 5 colunas coubessem no container de 1300px.
+6. **Grid de badges estourando em telas <375px** — `minmax(110px, 1fr)` causava overflow na grade de conquistas do Bolão.
+7. **Formulários do Bolão espremidos** — inputs e botões não quebravam para a linha de baixo em telas muito pequenas.
+
+---
+
+### Correções Aplicadas
+
+#### 1. Layout 2-Linhas para Partidas no Mobile (`@media max-width: 480px`)
+- A linha de partida (`.match-row`) era 3 colunas fixas: `[Time Casa | Placar | Time Visitante]`
+- Agora usa `flex-wrap: wrap` com os times ocupando **50% cada** na 1ª linha
+- O placar (selects + botões ⚽) vai para a **2ª linha centralizado** com `order: 3`
+- O time da casa tem `flex-direction: row-reverse` para exibir `[🏁][Nome]` (bandeira à esquerda)
+- **Resultado:** nenhum nome de seleção é cortado — cada time tem metade da tela para seu nome
+
+```
+ANTES: [Nome Casa][🏁] [S]x[S] [🏁][Nome Visit...] ← corte!
+DEPOIS:
+  [🏁] Nome Casa          Nome Visitante [🏁]   ← linha 1 (50%+50%)
+            [Select] x [Select]                  ← linha 2 (centralizado)
+```
+
+#### 2. Bottom Bar Compacta no Mobile (Action Bar)
+- Antes: botões empilhavam em coluna, cobrindo ~200px da tela
+- Agora: `position: fixed; bottom: 0; left: 0; width: 100%` com fundo glassmorphism
+- Botões ficam em **linha horizontal** com `flex: 1` cada dentro da barra
+- Adicionado `padding-bottom: 7rem` no `body` e `container` para o conteúdo não sumir atrás da barra
+
+#### 3. Grid de Grupos Responsivo
+- Alterado de `minmax(360px, 1fr)` para `minmax(min(100%, 390px), 1fr)`
+- A função `min()` garante que em telas estreitas o mínimo não ultrapasse 100% da viewport
+
+#### 4. Tabela de Classificação com `table-layout: fixed`
+- Adicionado `table-layout: fixed` ao `.group-card .standing-table`
+- Colunas de dados (Pts, J, V, SG): largura fixa de `12%` cada
+- Coluna do nome da seleção: `52%` garantido — com ellipsis quando necessário
+
+#### 5. Bracket Compacto no Desktop (sem scroll horizontal)
+- **Antes:** `min-width: 260px` + `flex-shrink: 0` → forçava scroll com 5 colunas × 260px = 1300px+ (sem contar gaps)
+- **Depois:** `flex: 1 1 0` + `min-width: 180px` → as 5 colunas se dividem igualmente no container de 1300px
+- Gap entre rounds: reduzido de `2rem` para `0.75rem`
+- Gap entre matches: reduzido de `1.5rem` para `0.6rem`
+- Padding dos cards: `0.75rem` → `0.5rem 0.6rem`
+- Fonte do título (round label): `0.7rem` → `0.6rem` com `text-overflow: ellipsis`
+- Padding das linhas de time: `0.4rem 0.25rem` → `0.3rem 0.2rem`
+- Fonte do nome do time no bracket: `0.9rem` → `0.8rem`
+- Adicionado `min-width: 0; overflow: hidden` em `.bracket-team-info` para evitar nomes estourando o card
+
+#### 6. Grid de Badges Responsivo
+- Alterado de `minmax(110px, 1fr)` para `minmax(min(100%, 95px), 1fr)` no inline style
+- Evita que os cards de conquista ultrapassem a largura disponível em telas de 320–375px
+
+#### 7. Formulários do Bolão em Mobile
+- `.bolao-form-row` passa a `flex-direction: column` em telas < 480px
+- Botões dentro do row passam a `width: 100%` para ocupar a linha completa
+
+---
+
+### Arquivos Alterados
+- `src/styles/global.css` — todas as correções de CSS (media queries, bracket, grid, etc.)
+- `src/pages/index.astro` — grid de badges com `min()` no inline style
+
+### Decisões Técnicas Importantes
+- **Não foram alterados** quaisquer arquivos JavaScript/lógica do simulador — todas as correções são puramente CSS
+- A função CSS `min()` foi usada extensivamente para "proteger" valores mínimos em grids contra overflow, sem necessidade de media queries extras
+- No bracket, a troca de `flex-shrink: 0` para `flex: 1 1 0` permite que os rounds encolham proporcionalmente ao invés de forçar scroll — mantendo o scroll disponível em mobile (quando `min-width: 180px` não cabe)
