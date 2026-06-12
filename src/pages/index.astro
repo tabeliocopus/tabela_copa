@@ -200,8 +200,8 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
         <!-- Se não tiver cadastro ainda -->
         <div id="bolao-gate" class="bolao-gate glass-card">
           <div class="bolao-gate-icon">👥</div>
-          <h2>Mini-Bolão da Copa 2026</h2>
-          <p class="text-muted">Crie um grupo com amigos e vejam quem acerta mais! Primeiro, salve sua simulação clicando no botão <strong>Compartilhar</strong> para se cadastrar.</p>
+          <h2>Mini-Bolão do Brasil & Ranking Global</h2>
+          <p class="text-muted">Crie grupos com amigos para ver quem manda melhor nos jogos do <strong>Brasil</strong> e participe do Ranking Geral da Copa do Mundo! Primeiro, salve sua simulação clicando no botão <strong>Compartilhar</strong> para se cadastrar.</p>
           <button class="btn btn-primary" id="bolao-goto-share" style="max-width:340px; margin-top:1rem;">📢 Salvar minha Simulação primeiro</button>
         </div>
 
@@ -212,8 +212,8 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
           <div class="bolao-actions">
             <div class="glass-card bolao-action-card" id="card-criar">
               <div class="bolao-action-icon">✨</div>
-              <h3>Criar Novo Grupo</h3>
-              <p class="text-muted">Gere um código único e convide seus amigos para competir!</p>
+              <h3>Criar Bolão do Brasil</h3>
+              <p class="text-muted">Gere um código único e convide seus amigos para competir nos placares da Seleção Brasileira!</p>
               <div class="bolao-form-row">
                 <input type="text" id="bolao-group-name" class="form-input" placeholder="Nome do grupo (ex: Família Silva)" maxlength="40" />
                 <button class="btn btn-primary" id="bolao-create-btn" style="white-space:nowrap;">Criar Grupo</button>
@@ -265,7 +265,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
 
           <!-- Meus grupos -->
           <div id="bolao-my-groups" class="bolao-my-groups">
-            <h3 class="bolao-section-title">🏅 Meus Grupos</h3>
+            <h3 class="bolao-section-title">🏅 Meus Bolões do Brasil</h3>
             <div id="bolao-groups-list" class="bolao-groups-list">
               <p class="text-muted text-center" style="padding:2rem;">Você ainda não participa de nenhum grupo.<br/>Crie ou entre em um acima!</p>
             </div>
@@ -284,9 +284,8 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
                   <tr>
                     <th style="text-align:center; width:40px;">#</th>
                     <th class="align-left">Participante</th>
-                    <th>Simulação</th>
-                    <th>Entrou em</th>
-                    <th></th>
+                    <th>Ver Palpites</th>
+                    <th style="color: var(--color-accent);">Pontos (Em breve)</th>
                   </tr>
                 </thead>
                 <tbody id="bolao-leaderboard-body">
@@ -297,6 +296,18 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
             <div class="bolao-share-row">
               <button class="btn" id="bolao-copy-link-btn" style="max-width:360px; background: rgba(0,255,135,0.15); border: 1px solid var(--border-glass-active); color: var(--color-primary);">📋 Copiar Link de Convite</button>
             </div>
+          </div>
+
+          <!-- Card Ranking Global -->
+          <div class="glass-card bolao-action-card" style="margin-top: 1.5rem; max-width: 100%; background: linear-gradient(135deg, rgba(255,215,0,0.05), rgba(0,255,135,0.03)); border-color: rgba(255,215,0,0.2);">
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+              <div class="bolao-action-icon">🌍</div>
+              <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700;">Palpitão Geral da Copa</h3>
+            </div>
+            <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 1rem;">
+              Veja o Ranking Global com <strong>todos</strong> os palpiteiros do site, calculado pelos 72 jogos da Copa! Os pontos são atualizados conforme os resultados reais saem.
+            </p>
+            <a href="/bolao/ranking-global" class="btn btn-primary" style="display: inline-block; width: auto; font-size: 0.9rem; text-decoration: none;">🏆 Ver Ranking Global →</a>
           </div>
 
         </div>
@@ -1738,7 +1749,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
         const res = await fetch(cleanUrl + '/rest/v1/grupo_membros?grupo_id=eq.' + group.id + '&select=joined_at,leads(nome,url_compartilhamento)&order=joined_at.asc', { headers: { 'apikey': anonKey, 'Authorization': 'Bearer ' + anonKey } });
         const members = await res.json();
         if (!members || members.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="text-muted text-center" style="padding:1rem;">Nenhum participante ainda. Compartilhe o codigo!</td></tr>'; return; }
-        tbody.innerHTML = members.map((m, i) => { const lead = m.leads || {}; const date = new Date(m.joined_at).toLocaleDateString('pt-BR'); const medal = i===0?'1o':i===1?'2o':i===2?'3o':(i+1)+'o'; return '<tr><td style="text-align:center;font-weight:800;">' + medal + '</td><td class="align-left" style="font-weight:600;">' + (lead.nome||'Anonimo') + '</td><td style="text-align:center;">' + (lead.url_compartilhamento ? '<a href="' + lead.url_compartilhamento + '" target="_blank" style="color:var(--color-secondary);font-size:0.8rem;">Ver palpites</a>' : '-') + '</td><td style="text-align:center;font-size:0.8rem;color:var(--text-muted);">' + date + '</td><td></td></tr>'; }).join('');
+        tbody.innerHTML = members.map((m, i) => { const lead = m.leads || {}; const medal = i===0?'1º':i===1?'2º':i===2?'3º':(i+1)+'º'; return '<tr><td style="text-align:center;font-weight:800;">' + medal + '</td><td class="align-left" style="font-weight:600;">' + (lead.nome||'Anônimo') + '</td><td style="text-align:center;">' + (lead.url_compartilhamento ? '<a href="' + lead.url_compartilhamento + '" target="_blank" style="color:var(--color-secondary);font-size:0.8rem;">Ver Link</a>' : '-') + '</td><td style="text-align:center;font-weight:700;color:var(--color-accent);">0 pts</td></tr>'; }).join('');
       } catch(err) { tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted" style="padding:1rem;">Erro ao carregar.</td></tr>'; console.error(err); }
     }
     const bolaoBackBtn = document.getElementById('bolao-back-btn');

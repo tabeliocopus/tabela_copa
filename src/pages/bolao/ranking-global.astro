@@ -1,0 +1,335 @@
+---
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || '';
+const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
+
+// All 72 match IDs for full cup scoring
+const allMatchIds = [
+  'A_M1','A_M2','A_M3','A_M4','A_M5','A_M6',
+  'B_M1','B_M2','B_M3','B_M4','B_M5','B_M6',
+  'C_M1','C_M2','C_M3','C_M4','C_M5','C_M6',
+  'D_M1','D_M2','D_M3','D_M4','D_M5','D_M6',
+  'E_M1','E_M2','E_M3','E_M4','E_M5','E_M6',
+  'F_M1','F_M2','F_M3','F_M4','F_M5','F_M6',
+  'G_M1','G_M2','G_M3','G_M4','G_M5','G_M6',
+  'H_M1','H_M2','H_M3','H_M4','H_M5','H_M6',
+  'I_M1','I_M2','I_M3','I_M4','I_M5','I_M6',
+  'J_M1','J_M2','J_M3','J_M4','J_M5','J_M6',
+  'K_M1','K_M2','K_M3','K_M4','K_M5','K_M6',
+  'L_M1','L_M2','L_M3','L_M4','L_M5','L_M6',
+];
+
+const totalMatches = allMatchIds.length; // 72
+---
+
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Palpitão Geral da Copa 2026 | Ranking Global</title>
+  <meta name="description" content="Ranking global do Palpitão Geral. Veja quem está acertando mais os resultados da Copa do Mundo 2026!" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="stylesheet" href="/global.css" />
+  <style>
+    .page-header { text-align: center; padding: 2rem 0; }
+    .back-link { color: var(--color-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.4rem; margin-bottom: 1.5rem; }
+    .back-link:hover { color: var(--color-primary); }
+
+    .global-hero {
+      background: linear-gradient(135deg, rgba(255,215,0,0.07), rgba(0,255,135,0.04));
+      border: 1px solid rgba(255,215,0,0.2);
+      border-radius: 20px;
+      padding: 2.5rem 2rem;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .global-hero h1 { font-size: 2.2rem; font-weight: 800; background: linear-gradient(135deg, var(--color-accent), var(--color-primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0.5rem; }
+    .global-hero p { color: var(--text-muted); max-width: 560px; margin: 0 auto; }
+
+    .stats-bar { display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; margin: 1.5rem 0; }
+    .stat-item { text-align: center; }
+    .stat-number { font-size: 2rem; font-weight: 800; color: var(--color-primary); }
+    .stat-label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+
+    /* Points legend */
+    .points-legend { display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2rem; padding: 1rem 1.5rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border-glass); border-radius: 10px; }
+    .legend-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.82rem; }
+    .legend-badge { padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
+
+    /* Podium */
+    .podium { display: flex; justify-content: center; align-items: flex-end; gap: 1rem; margin-bottom: 2.5rem; padding: 0 1rem; }
+    .podium-step { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+    .podium-step.second { order: 0; }
+    .podium-step.first  { order: 1; }
+    .podium-step.third  { order: 2; }
+    .podium-avatar { border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem; flex-shrink: 0; }
+    .podium-step.first .podium-avatar { width: 70px; height: 70px; background: linear-gradient(135deg, #FFD700, #FFA000); font-size: 1.4rem; }
+    .podium-step.second .podium-avatar { width: 56px; height: 56px; background: linear-gradient(135deg, #C0C0C0, #888); }
+    .podium-step.third .podium-avatar { width: 50px; height: 50px; background: linear-gradient(135deg, #CD7F32, #8B4513); }
+    .podium-name { font-weight: 700; font-size: 0.85rem; text-align: center; max-width: 100px; }
+    .podium-pts { font-size: 0.8rem; color: var(--color-primary); font-weight: 700; }
+    .podium-block { border-radius: 8px 8px 0 0; width: 90px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.2rem; }
+    .podium-step.first .podium-block  { height: 90px; background: linear-gradient(to top, rgba(255,215,0,0.2), rgba(255,215,0,0.05)); border: 1px solid rgba(255,215,0,0.3); }
+    .podium-step.second .podium-block { height: 70px; background: linear-gradient(to top, rgba(192,192,192,0.2), transparent); border: 1px solid rgba(192,192,192,0.2); }
+    .podium-step.third .podium-block  { height: 55px; background: linear-gradient(to top, rgba(205,127,50,0.2), transparent); border: 1px solid rgba(205,127,50,0.2); }
+
+    /* Ranking full table */
+    .ranking-card { overflow: hidden; }
+    .ranking-table-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-glass); display: flex; align-items: center; gap: 0.75rem; }
+    .ranking-table-header h2 { font-size: 1.1rem; font-weight: 700; }
+    .ranking-table { width: 100%; border-collapse: collapse; }
+    .ranking-table th { padding: 0.65rem 1rem; text-align: left; font-size: 0.72rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid var(--border-glass); }
+    .ranking-table th.center { text-align: center; }
+    .ranking-table td { padding: 0.85rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.02); }
+    .ranking-table td.center { text-align: center; }
+    .rank-row-top { background: rgba(255,215,0,0.03); }
+
+    .progress-bar-wrap { width: 80px; height: 6px; background: rgba(255,255,255,0.08); border-radius: 99px; overflow: hidden; display: inline-block; vertical-align: middle; margin-left: 6px; }
+    .progress-bar-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--color-primary), var(--color-secondary)); }
+
+    .search-box { display: flex; gap: 0.75rem; align-items: center; margin-bottom: 1.5rem; }
+    .search-input { flex: 1; max-width: 320px; padding: 0.65rem 1rem; background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass); border-radius: 8px; color: var(--text-main); font-family: var(--font-sans); font-size: 0.9rem; }
+    .search-input:focus { outline: none; border-color: var(--color-primary); }
+
+    .my-rank-highlight { background: rgba(0,255,135,0.05) !important; border-left: 3px solid var(--color-primary); }
+    .empty-state { text-align: center; padding: 4rem; color: var(--text-muted); }
+
+    @media (max-width: 640px) {
+      .ranking-table th:nth-child(5), .ranking-table td:nth-child(5) { display: none; }
+      .podium { gap: 0.5rem; }
+      .podium-block { width: 70px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <a href="/" class="back-link">← Voltar para o Simulador</a>
+    </div>
+
+    <!-- Hero -->
+    <div class="global-hero">
+      <div style="font-size: 3rem; margin-bottom: 0.75rem;">🌍🏆</div>
+      <h1>Palpitão Geral da Copa 2026</h1>
+      <p>Ranking global com <strong>todos os palpiteiros</strong> do site. Pontos calculados com base nos <strong>72 jogos</strong> da Copa do Mundo. Quem acerta mais, leva a glória!</p>
+      <div class="stats-bar">
+        <div class="stat-item">
+          <div class="stat-number" id="total-players">—</div>
+          <div class="stat-label">Palpiteiros</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number" id="total-games-played">0 / {totalMatches}</div>
+          <div class="stat-label">Jogos Realizados</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number" id="top-score">—</div>
+          <div class="stat-label">Maior Pontuação</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scoring legend -->
+    <div class="points-legend">
+      <strong style="color: var(--text-main); font-size: 0.85rem;">Sistema de Pontuação:</strong>
+      <div class="legend-item"><span class="legend-badge" style="background:rgba(0,255,135,0.2);color:var(--color-primary);">⭐ 5 pts</span> Placar exato</div>
+      <div class="legend-item"><span class="legend-badge" style="background:rgba(96,165,250,0.2);color:var(--color-secondary);">✓ 2 pts</span> Acertou o vencedor</div>
+      <div class="legend-item"><span class="legend-badge" style="background:rgba(255,71,87,0.15);color:var(--color-danger);">✗ 0 pts</span> Errou</div>
+    </div>
+
+    <!-- Podium (top 3) -->
+    <div class="podium" id="podium-section" style="display:none;">
+      <div class="podium-step second" id="podium-2nd">
+        <div class="podium-avatar" id="p2-avatar">?</div>
+        <div class="podium-name" id="p2-name">—</div>
+        <div class="podium-pts" id="p2-pts">0 pts</div>
+        <div class="podium-block">🥈</div>
+      </div>
+      <div class="podium-step first" id="podium-1st">
+        <div class="podium-avatar" id="p1-avatar">?</div>
+        <div class="podium-name" id="p1-name">—</div>
+        <div class="podium-pts" id="p1-pts">0 pts</div>
+        <div class="podium-block">🥇</div>
+      </div>
+      <div class="podium-step third" id="podium-3rd">
+        <div class="podium-avatar" id="p3-avatar">?</div>
+        <div class="podium-name" id="p3-name">—</div>
+        <div class="podium-pts" id="p3-pts">0 pts</div>
+        <div class="podium-block">🥉</div>
+      </div>
+    </div>
+
+    <!-- Search -->
+    <div class="search-box">
+      <input class="search-input" id="search-input" type="text" placeholder="🔎 Buscar participante..." />
+    </div>
+
+    <!-- Full Ranking -->
+    <div class="glass-card ranking-card" id="ranking-card">
+      <div class="ranking-table-header">
+        <span style="font-size:1.3rem;">📊</span>
+        <h2>Ranking Completo</h2>
+      </div>
+      <div id="ranking-content">
+        <div style="text-align:center;padding:3rem;color:var(--text-muted);">Carregando ranking global...</div>
+      </div>
+    </div>
+  </div>
+
+  <script is:inline define:vars={{ supabaseUrl, supabaseAnonKey, allMatchIds, totalMatches }}>
+    const getBaseUrl = () => (supabaseUrl || '').trim().replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
+
+    async function req(endpoint) {
+      const url = getBaseUrl();
+      if (!url || !supabaseAnonKey) return null;
+      try {
+        const r = await fetch(`${url}/rest/v1/${endpoint}`, {
+          headers: { 'apikey': supabaseAnonKey, 'Authorization': `Bearer ${supabaseAnonKey}` }
+        });
+        return r.ok ? r.json() : null;
+      } catch(e) { return null; }
+    }
+
+    function getLocalLeadInfo() {
+      try { return JSON.parse(localStorage.getItem('sim_lead_info') || 'null'); } catch(e) { return null; }
+    }
+
+    function calcPoints(ph, pa, rh, ra) {
+      if (rh === null || ra === null) return null;
+      if (ph === null || pa === null) return 0;
+      if (ph === rh && pa === ra) return 5;
+      if (Math.sign(ph - pa) === Math.sign(rh - ra)) return 2;
+      return 0;
+    }
+
+    function parsePalpites(simData) {
+      const map = {};
+      if (!simData) return map;
+      try {
+        atob(simData).split('_').forEach(part => {
+          if (!part) return;
+          const [id, home, away] = part.split('-');
+          map[id] = { home: parseInt(home, 10), away: parseInt(away, 10) };
+        });
+      } catch(e) {}
+      return map;
+    }
+
+    let allData = [];
+    let myLeadId = null;
+
+    function renderTable(data) {
+      const container = document.getElementById('ranking-content');
+      if (!data || data.length === 0) {
+        container.innerHTML = `<div class="empty-state"><p>Nenhum palpite registrado ainda.</p><p style="font-size:0.85rem;margin-top:0.5rem;">Seja o primeiro! Preencha sua simulação e clique em Compartilhar.</p><a href="/" style="color:var(--color-primary);font-weight:700;text-decoration:none;">Ir Simular →</a></div>`;
+        return;
+      }
+
+      const maxPts = data[0]?.totalPts || 1;
+      const rows = data.map((p, i) => {
+        const isMe = p.id === myLeadId;
+        const pct = Math.round((p.totalPts / Math.max(maxPts, 1)) * 100);
+        const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}º`;
+        const rowClass = isMe ? 'my-rank-highlight' : (i < 3 ? 'rank-row-top' : '');
+        return `<tr class="${rowClass}">
+          <td class="center" style="font-weight:800;font-size:0.95rem;">${medal}</td>
+          <td style="font-weight:600;">${p.nome || 'Anônimo'}${isMe ? ' <span style="color:var(--color-primary);font-size:0.75rem;">(você)</span>' : ''}</td>
+          <td class="center" style="font-weight:800;color:var(--color-primary);font-size:1rem;">${p.totalPts}</td>
+          <td class="center" style="font-size:0.8rem;color:var(--text-muted);">${p.exactScores} exact / ${p.correctWinner} win</td>
+          <td class="center">
+            <span style="font-size:0.8rem;color:var(--text-muted);">${pct}%</span>
+            <span class="progress-bar-wrap"><span class="progress-bar-fill" style="width:${pct}%"></span></span>
+          </td>
+        </tr>`;
+      }).join('');
+
+      container.innerHTML = `
+        <table class="ranking-table">
+          <thead>
+            <tr>
+              <th class="center">#</th>
+              <th>Nome</th>
+              <th class="center">Pts</th>
+              <th class="center">Acertos</th>
+              <th class="center">Aproveit.</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>`;
+    }
+
+    function renderPodium(data) {
+      if (data.length < 1) return;
+      document.getElementById('podium-section').style.display = 'flex';
+      const setStep = (sel, d) => {
+        if (!d) return document.getElementById(sel).parentElement.style.display = 'none';
+        document.getElementById(sel + '-avatar').textContent = (d.nome || 'A')[0].toUpperCase();
+        document.getElementById(sel + '-name').textContent = d.nome || 'Anônimo';
+        document.getElementById(sel + '-pts').textContent = d.totalPts + ' pts';
+      };
+      // podium: 2nd, 1st, 3rd order in DOM handled by CSS order
+      setStep('p1', data[0]);
+      setStep('p2', data[1]);
+      setStep('p3', data[2]);
+    }
+
+    async function init() {
+      const localInfo = getLocalLeadInfo();
+      if (localInfo?.leadId) myLeadId = localInfo.leadId;
+
+      // Load all real results
+      const results = await req(`resultados_reais?select=match_id,home_score,away_score`);
+      const realMap = {};
+      let gamesPlayed = 0;
+      if (results) {
+        results.forEach(r => {
+          if (r.home_score !== null && r.away_score !== null) {
+            realMap[r.match_id] = { homeScore: r.home_score, awayScore: r.away_score };
+            gamesPlayed++;
+          }
+        });
+      }
+      document.getElementById('total-games-played').textContent = `${gamesPlayed} / ${totalMatches}`;
+
+      // Load all leads with sim_data (paginated, max 1000)
+      const leads = await req(`leads?select=id,nome,sim_data&sim_data=not.is.null&order=created_at.desc&limit=500`);
+
+      if (!leads || leads.length === 0) {
+        document.getElementById('total-players').textContent = '0';
+        renderTable([]);
+        return;
+      }
+
+      document.getElementById('total-players').textContent = leads.length;
+
+      // Calculate points per lead
+      allData = leads.map(lead => {
+        const palpites = parsePalpites(lead.sim_data);
+        let totalPts = 0, exactScores = 0, correctWinner = 0;
+
+        allMatchIds.forEach(mid => {
+          const p = palpites[mid];
+          const r = realMap[mid];
+          const pts = calcPoints(p?.home ?? null, p?.away ?? null, r?.homeScore ?? null, r?.awayScore ?? null);
+          if (pts === 5) { totalPts += 5; exactScores++; }
+          else if (pts === 2) { totalPts += 2; correctWinner++; }
+        });
+
+        return { ...lead, totalPts, exactScores, correctWinner };
+      }).sort((a, b) => b.totalPts - a.totalPts);
+
+      document.getElementById('top-score').textContent = allData[0]?.totalPts + ' pts' || '—';
+
+      renderPodium(allData);
+      renderTable(allData);
+
+      // Search filter
+      document.getElementById('search-input').addEventListener('input', (e) => {
+        const q = e.target.value.toLowerCase().trim();
+        const filtered = q ? allData.filter(p => (p.nome || '').toLowerCase().includes(q)) : allData;
+        renderTable(filtered);
+      });
+    }
+
+    init();
+  </script>
+</body>
+</html>
