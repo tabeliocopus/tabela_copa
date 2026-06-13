@@ -699,3 +699,16 @@ DEPOIS:
 - **Não foram alterados** quaisquer arquivos JavaScript/lógica do simulador — todas as correções são puramente CSS
 - A função CSS `min()` foi usada extensivamente para "proteger" valores mínimos em grids contra overflow, sem necessidade de media queries extras
 - No bracket, a troca de `flex-shrink: 0` para `flex: 1 1 0` permite que os rounds encolham proporcionalmente ao invés de forçar scroll — mantendo o scroll disponível em mobile (quando `min-width: 180px` não cabe)
+
+---
+
+## Atualização — Integração com Analytics (PostHog)
+
+**Status:** Implementado no código-fonte.
+
+### O que foi feito:
+- Adicionado o script base do **PostHog** (`posthog-js`) no `<head>` global do projeto (`src/layouts/Layout.astro`).
+- A configuração atual rastreia automaticamente visualizações de página, cliques, navegação do usuário e gravações de sessão de forma totalmente anônima ou vinculada caso o usuário se identifique no app.
+
+### Arquivos Modificados:
+- `src/layouts/Layout.astro`
