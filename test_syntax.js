@@ -1,412 +1,4 @@
----
-import Layout from '../layouts/Layout.astro';
-import { teams, groups, generateMatches, validateWorldCupData } from '../data/worldCupData';
 
-const initialMatches = generateMatches();
-validateWorldCupData(); // Run build-time self-audit validation
-
-// Supabase environment variables from server environment
-const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
----
-
-<Layout title="Simulador da Copa do Mundo FIFA 2026" description="Simule os grupos, o mata-mata, os artilheiros e monte sua própria Copa do Mundo FIFA 2026.">
-  <main class="container">
-    
-    <!-- HEADER -->
-    <header>
-      <img src="/logo-copa.png" alt="FIFA World Cup 2026 Logo" class="official-logo" style="width: 140px; height: auto; margin: 0 auto 1.5rem auto; display: block;" />
-      <div class="logo-badge">United States • Canada • Mexico 2026</div>
-      <h1>SIMULADOR DA COPA DO MUNDO 2026</h1>
-      <p class="subtitle">Simule a fase de grupos, defina a classificação dos melhores terceiros colocados e monte o chaveamento do mata-mata até a grande final!</p>
-      
-      <!-- NAV TABS -->
-      <div class="tabs-container">
-        <button class="tab-btn active" data-tab="fase-grupos">
-          ⚽ Fase de Grupos
-        </button>
-        <button class="tab-btn" data-tab="mata-mata">
-          🏆 Mata-Mata
-        </button>
-        <button class="tab-btn" data-tab="artilharia">
-          👟 Artilharia
-        </button>
-        <button class="tab-btn" data-tab="bolao">
-          👥 Bolão
-        </button>
-      </div>
-    </header>
-
-    <!-- HOW IT WORKS INSTRUCTIONS -->
-    <div class="instructions-card glass-card expanded" id="instructions-container">
-      <div class="instructions-header" id="toggle-instructions">
-        <span>💡 Como funciona este Simulador?</span>
-        <span class="toggle-icon">▼</span>
-      </div>
-      <div class="instructions-content active" id="instructions-body">
-        <div class="steps-grid">
-          <div class="step-item">
-            <div class="step-number">1</div>
-            <p>
-              <strong>Preencha os Placares</strong>
-              Preencha os gols dos jogos nos grupos. A classificação e os classificados do mata-mata atualizam na hora!
-            </p>
-          </div>
-          <div class="step-item">
-            <div class="step-number">2</div>
-            <p>
-              <strong>Escolha os Artilheiros</strong>
-              Clique no ícone de bola de futebol ⚽ ao lado do placar para cadastrar quem fez os gols e ver a tabela de Artilharia.
-            </p>
-          </div>
-          <div class="step-item">
-            <div class="step-number">3</div>
-            <p>
-              <strong>Simule o Mata-Mata</strong>
-              Na aba <strong>Mata-Mata</strong>, clique em cima da bandeira da seleção que você deseja fazer avançar até definir o grande Campeão!
-            </p>
-          </div>
-          <div class="step-item">
-            <div class="step-number">4</div>
-            <p>
-              <strong>Salve e Baixe</strong>
-              Ao final, clique em "Baixar Imagem" para salvar um print do seu chaveamento ou em "Compartilhar" para enviar aos amigos.
-            </p>
-          </div>
-        </div>
-        
-        <div class="auto-fill-box" style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-          <button class="btn" id="auto-fill-btn">⚡ Simulação Rápida (Preencher placares aleatórios)</button>
-          <button class="btn" id="reset-sim-btn">🗑️ Limpar Palpites</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- MONETIZATION BANNER (Removed) -->
-
-    <!-- VIEW 1: FASE DE GRUPOS -->
-    <section id="fase-grupos" class="view-panel active">
-      <div class="groups-grid">
-        {groups.map(groupLetter => (
-          <div class="glass-card group-card" data-group={groupLetter}>
-            <div class="group-title">
-              Grupo {groupLetter}
-              <span class="text-xs text-muted">Copa 2026</span>
-            </div>
-            
-            <!-- Standings Table -->
-            <table class="standing-table">
-              <thead>
-                <tr>
-                  <th class="align-left">Sel.</th>
-                  <th>P</th>
-                  <th>J</th>
-                  <th>V</th>
-                  <th>SG</th>
-                </tr>
-              </thead>
-              <tbody class="group-standings-body" id={`standings-${groupLetter}`}>
-                <!-- Populated via JS -->
-              </tbody>
-            </table>
-
-            <!-- Group Matches -->
-            <div class="matches-list" id={`matches-${groupLetter}`}>
-              <!-- Populated via JS -->
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
-
-    <!-- VIEW 2: MATA-MATA -->
-    <section id="mata-mata" class="view-panel">
-      <div class="bracket-wrapper" id="bracket-container">
-        
-        <!-- Round of 32 -->
-        <div class="bracket-round" id="round-32">
-          <h3 class="text-center text-muted text-xs font-bold uppercase tracking-wider mb-2">Dezesseis-avos (32)</h3>
-          <!-- Populated via JS -->
-        </div>
-
-        <!-- Round of 16 -->
-        <div class="bracket-round" id="round-16">
-          <h3 class="text-center text-muted text-xs font-bold uppercase tracking-wider mb-2">Oitavas de Final</h3>
-          <!-- Populated via JS -->
-        </div>
-
-        <!-- Quarter Finals -->
-        <div class="bracket-round" id="round-8">
-          <h3 class="text-center text-muted text-xs font-bold uppercase tracking-wider mb-2">Quartas de Final</h3>
-          <!-- Populated via JS -->
-        </div>
-
-        <!-- Semi Finals -->
-        <div class="bracket-round" id="round-4">
-          <h3 class="text-center text-muted text-xs font-bold uppercase tracking-wider mb-2">Semifinais</h3>
-          <!-- Populated via JS -->
-        </div>
-
-        <!-- Final -->
-        <div class="bracket-round" id="round-2">
-          <h3 class="text-center text-muted text-xs font-bold uppercase tracking-wider mb-2">Grande Final</h3>
-          <!-- Populated via JS -->
-        </div>
-
-      </div>
-
-      <!-- Champion Display Banner -->
-      <div class="champion-banner" id="champion-display">
-        <h3 class="text-xs text-muted font-bold tracking-widest uppercase">👑 Campeão do Mundo 2026 👑</h3>
-        <img src="" alt="Bandeira do Campeão" class="champion-flag" id="champion-flag-img" />
-        <div class="champion-name" id="champion-team-name">Brasil</div>
-        <p class="text-muted text-sm mt-2">Parabéns! Sua simulação da Copa do Mundo foi concluída com sucesso.</p>
-      </div>
-    </section>
-
-    <!-- VIEW 3: ARTILHARIA -->
-    <section id="artilharia" class="view-panel">
-      <div class="glass-card" style="max-width: 600px; margin: 0 auto; padding: 2rem;">
-        <h2 class="text-center mb-6" style="color: var(--color-primary); font-weight: 700;">👟 Chuteira de Ouro (Artilharia)</h2>
-        <table class="standing-table" style="font-size: 1rem;">
-          <thead>
-            <tr>
-              <th class="align-left">Jogador</th>
-              <th class="align-left">Seleção</th>
-              <th>Gols</th>
-            </tr>
-          </thead>
-          <tbody id="artilharia-body">
-            <!-- Populated via JS -->
-          </tbody>
-        </table>
-        <div id="no-scorers-msg" class="text-center text-muted py-6">
-          Nenhum gol marcado ainda. Digite placares nos jogos e clique no ícone de bola de futebol ⚽ ao lado do placar para cadastrar os gols!
-        </div>
-      </div>
-    </section>
-
-    <!-- VIEW 4: BOLÃO -->
-    <section id="bolao" class="view-panel">
-      <div class="bolao-wrapper">
-
-        <!-- Se não tiver cadastro ainda -->
-        <div id="bolao-gate" class="bolao-gate glass-card">
-          <div class="bolao-gate-icon">👥</div>
-          <h2>Mini-Bolão do Brasil & Ranking Global</h2>
-          <p class="text-muted">Crie grupos com amigos para ver quem manda melhor nos jogos do <strong>Brasil</strong> e participe do Ranking Geral da Copa do Mundo! Primeiro, salve sua simulação clicando no botão <strong>Compartilhar</strong> para se cadastrar.</p>
-          <button class="btn btn-primary" id="bolao-goto-share" style="max-width:340px; margin-top:1rem;">📢 Salvar minha Simulação primeiro</button>
-        </div>
-
-        <!-- Painel principal do bolão (visível após cadastro) -->
-        <div id="bolao-panel" style="display:none;">
-
-          <!-- Ações do grupo -->
-          <div class="bolao-actions">
-            <div class="glass-card bolao-action-card" id="card-criar">
-              <div class="bolao-action-icon">✨</div>
-              <h3>Criar Bolão do Brasil</h3>
-              <p class="text-muted">Gere um código único e convide seus amigos para competir nos placares da Seleção Brasileira!</p>
-              <div class="bolao-form-row">
-                <input type="text" id="bolao-group-name" class="form-input" placeholder="Nome do grupo (ex: Família Silva)" maxlength="40" />
-                <button class="btn btn-primary" id="bolao-create-btn" style="white-space:nowrap;">Criar Grupo</button>
-              </div>
-            </div>
-
-            <div class="glass-card bolao-action-card" id="card-entrar">
-              <div class="bolao-action-icon">🔑</div>
-              <h3>Entrar em um Grupo</h3>
-              <p class="text-muted">Tem um código de um amigo? Cole aqui e entre na disputa!</p>
-              <div class="bolao-form-row">
-                <input type="text" id="bolao-join-code" class="form-input" placeholder="Código (ex: COPA-5984)" maxlength="10" style="text-transform:uppercase;" />
-                <button class="btn btn-primary" id="bolao-join-btn" style="white-space:nowrap;">Entrar</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Indicações Card -->
-          <div class="glass-card bolao-action-card" id="card-indicacao" style="margin-top: 1.5rem; display: block; max-width: 100%;">
-            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
-              <div class="bolao-action-icon">📢</div>
-              <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--text-main);">Programa de Indicações</h3>
-            </div>
-            <p class="text-muted" style="margin-bottom: 0.75rem; font-size: 0.9rem;">
-              Convide seus amigos para palpitar! Cada amigo que se cadastrar pelo seu link garante **+15 pontos** para você e **+15 pontos** para ele no Ranking Global!
-            </p>
-            <div class="bolao-form-row">
-              <input type="text" id="ref-link-input" class="form-input" readonly value="" style="background: rgba(0,0,0,0.2);" />
-              <button class="btn btn-primary" id="ref-copy-btn" style="white-space:nowrap;">📋 Copiar Link</button>
-            </div>
-            <p class="text-xs text-muted" style="margin-top: 0.5rem; font-weight: 600;">
-              Seu Código de Indicação: <span id="ref-code-display" style="color:var(--color-primary); font-family: monospace; font-size: 0.95rem; letter-spacing: 0.05em;"></span>
-            </p>
-          </div>
-
-          <!-- Card de Conquistas/Badges -->
-          <div class="glass-card bolao-action-card" id="card-conquistas" style="margin-top: 1.5rem; display: block; max-width: 100%;">
-            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
-              <div class="bolao-action-icon">🏅</div>
-              <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--text-main);">Minhas Conquistas</h3>
-            </div>
-            <p class="text-muted" style="margin-bottom: 1rem; font-size: 0.9rem;">
-              Complete desafios para liberar insígnias exclusivas e subir no Ranking Global!
-            </p>
-            <div class="badges-grid" id="user-badges-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 95px), 1fr)); gap: 0.75rem;">
-              <!-- Badges loaded dynamically -->
-            </div>
-          </div>
-
-          <!-- Meus grupos -->
-          <div id="bolao-my-groups" class="bolao-my-groups">
-            <h3 class="bolao-section-title">🏅 Meus Bolões do Brasil</h3>
-            <div id="bolao-groups-list" class="bolao-groups-list">
-              <p class="text-muted text-center" style="padding:2rem;">Você ainda não participa de nenhum grupo.<br/>Crie ou entre em um acima!</p>
-            </div>
-          </div>
-
-          <!-- Leaderboard do grupo selecionado -->
-          <div id="bolao-leaderboard-section" style="display:none;">
-            <div class="bolao-leaderboard-header">
-              <button id="bolao-back-btn" class="bolao-back-btn">← Voltar</button>
-              <h3 id="bolao-leaderboard-title">Ranking do Grupo</h3>
-              <div class="bolao-code-badge" id="bolao-leaderboard-code"></div>
-            </div>
-            <div class="glass-card bolao-leaderboard">
-              <table class="standing-table" style="font-size:1rem;">
-                <thead>
-                  <tr>
-                    <th style="text-align:center; width:40px;">#</th>
-                    <th class="align-left">Participante</th>
-                    <th>Ver Palpites</th>
-                    <th style="color: var(--color-accent);">Pontos (Em breve)</th>
-                  </tr>
-                </thead>
-                <tbody id="bolao-leaderboard-body">
-                  <!-- Populated via JS -->
-                </tbody>
-              </table>
-            </div>
-            <div class="bolao-share-row">
-              <button class="btn" id="bolao-copy-link-btn" style="max-width:360px; background: rgba(0,255,135,0.15); border: 1px solid var(--border-glass-active); color: var(--color-primary);">📋 Copiar Link de Convite</button>
-            </div>
-          </div>
-
-          <!-- Card Ranking Global -->
-          <div class="glass-card bolao-action-card" style="margin-top: 1.5rem; max-width: 100%; background: linear-gradient(135deg, rgba(255,215,0,0.05), rgba(0,255,135,0.03)); border-color: rgba(255,215,0,0.2);">
-            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
-              <div class="bolao-action-icon">🌍</div>
-              <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700;">Palpitão Geral da Copa</h3>
-            </div>
-            <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 1rem;">
-              Veja o Ranking Global com <strong>todos</strong> os palpiteiros do site, calculado pelos 72 jogos da Copa! Os pontos são atualizados conforme os resultados reais saem.
-            </p>
-            <a href="/bolao/ranking-global" class="btn btn-primary" style="display: inline-block; width: auto; font-size: 0.9rem; text-decoration: none;">🏆 Ver Ranking Global →</a>
-          </div>
-
-        </div>
-      </div>
-    </section>
-
-    <!-- ACTION FLOATING BAR -->
-    <div class="action-bar">
-      <button class="action-btn" id="share-btn">
-        <span>📢 Compartilhar</span>
-      </button>
-      <button class="action-btn secondary-action" id="download-btn">
-        <span>🖼️ Baixar Imagem</span>
-      </button>
-      <button class="action-btn secondary-action" id="reset-btn">
-        <span>🔄 Reiniciar</span>
-      </button>
-    </div>
-
-    <!-- MODAL 1: LEAD CAPTURE (CADASTRO) -->
-    <div class="modal-overlay" id="lead-modal">
-      <div class="glass-card modal-content">
-        <button class="close-modal-btn" id="close-lead-modal">&times;</button>
-        <h2 style="font-weight: 800; margin-bottom: 0.5rem; text-align: center; color: var(--color-primary);">QUASE LÁ!</h2>
-        <p class="text-muted text-center text-sm mb-6">Cadastre-se rapidamente para salvar sua simulação, gerar seu link único de compartilhamento e receber atualizações!</p>
-        
-        <form id="lead-form">
-          <div class="form-group">
-            <label class="form-label" for="lead-name">Nome Completo</label>
-            <input type="text" id="lead-name" class="form-input" placeholder="Seu nome" required />
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="lead-email">E-mail</label>
-            <input type="email" id="lead-email" class="form-input" placeholder="seu@email.com" required />
-          </div>
-          <button type="submit" class="btn btn-primary mt-2">Salvar & Gerar Link ➜</button>
-        </form>
-      </div>
-    </div>
-
-    <!-- MODAL 2: SELECT SCORER (ARTILHARIA SELECTION) -->
-    <div class="modal-overlay" id="scorer-modal">
-      <div class="glass-card modal-content" style="max-width: 400px;">
-        <button class="close-modal-btn" id="close-scorer-modal">&times;</button>
-        <h3 style="font-weight: 700; margin-bottom: 1rem; text-align: center; color: var(--color-secondary);" id="scorer-modal-title">Quem marcou o gol?</h3>
-        
-        <div class="squad-modal-grid" id="scorer-players-list">
-          <!-- Populated via JS -->
-        </div>
-      </div>
-    </div>
-
-    <!-- MODAL 3: SQUAD DETAILS (ELENCO DETAILS) -->
-    <div class="modal-overlay" id="squad-modal">
-      <div class="glass-card modal-content" style="max-width: 450px;">
-        <button class="close-modal-btn" id="close-squad-modal">&times;</button>
-        <h3 style="font-weight: 800; margin-bottom: 1rem; text-align: center; color: var(--color-primary);" id="squad-modal-title">Elenco</h3>
-        
-        <div class="squad-modal-grid" id="squad-players-list">
-          <!-- Populated via JS -->
-        </div>
-      </div>
-    </div>
-
-    <!-- MODAL 4: WELCOME MANUAL (CAROUSEL) -->
-    <div class="modal-overlay" id="welcome-modal">
-      <div class="glass-card modal-content" style="max-width: 450px; padding: 0; overflow: hidden; display: flex; flex-direction: column;">
-        
-        <div class="carousel-container" id="welcome-carousel">
-          <!-- Slide 1 -->
-          <div class="carousel-slide active" style="padding: 2.5rem 1.5rem; text-align: center;">
-            <div style="font-size: 4rem; margin-bottom: 1rem; animation: float 3s ease-in-out infinite;">🎮</div>
-            <h2 style="color: var(--color-primary); margin-bottom: 1rem; font-weight: 800; font-size: 1.5rem;">Simule a Copa</h2>
-            <p class="text-muted" style="line-height: 1.6;">Preencha os placares dos jogos. A fase de mata-mata se desenha automaticamente até a grande final com base nos seus palpites!</p>
-          </div>
-          <!-- Slide 2 -->
-          <div class="carousel-slide" style="padding: 2.5rem 1.5rem; text-align: center; display: none;">
-            <div style="font-size: 4rem; margin-bottom: 1rem; animation: float 3s ease-in-out infinite;">🏆</div>
-            <h2 style="color: var(--color-secondary); margin-bottom: 1rem; font-weight: 800; font-size: 1.5rem;">Bolão com Amigos</h2>
-            <p class="text-muted" style="line-height: 1.6;">Crie grupos privados para os jogos do Brasil ou compita no Palpitão Geral da Copa com todo mundo!</p>
-          </div>
-          <!-- Slide 3 -->
-          <div class="carousel-slide" style="padding: 2.5rem 1.5rem; text-align: center; display: none;">
-            <div style="font-size: 4rem; margin-bottom: 1rem; animation: float 3s ease-in-out infinite;">⚡</div>
-            <h2 style="color: #00ff87; margin-bottom: 1rem; font-weight: 800; font-size: 1.5rem;">Placares Oficiais</h2>
-            <p class="text-muted" style="line-height: 1.6;">Não se preocupe em atualizar! Nossos robôs travam os placares reais assim que o jogo oficial acaba.</p>
-          </div>
-        </div>
-
-        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1.2rem 2rem; background: rgba(0,0,0,0.3); border-top: 1px solid var(--border-glass);">
-          <div class="carousel-dots" id="welcome-dots">
-            <span class="dot active"></span><span class="dot"></span><span class="dot"></span>
-          </div>
-          <button class="btn btn-primary" id="welcome-next-btn" style="width: auto; padding: 0.5rem 1.5rem;">Próximo ➔</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- FOOTER -->
-    <footer>
-      <p>&copy; 2026 Simulador da Copa do Mundo 2026. Desenvolvido por <a href="https://github.com" target="_blank">Lucro Ninja</a>.</p>
-    </footer>
-  </main>
-
-  <!-- CLIENT-SIDE LOGIC -->
-  <script is:inline define:vars={{ initialMatches, teams, groups, supabaseUrl, supabaseAnonKey }}>
     // We pass JSON variables safely from Astro metadata to browser JS
     let matches = JSON.parse(JSON.stringify(initialMatches));
     let scorersDb = {}; // { "Cristiano Ronaldo": { goals: 2, teamCode: "pt", teamName: "Portugal" } }
@@ -474,26 +66,6 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
           matchCard.className = 'match-card';
           
           if (match.isFinished) {
-            let feedbackHtml = '';
-            if (match.userHomeScore !== undefined && match.userHomeScore !== null && match.userAwayScore !== undefined && match.userAwayScore !== null) {
-              const uHome = parseInt(match.userHomeScore);
-              const uAway = parseInt(match.userAwayScore);
-              const rHome = parseInt(match.homeScore);
-              const rAway = parseInt(match.awayScore);
-              
-              if (uHome === rHome && uAway === rAway) {
-                feedbackHtml = `<div style="font-size: 0.75rem; color: var(--bg-main); font-weight: bold; text-align: center; margin-top: 0.75rem; background: var(--color-primary); border-radius: 4px; padding: 4px;">✅ Na mosca! Você cravou ${uHome}x${uAway}</div>`;
-              } else if (
-                (uHome > uAway && rHome > rAway) ||
-                (uHome < uAway && rHome < rAway) ||
-                (uHome === uAway && rHome === rAway)
-              ) {
-                feedbackHtml = `<div style="font-size: 0.75rem; color: var(--bg-main); font-weight: bold; text-align: center; margin-top: 0.75rem; background: var(--color-accent); border-radius: 4px; padding: 4px;">👍 Quase! Acertou o vencedor (Seu palpite: ${uHome}x${uAway})</div>`;
-              } else {
-                feedbackHtml = `<div style="font-size: 0.75rem; color: white; font-weight: bold; text-align: center; margin-top: 0.75rem; background: var(--color-danger); border-radius: 4px; padding: 4px;">❌ Zebra! Seu palpite era ${uHome}x${uAway}</div>`;
-              }
-            }
-
             matchCard.innerHTML = `
               <div class="match-datetime">📅 ${match.datetime || ''} <span style="color: var(--color-primary); font-weight: bold; font-size: 0.75rem; margin-left: 0.5rem; border: 1px solid var(--color-primary); padding: 2px 6px; border-radius: 10px; background: rgba(0,255,135,0.1);">✅ Oficial</span></div>
               <div class="match-venue" style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-align: center;">🏟️ ${match.stadium || ''}, ${match.city || ''}</div>
@@ -512,7 +84,6 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
                   <span class="team-name" data-team-id="${match.awayId}">${awayTeam.name}</span>
                 </div>
               </div>
-              ${feedbackHtml}
             `;
           } else {
             matchCard.innerHTML = `
@@ -864,9 +435,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
         const container = document.getElementById(r.id);
         // Clear all except title
         const titleHtml = container.querySelector('h3').outerHTML;
-        
-        container.innerHTML = titleHtml + '<div class="bracket-matches"></div>';
-        const matchesContainer = container.querySelector('.bracket-matches');
+        container.innerHTML = titleHtml;
 
         for (let i = 0; i < r.count; i++) {
           const bracketIdx = r.start + i;
@@ -905,7 +474,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
               </select>
             </div>
           `;
-          matchesContainer.appendChild(matchDiv);
+          container.appendChild(matchDiv);
         }
       });
 
@@ -1458,6 +1027,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       
       const nome = document.getElementById('lead-name').value;
       const email = document.getElementById('lead-email').value;
+      const whatsapp = document.getElementById('lead-phone').value;
       let shareUrl = getLegacyShareUrl();
       const simulationSnapshot = getSimulationSnapshot();
 
@@ -1465,7 +1035,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       const refCode = savedLead?.refCode || generateRefCode();
 
       // Save Lead Data Locally
-      const leadData = { nome, email, url: shareUrl, refCode };
+      const leadData = { nome, email, whatsapp, url: shareUrl, refCode };
       localStorage.setItem('lead_cadastrado', JSON.stringify(leadData));
 
       // Close modal
@@ -1477,6 +1047,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
           const payload = {
             nome: nome,
             email: email,
+            whatsapp: whatsapp,
             simulacao_data: simulationSnapshot,
             url_compartilhamento: shareUrl,
             ref_code: refCode
@@ -1960,8 +1531,6 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
               if (rr.status === 'FINISHED' || rr.status === 'IN_PLAY') {
                 const m = matches.find(x => x.id === rr.match_id);
                 if (m) {
-                  m.userHomeScore = m.homeScore;
-                  m.userAwayScore = m.awayScore;
                   m.homeScore = rr.home_score;
                   m.awayScore = rr.away_score;
                   m.isFinished = (rr.status === 'FINISHED');
@@ -1981,6 +1550,4 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       parseUrlParams();
     }
     initApp();
-  </script>
-</Layout>
-
+  
