@@ -476,7 +476,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
     }
 
     // Render logic for single match card HTML
-    function getMatchCardHTML(match, isSimulationView = false) {
+    function getMatchCardHTML(match, isSimulationView = false, forceShowScore = false) {
       const homeTeam = teams[match.homeId];
       const awayTeam = teams[match.awayId];
       
@@ -501,8 +501,9 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
           }
         }
 
-        const hScore = (match.isFinished && match.homeScore !== null) ? match.homeScore : '-';
-        const aScore = (match.isFinished && match.awayScore !== null) ? match.awayScore : '-';
+        const showScore = match.isFinished || forceShowScore;
+        const hScore = (showScore && match.homeScore !== null) ? match.homeScore : '-';
+        const aScore = (showScore && match.awayScore !== null) ? match.awayScore : '-';
 
         return `
           <div class="match-datetime">📅 ${match.datetime || ''} ${match.isFinished ? '<span style="color: var(--color-primary); font-weight: bold; font-size: 0.75rem; margin-left: 0.5rem; border: 1px solid var(--color-primary); padding: 2px 6px; border-radius: 10px; background: rgba(0,255,135,0.1);">✅ Oficial</span>' : ''}</div>
@@ -578,7 +579,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
         todayMatches.forEach(match => {
           const card = document.createElement('div');
           card.className = 'match-card';
-          card.innerHTML = getMatchCardHTML(match, false);
+          card.innerHTML = getMatchCardHTML(match, false, false);
           todayContainer.appendChild(card);
         });
       }
@@ -589,7 +590,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
         yesterdayMatches.forEach(match => {
           const card = document.createElement('div');
           card.className = 'match-card';
-          card.innerHTML = getMatchCardHTML(match, false);
+          card.innerHTML = getMatchCardHTML(match, false, true);
           yesterdayContainer.appendChild(card);
         });
       }
