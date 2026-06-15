@@ -1093,18 +1093,20 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
 
       const list = Object.keys(scorersDb)
         .map(pName => ({ name: pName, ...scorersDb[pName] }))
-        .sort((a, b) => b.goals - a.goals);
+        .sort((a, b) => b.goals - a.goals)
+        .slice(0, 3); // Apenas top 3
 
       if (list.length > 0) {
         noMsg.style.display = 'none';
-        list.forEach(p => {
+        list.forEach((p, index) => {
+          const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉';
           const tr = document.createElement('tr');
           tr.innerHTML = `
-            <td class="align-left">🏃‍♂️ ${p.name}</td>
+            <td class="align-left">${medal} ${p.name}</td>
             <td class="align-left">
               <img src="${getFlagUrl(p.teamCode)}" class="flag-emoji" /> ${p.teamName}
             </td>
-            <td><strong>${p.goals}</strong></td>
+            <td><strong style="color: var(--color-primary); font-size: 1.1rem;">${p.goals}</strong></td>
           `;
           tbody.appendChild(tr);
         });
