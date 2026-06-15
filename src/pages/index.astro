@@ -10,15 +10,15 @@ const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
 ---
 
-<Layout title="Simulador da Copa do Mundo FIFA 2026" description="Simule os grupos, o mata-mata, os artilheiros e monte sua própria Copa do Mundo FIFA 2026.">
+<Layout title="Tabela da Copa do Mundo FIFA 2026" description="Preencha sua Tabela da Copa do Mundo FIFA 2026, baixe para imprimir e guarde de recordação.">
   <main class="container">
     
     <!-- HEADER -->
     <header>
       <img src="/logo-copa.png" alt="FIFA World Cup 2026 Logo" class="official-logo" style="width: 140px; height: auto; margin: 0 auto 1.5rem auto; display: block;" />
       <div class="logo-badge">United States • Canada • Mexico 2026</div>
-      <h1>SIMULADOR DA COPA DO MUNDO 2026</h1>
-      <p class="subtitle">Simule a fase de grupos, defina a classificação dos melhores terceiros colocados e monte o chaveamento do mata-mata até a grande final!</p>
+      <h1>TABELA DA COPA DO MUNDO 2026</h1>
+      <p class="subtitle">Preencha os resultados dos jogos e monte a sua Tabela da Copa para baixar, imprimir e guardar de recordação!</p>
       
       <!-- NAV TABS -->
       <div class="tabs-container">
@@ -26,7 +26,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
           📅 Jogos Hoje
         </button>
         <button class="tab-btn" data-tab="fase-grupos">
-          ⚽ Simulador
+          📋 Tabela da Copa
         </button>
         <button class="tab-btn" data-tab="mata-mata">
           🏆 Mata-Mata
@@ -43,7 +43,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
     <!-- HOW IT WORKS INSTRUCTIONS -->
     <div class="instructions-card glass-card expanded" id="instructions-container">
       <div class="instructions-header" id="toggle-instructions">
-        <span>💡 Como funciona este Simulador?</span>
+        <span>💡 Como funciona esta Tabela?</span>
         <span class="toggle-icon">▼</span>
       </div>
       <div class="instructions-content active" id="instructions-body">
@@ -65,22 +65,22 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
           <div class="step-item">
             <div class="step-number">3</div>
             <p>
-              <strong>Simule o Mata-Mata</strong>
-              Na aba <strong>Mata-Mata</strong>, clique em cima da bandeira da seleção que você deseja fazer avançar até definir o grande Campeão!
+              <strong>Preencha o Mata-Mata</strong>
+              Na aba <strong>Mata-Mata</strong>, clique na bandeira da seleção para avançar de fase até definir o seu Campeão!
             </p>
           </div>
           <div class="step-item">
             <div class="step-number">4</div>
             <p>
               <strong>Salve e Baixe</strong>
-              Ao final, clique em "Baixar Imagem" para salvar um print do seu chaveamento ou em "Compartilhar" para enviar aos amigos.
+              Ao final, clique em "Baixar Imagem" para salvar e imprimir sua Tabela da Copa de recordação, ou em "Compartilhar" com os amigos.
             </p>
           </div>
         </div>
         
         <div class="auto-fill-box" style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-          <button class="btn" id="auto-fill-btn">⚡ Simulação Rápida (Preencher placares aleatórios)</button>
-          <button class="btn" id="reset-sim-btn">🗑️ Limpar Palpites</button>
+          <button class="btn" id="auto-fill-btn">⚡ Preenchimento Automático (Placares aleatórios)</button>
+          <button class="btn" id="reset-sim-btn">🗑️ Limpar Tabela</button>
         </div>
       </div>
     </div>
@@ -213,9 +213,9 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
         <!-- Se não tiver cadastro ainda -->
         <div id="bolao-gate" class="bolao-gate glass-card">
           <div class="bolao-gate-icon">👥</div>
-          <h2>Bolão com Amigos & Ranking Global</h2>
-          <p class="text-muted">A simulação não é obrigatória! Você pode usar o app apenas para participar dos bolões. Cadastre-se agora para criar grupos com amigos e participar do Ranking Geral da Copa do Mundo, onde você pode ver quem vem acertando e pontuando mais globalmente!</p>
-          <button class="btn btn-primary" id="bolao-goto-register" style="max-width:340px; margin-top:1rem;">📝 Cadastrar-se no Bolão</button>
+          <h2>Bolão com Amigos (Apenas Jogos do Brasil)</h2>
+          <p class="text-muted">A tabela da Copa é apenas para sua diversão e recordação! Mas se você quiser competir, cadastre-se agora para criar grupos com amigos no nosso <strong>Bolão focado exclusivamente nos jogos da Seleção Brasileira!</strong></p>
+          <button class="btn btn-primary" id="bolao-goto-register" style="max-width:340px; margin-top:1rem;">📝 Cadastrar-se no Bolão do Brasil</button>
         </div>
 
         <!-- Painel principal do bolão (visível após cadastro) -->
@@ -251,7 +251,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
               <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--text-main);">Programa de Indicações</h3>
             </div>
             <p class="text-muted" style="margin-bottom: 0.75rem; font-size: 0.9rem;">
-              Convide seus amigos para palpitar! Cada amigo que se cadastrar pelo seu link garante **+15 pontos** para você e **+15 pontos** para ele no Ranking Global!
+              Convide seus amigos para o bolão! Cada amigo que se cadastrar pelo seu link garante **+15 pontos** para você e **+15 pontos** para ele no Ranking do Brasil!
             </p>
             <div class="bolao-form-row">
               <input type="text" id="ref-link-input" class="form-input" readonly value="" style="background: rgba(0,0,0,0.2);" />
@@ -269,7 +269,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
               <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--text-main);">Minhas Conquistas</h3>
             </div>
             <p class="text-muted" style="margin-bottom: 1rem; font-size: 0.9rem;">
-              Complete desafios para liberar insígnias exclusivas e subir no Ranking Global!
+              Complete desafios para liberar insígnias exclusivas e subir no Ranking do Brasil!
             </p>
             <div class="badges-grid" id="user-badges-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 95px), 1fr)); gap: 0.75rem;">
               <!-- Badges loaded dynamically -->
@@ -315,12 +315,12 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
           <div class="glass-card bolao-action-card" style="margin-top: 1.5rem; max-width: 100%; background: linear-gradient(135deg, rgba(255,215,0,0.05), rgba(0,255,135,0.03)); border-color: rgba(255,215,0,0.2);">
             <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
               <div class="bolao-action-icon">🌍</div>
-              <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700;">Palpitão Geral da Copa</h3>
+              <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700;">Ranking Geral (Apenas Brasil)</h3>
             </div>
             <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 1rem;">
-              Veja o Ranking Global com <strong>todos</strong> os palpiteiros do site, calculado pelos 72 jogos da Copa! Os pontos são atualizados conforme os resultados reais saem.
+              Veja o Ranking Global com <strong>todos</strong> os palpiteiros do site, focado unicamente nos jogos da Seleção Brasileira! Os pontos são atualizados conforme os resultados oficiais do Brasil saem.
             </p>
-            <a href="/bolao/ranking-global" class="btn btn-primary" style="display: inline-block; width: auto; font-size: 0.9rem; text-decoration: none;">🏆 Ver Ranking Global →</a>
+            <a href="/bolao/ranking-global" class="btn btn-primary" style="display: inline-block; width: auto; font-size: 0.9rem; text-decoration: none;">🏆 Ver Ranking do Brasil →</a>
           </div>
 
         </div>
@@ -393,14 +393,14 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
           <!-- Slide 1 -->
           <div class="carousel-slide active" style="padding: 2.5rem 1.5rem; text-align: center;">
             <div style="font-size: 4rem; margin-bottom: 1rem; animation: float 3s ease-in-out infinite;">🎮</div>
-            <h2 style="color: var(--color-primary); margin-bottom: 1rem; font-weight: 800; font-size: 1.5rem;">Simule a Copa</h2>
-            <p class="text-muted" style="line-height: 1.6;">Preencha os placares dos jogos. A fase de mata-mata se desenha automaticamente até a grande final com base nos seus palpites!</p>
+            <h2 style="color: var(--color-primary); margin-bottom: 1rem; font-weight: 800; font-size: 1.5rem;">Preencha a Tabela</h2>
+            <p class="text-muted" style="line-height: 1.6;">Preencha os placares dos jogos. A fase de mata-mata se desenha automaticamente até a grande final com base nos seus resultados!</p>
           </div>
           <!-- Slide 2 -->
           <div class="carousel-slide" style="padding: 2.5rem 1.5rem; text-align: center; display: none;">
             <div style="font-size: 4rem; margin-bottom: 1rem; animation: float 3s ease-in-out infinite;">🏆</div>
             <h2 style="color: var(--color-secondary); margin-bottom: 1rem; font-weight: 800; font-size: 1.5rem;">Bolão com Amigos</h2>
-            <p class="text-muted" style="line-height: 1.6;">Crie grupos privados para os jogos do Brasil ou compita no Palpitão Geral da Copa com todo mundo!</p>
+            <p class="text-muted" style="line-height: 1.6;">Crie grupos privados com amigos e dispute o ranking focado exclusivamente nos jogos da Seleção Brasileira!</p>
           </div>
           <!-- Slide 3 -->
           <div class="carousel-slide" style="padding: 2.5rem 1.5rem; text-align: center; display: none;">
@@ -421,7 +421,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
 
     <!-- FOOTER -->
     <footer>
-      <p>&copy; 2026 Simulador da Copa do Mundo 2026. Desenvolvido por <a href="https://github.com" target="_blank">Lucro Ninja</a>.</p>
+      <p>&copy; 2026 Tabela da Copa do Mundo 2026. Desenvolvido por <a href="https://github.com" target="_blank">Lucro Ninja</a>.</p>
     </footer>
   </main>
 
@@ -1182,7 +1182,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
         calculateQualifiedTeams();
         renderArtilharia();
         
-        alert('Simulador resetado com sucesso!');
+        alert('Tabela limpa com sucesso!');
       }
     }
 
@@ -1457,7 +1457,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       let shareUrl = action === 'share' ? await ensurePublicPredictionUrl() : getShareUrl();
       shareUrl = appendRefCode(shareUrl);
       const winnerName = document.getElementById('champion-team-name').textContent || 'Brasil';
-      const text = `Meu simulador da Copa 2026 deu que o campeão será o(a) *${winnerName}*! 🏆 Faça seu palpite e me desafie: ${shareUrl}`;
+      const text = `A minha Tabela da Copa 2026 deu que o campeão será o(a) *${winnerName}*! 🏆 Faça seu palpite e me desafie: ${shareUrl}`;
 
       if (action === 'share') {
         const lead = getSavedLead();
@@ -1472,7 +1472,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
         const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
         if (navigator.share) {
           navigator.share({
-            title: 'Simulador Copa 2026',
+            title: 'Tabela Copa 2026',
             text: text,
             url: shareUrl,
           }).catch(() => {
@@ -1505,7 +1505,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
             windowHeight: container.scrollHeight + 100
           }).then(canvas => {
             const link = document.createElement('a');
-            link.download = `simulacao-copa-2026-${winnerName.toLowerCase()}.png`;
+            link.download = `tabela-copa-2026-${winnerName.toLowerCase()}.png`;
             link.href = canvas.toDataURL('image/png');
             link.click();
             
@@ -1717,7 +1717,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
     const resetSimBtn = document.getElementById('reset-sim-btn');
     if (resetSimBtn) {
       resetSimBtn.addEventListener('click', () => {
-        if (confirm('Deseja limpar todos os seus palpites e reiniciar o simulador do zero?')) {
+        if (confirm('Deseja limpar todos os seus palpites e reiniciar a tabela do zero?')) {
           // 1. Reset match list scores and visibility
           matches.forEach(m => {
             m.homeScore = null;
@@ -1898,7 +1898,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
     const bolaoCreateBtn2 = document.getElementById('bolao-create-btn');
     if (bolaoCreateBtn2) {
       bolaoCreateBtn2.addEventListener('click', async () => {
-        const lead = getSavedLead(); if (!lead) { alert('Salve sua simulacao primeiro!'); return; }
+        const lead = getSavedLead(); if (!lead) { alert('Cadastre-se primeiro!'); return; }
         const nameInput = document.getElementById('bolao-group-name'); const groupName = nameInput.value.trim();
         if (!groupName) { alert('Digite um nome para o grupo!'); nameInput.focus(); return; }
         bolaoCreateBtn2.textContent = 'Criando...'; bolaoCreateBtn2.disabled = true;
@@ -1929,7 +1929,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
     const bolaoJoinBtn2 = document.getElementById('bolao-join-btn');
     if (bolaoJoinBtn2) {
       bolaoJoinBtn2.addEventListener('click', async () => {
-        const lead = getSavedLead(); if (!lead) { alert('Salve sua simulacao primeiro!'); return; }
+        const lead = getSavedLead(); if (!lead) { alert('Cadastre-se primeiro!'); return; }
         const codeInput = document.getElementById('bolao-join-code'); const code = codeInput.value.trim().toUpperCase();
         if (!code) { alert('Digite o codigo do grupo!'); codeInput.focus(); return; }
         bolaoJoinBtn2.textContent = 'Entrando...'; bolaoJoinBtn2.disabled = true;
