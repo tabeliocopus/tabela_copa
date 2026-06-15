@@ -22,8 +22,11 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       
       <!-- NAV TABS -->
       <div class="tabs-container">
-        <button class="tab-btn active" data-tab="fase-grupos">
-          ⚽ Fase de Grupos
+        <button class="tab-btn active" data-tab="jogos-dia">
+          📅 Jogos Hoje
+        </button>
+        <button class="tab-btn" data-tab="fase-grupos">
+          ⚽ Simulador
         </button>
         <button class="tab-btn" data-tab="mata-mata">
           🏆 Mata-Mata
@@ -32,7 +35,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
           👟 Artilharia
         </button>
         <button class="tab-btn" data-tab="bolao">
-          👥 Bolão
+          👥 Bolão & Ranking
         </button>
       </div>
     </header>
@@ -84,8 +87,25 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
 
     <!-- MONETIZATION BANNER (Removed) -->
 
+    <!-- VIEW 0: JOGOS DO DIA -->
+    <section id="jogos-dia" class="view-panel active">
+      <div class="glass-card" style="margin-bottom: 2rem;">
+        <h2 style="color: var(--color-primary); font-weight: 700; margin-bottom: 1rem;">📅 Jogos de Hoje</h2>
+        <div class="matches-list" id="today-matches-container">
+          <!-- Populated via JS -->
+        </div>
+      </div>
+      
+      <div class="glass-card">
+        <h2 style="color: var(--text-muted); font-weight: 700; margin-bottom: 1rem;">⬅️ Placares de Ontem</h2>
+        <div class="matches-list" id="yesterday-matches-container">
+          <!-- Populated via JS -->
+        </div>
+      </div>
+    </section>
+
     <!-- VIEW 1: FASE DE GRUPOS -->
-    <section id="fase-grupos" class="view-panel active">
+    <section id="fase-grupos" class="view-panel">
       <div class="groups-grid">
         {groups.map(groupLetter => (
           <div class="glass-card group-card" data-group={groupLetter}>
@@ -193,9 +213,9 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
         <!-- Se não tiver cadastro ainda -->
         <div id="bolao-gate" class="bolao-gate glass-card">
           <div class="bolao-gate-icon">👥</div>
-          <h2>Mini-Bolão do Brasil & Ranking Global</h2>
-          <p class="text-muted">Crie grupos com amigos para ver quem manda melhor nos jogos do <strong>Brasil</strong> e participe do Ranking Geral da Copa do Mundo! Primeiro, salve sua simulação clicando no botão <strong>Compartilhar</strong> para se cadastrar.</p>
-          <button class="btn btn-primary" id="bolao-goto-share" style="max-width:340px; margin-top:1rem;">📢 Salvar minha Simulação primeiro</button>
+          <h2>Bolão com Amigos & Ranking Global</h2>
+          <p class="text-muted">A simulação não é obrigatória! Você pode usar o app apenas para participar dos bolões. Cadastre-se agora para criar grupos com amigos e participar do Ranking Geral da Copa do Mundo, onde você pode ver quem vem acertando e pontuando mais globalmente!</p>
+          <button class="btn btn-primary" id="bolao-goto-register" style="max-width:340px; margin-top:1rem;">📝 Cadastrar-se no Bolão</button>
         </div>
 
         <!-- Painel principal do bolão (visível após cadastro) -->
@@ -324,8 +344,8 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
     <div class="modal-overlay" id="lead-modal">
       <div class="glass-card modal-content">
         <button class="close-modal-btn" id="close-lead-modal">&times;</button>
-        <h2 style="font-weight: 800; margin-bottom: 0.5rem; text-align: center; color: var(--color-primary);">QUASE LÁ!</h2>
-        <p class="text-muted text-center text-sm" style="margin-bottom: 1.5rem;">Cadastre-se rapidamente para salvar sua simulação, gerar seu link único de compartilhamento e receber atualizações!</p>
+        <h2 style="font-weight: 800; margin-bottom: 0.5rem; text-align: center; color: var(--color-primary);">CADASTRE-SE</h2>
+        <p class="text-muted text-center text-sm" style="margin-bottom: 1.5rem;">Cadastre-se rapidamente para participar do ranking global, criar bolões com amigos e salvar seus palpites!</p>
         
         <form id="lead-form">
           <div class="form-group">
@@ -455,6 +475,126 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       return opts;
     }
 
+    // Render logic for single match card HTML
+    function getMatchCardHTML(match, isSimulationView = false) {
+      const homeTeam = teams[match.homeId];
+      const awayTeam = teams[match.awayId];
+      
+      if (match.isFinished || !isSimulationView) {
+        let feedbackHtml = '';
+        if (match.isFinished && match.userHomeScore !== undefined && match.userHomeScore !== null && match.userAwayScore !== undefined && match.userAwayScore !== null) {
+          const uHome = parseInt(match.userHomeScore);
+          const uAway = parseInt(match.userAwayScore);
+          const rHome = parseInt(match.homeScore);
+          const rAway = parseInt(match.awayScore);
+          
+          if (uHome === rHome && uAway === rAway) {
+            feedbackHtml = `<div style="font-size: 0.75rem; color: var(--bg-main); font-weight: bold; text-align: center; margin-top: 0.75rem; background: var(--color-primary); border-radius: 4px; padding: 4px;">✅ Na mosca! Você cravou ${uHome}x${uAway}</div>`;
+          } else if (
+            (uHome > uAway && rHome > rAway) ||
+            (uHome < uAway && rHome < rAway) ||
+            (uHome === uAway && rHome === rAway)
+          ) {
+            feedbackHtml = `<div style="font-size: 0.75rem; color: var(--bg-main); font-weight: bold; text-align: center; margin-top: 0.75rem; background: var(--color-accent); border-radius: 4px; padding: 4px;">👍 Quase! Acertou o vencedor (Seu palpite: ${uHome}x${uAway})</div>`;
+          } else {
+            feedbackHtml = `<div style="font-size: 0.75rem; color: white; font-weight: bold; text-align: center; margin-top: 0.75rem; background: var(--color-danger); border-radius: 4px; padding: 4px;">❌ Zebra! Seu palpite era ${uHome}x${uAway}</div>`;
+          }
+        }
+
+        const hScore = match.homeScore !== null ? match.homeScore : '-';
+        const aScore = match.awayScore !== null ? match.awayScore : '-';
+
+        return `
+          <div class="match-datetime">📅 ${match.datetime || ''} ${match.isFinished ? '<span style="color: var(--color-primary); font-weight: bold; font-size: 0.75rem; margin-left: 0.5rem; border: 1px solid var(--color-primary); padding: 2px 6px; border-radius: 10px; background: rgba(0,255,135,0.1);">✅ Oficial</span>' : ''}</div>
+          <div class="match-venue" style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-align: center;">🏟️ ${match.stadium || ''}, ${match.city || ''}</div>
+          <div class="match-row">
+            <div class="match-team home">
+              <span class="team-name" data-team-id="${match.homeId}">${homeTeam.name}</span>
+              <img src="${getFlagUrl(homeTeam.code)}" alt="${homeTeam.name}" class="flag-emoji" />
+            </div>
+            <div class="match-scores-inputs">
+              <div style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 0.4rem 0.8rem; font-weight: bold; color: white; min-width: 45px; text-align: center;">${hScore}</div>
+              <span class="match-vs" style="margin: 0 0.5rem; color: var(--color-primary);">x</span>
+              <div style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 0.4rem 0.8rem; font-weight: bold; color: white; min-width: 45px; text-align: center;">${aScore}</div>
+            </div>
+            <div class="match-team away">
+              <img src="${getFlagUrl(awayTeam.code)}" alt="${awayTeam.name}" class="flag-emoji" />
+              <span class="team-name" data-team-id="${match.awayId}">${awayTeam.name}</span>
+            </div>
+          </div>
+          ${feedbackHtml}
+        `;
+      } else {
+        return `
+          <div class="match-datetime">📅 ${match.datetime || ''}</div>
+          <div class="match-venue" style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-align: center;">🏟️ ${match.stadium || ''}, ${match.city || ''}</div>
+          <div class="match-row">
+            <div class="match-team home">
+              <span class="team-name" data-team-id="${match.homeId}">${homeTeam.name}</span>
+              <img src="${getFlagUrl(homeTeam.code)}" alt="${homeTeam.name}" class="flag-emoji" />
+            </div>
+            <div class="match-scores-inputs">
+              <select class="score-input" id="${match.id}-home" data-match-id="${match.id}" data-side="home">
+                ${generateScoreOptions(match.homeScore)}
+              </select>
+              <button class="goal-scorer-btn" data-match-id="${match.id}" data-side="home" style="background:none; border:none; cursor:pointer; font-size:0.8rem; display: ${match.homeScore > 0 ? 'inline' : 'none'};">⚽</button>
+              <span class="match-vs">x</span>
+              <button class="goal-scorer-btn" data-match-id="${match.id}" data-side="away" style="background:none; border:none; cursor:pointer; font-size:0.8rem; display: ${match.awayScore > 0 ? 'inline' : 'none'};">⚽</button>
+              <select class="score-input" id="${match.id}-away" data-match-id="${match.id}" data-side="away">
+                ${generateScoreOptions(match.awayScore)}
+              </select>
+            </div>
+            <div class="match-team away">
+              <img src="${getFlagUrl(awayTeam.code)}" alt="${awayTeam.name}" class="flag-emoji" />
+              <span class="team-name" data-team-id="${match.awayId}">${awayTeam.name}</span>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    // Render Jogos do Dia
+    function renderJogosDoDia() {
+      const todayContainer = document.getElementById('today-matches-container');
+      const yesterdayContainer = document.getElementById('yesterday-matches-container');
+      if (!todayContainer || !yesterdayContainer) return;
+
+      const now = new Date();
+      const todayStr = String(now.getDate()).padStart(2, '0') + '/' + String(now.getMonth() + 1).padStart(2, '0') + '/' + now.getFullYear();
+      
+      const yesterday = new Date(now);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = String(yesterday.getDate()).padStart(2, '0') + '/' + String(yesterday.getMonth() + 1).padStart(2, '0') + '/' + yesterday.getFullYear();
+
+      const todayMatches = matches.filter(m => m.datetime.startsWith(todayStr));
+      const yesterdayMatches = matches.filter(m => m.datetime.startsWith(yesterdayStr));
+
+      todayContainer.innerHTML = '';
+      yesterdayContainer.innerHTML = '';
+
+      if (todayMatches.length === 0) {
+        todayContainer.innerHTML = '<p class="text-center text-muted" style="padding: 1rem;">Nenhum jogo programado para hoje.</p>';
+      } else {
+        todayMatches.forEach(match => {
+          const card = document.createElement('div');
+          card.className = 'match-card';
+          card.innerHTML = getMatchCardHTML(match, false);
+          todayContainer.appendChild(card);
+        });
+      }
+
+      if (yesterdayMatches.length === 0) {
+        yesterdayContainer.innerHTML = '<p class="text-center text-muted" style="padding: 1rem;">Nenhum jogo ocorreu ontem.</p>';
+      } else {
+        yesterdayMatches.forEach(match => {
+          const card = document.createElement('div');
+          card.className = 'match-card';
+          card.innerHTML = getMatchCardHTML(match, false);
+          yesterdayContainer.appendChild(card);
+        });
+      }
+    }
+
     // Initialize/Render phase of the groups matches
     function initGroups() {
       groups.forEach(groupLetter => {
@@ -467,84 +607,15 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
 
         const groupMatches = matches.filter(m => m.group === groupLetter);
         groupMatches.forEach(match => {
-          const homeTeam = teams[match.homeId];
-          const awayTeam = teams[match.awayId];
-
           const matchCard = document.createElement('div');
           matchCard.className = 'match-card';
-          
-          if (match.isFinished) {
-            let feedbackHtml = '';
-            if (match.userHomeScore !== undefined && match.userHomeScore !== null && match.userAwayScore !== undefined && match.userAwayScore !== null) {
-              const uHome = parseInt(match.userHomeScore);
-              const uAway = parseInt(match.userAwayScore);
-              const rHome = parseInt(match.homeScore);
-              const rAway = parseInt(match.awayScore);
-              
-              if (uHome === rHome && uAway === rAway) {
-                feedbackHtml = `<div style="font-size: 0.75rem; color: var(--bg-main); font-weight: bold; text-align: center; margin-top: 0.75rem; background: var(--color-primary); border-radius: 4px; padding: 4px;">✅ Na mosca! Você cravou ${uHome}x${uAway}</div>`;
-              } else if (
-                (uHome > uAway && rHome > rAway) ||
-                (uHome < uAway && rHome < rAway) ||
-                (uHome === uAway && rHome === rAway)
-              ) {
-                feedbackHtml = `<div style="font-size: 0.75rem; color: var(--bg-main); font-weight: bold; text-align: center; margin-top: 0.75rem; background: var(--color-accent); border-radius: 4px; padding: 4px;">👍 Quase! Acertou o vencedor (Seu palpite: ${uHome}x${uAway})</div>`;
-              } else {
-                feedbackHtml = `<div style="font-size: 0.75rem; color: white; font-weight: bold; text-align: center; margin-top: 0.75rem; background: var(--color-danger); border-radius: 4px; padding: 4px;">❌ Zebra! Seu palpite era ${uHome}x${uAway}</div>`;
-              }
-            }
-
-            matchCard.innerHTML = `
-              <div class="match-datetime">📅 ${match.datetime || ''} <span style="color: var(--color-primary); font-weight: bold; font-size: 0.75rem; margin-left: 0.5rem; border: 1px solid var(--color-primary); padding: 2px 6px; border-radius: 10px; background: rgba(0,255,135,0.1);">✅ Oficial</span></div>
-              <div class="match-venue" style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-align: center;">🏟️ ${match.stadium || ''}, ${match.city || ''}</div>
-              <div class="match-row">
-                <div class="match-team home">
-                  <span class="team-name" data-team-id="${match.homeId}">${homeTeam.name}</span>
-                  <img src="${getFlagUrl(homeTeam.code)}" alt="${homeTeam.name}" class="flag-emoji" />
-                </div>
-                <div class="match-scores-inputs">
-                  <div style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 0.4rem 0.8rem; font-weight: bold; color: white; min-width: 45px; text-align: center;">${match.homeScore}</div>
-                  <span class="match-vs" style="margin: 0 0.5rem; color: var(--color-primary);">x</span>
-                  <div style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 0.4rem 0.8rem; font-weight: bold; color: white; min-width: 45px; text-align: center;">${match.awayScore}</div>
-                </div>
-                <div class="match-team away">
-                  <img src="${getFlagUrl(awayTeam.code)}" alt="${awayTeam.name}" class="flag-emoji" />
-                  <span class="team-name" data-team-id="${match.awayId}">${awayTeam.name}</span>
-                </div>
-              </div>
-              ${feedbackHtml}
-            `;
-          } else {
-            matchCard.innerHTML = `
-              <div class="match-datetime">📅 ${match.datetime || ''}</div>
-              <div class="match-venue" style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-align: center;">🏟️ ${match.stadium || ''}, ${match.city || ''}</div>
-              <div class="match-row">
-                <div class="match-team home">
-                  <span class="team-name" data-team-id="${match.homeId}">${homeTeam.name}</span>
-                  <img src="${getFlagUrl(homeTeam.code)}" alt="${homeTeam.name}" class="flag-emoji" />
-                </div>
-                <div class="match-scores-inputs">
-                  <select class="score-input" id="${match.id}-home" data-match-id="${match.id}" data-side="home">
-                    ${generateScoreOptions(match.homeScore)}
-                  </select>
-                  <button class="goal-scorer-btn" data-match-id="${match.id}" data-side="home" style="background:none; border:none; cursor:pointer; font-size:0.8rem; display: ${match.homeScore > 0 ? 'inline' : 'none'};">⚽</button>
-                  <span class="match-vs">x</span>
-                  <button class="goal-scorer-btn" data-match-id="${match.id}" data-side="away" style="background:none; border:none; cursor:pointer; font-size:0.8rem; display: ${match.awayScore > 0 ? 'inline' : 'none'};">⚽</button>
-                  <select class="score-input" id="${match.id}-away" data-match-id="${match.id}" data-side="away">
-                    ${generateScoreOptions(match.awayScore)}
-                  </select>
-                </div>
-                <div class="match-team away">
-                  <img src="${getFlagUrl(awayTeam.code)}" alt="${awayTeam.name}" class="flag-emoji" />
-                  <span class="team-name" data-team-id="${match.awayId}">${awayTeam.name}</span>
-                </div>
-              </div>
-            `;
-          }
-
+          matchCard.innerHTML = getMatchCardHTML(match, true);
           matchesContainer.appendChild(matchCard);
         });
       });
+
+      // Render Jogos do Dia
+      renderJogosDoDia();
 
       // Bind input events
       document.querySelectorAll('.score-input').forEach(input => {
@@ -567,6 +638,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
             updateGroupStandings(match.group);
             calculateQualifiedTeams();
             saveLocalState();
+            renderJogosDoDia(); // Update today view as well
           }
         });
       });
@@ -1821,8 +1893,8 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
     }
     const bolaoBackBtn = document.getElementById('bolao-back-btn');
     if (bolaoBackBtn) { bolaoBackBtn.addEventListener('click', () => { document.getElementById('bolao-leaderboard-section').style.display = 'none'; const mg = document.getElementById('bolao-my-groups'); const act = document.querySelector('.bolao-actions'); if (mg) mg.style.display = 'block'; if (act) act.style.display = 'grid'; }); }
-    const bolaoGotoShare = document.getElementById('bolao-goto-share');
-    if (bolaoGotoShare) { bolaoGotoShare.addEventListener('click', () => { document.querySelector('[data-tab="fase-grupos"]').click(); document.getElementById('lead-modal').classList.add('active'); }); }
+    const bolaoGotoRegister = document.getElementById('bolao-goto-register');
+    if (bolaoGotoRegister) { bolaoGotoRegister.addEventListener('click', () => { document.getElementById('lead-modal').classList.add('active'); }); }
     const bolaoCreateBtn2 = document.getElementById('bolao-create-btn');
     if (bolaoCreateBtn2) {
       bolaoCreateBtn2.addEventListener('click', async () => {
