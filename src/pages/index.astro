@@ -654,11 +654,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       });
 
       // Bind Goal Scorer buttons
-      document.querySelectorAll('.goal-scorer-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          openScorerModal(btn.dataset.matchId, btn.dataset.side);
-        });
-      });
+      // Scorers logic is now fully automated and global
     }
 
     // Recalculate Group Standings
@@ -1588,14 +1584,12 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
 
     // Modal closures
     closeLeadModal.addEventListener('click', () => leadModal.classList.remove('active'));
-    closeScorerModal.addEventListener('click', () => scorerModal.classList.remove('active'));
     closeSquadModal.addEventListener('click', () => squadModal.classList.remove('active'));
     resetBtn.addEventListener('click', resetSimulation);
 
     // Close on overlay click
     window.addEventListener('click', (e) => {
       if (e.target === leadModal) leadModal.classList.remove('active');
-      if (e.target === scorerModal) scorerModal.classList.remove('active');
       if (e.target === squadModal) squadModal.classList.remove('active');
     });
 
