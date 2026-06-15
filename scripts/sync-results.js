@@ -94,7 +94,11 @@ async function syncResults() {
   );
 
   const matches = apiData.matches || [];
-  const finished = matches.filter(m => m.status === 'FINISHED');
+  const finished = matches.filter(m => 
+    m.status === 'FINISHED' || 
+    m.status === 'IN_PLAY' || 
+    m.status === 'PAUSED'   // Intervalo do jogo
+  );
   
   console.log(`📡 API retornou ${matches.length} jogos, sendo ${finished.length} finalizados.\n`);
 
@@ -139,7 +143,7 @@ async function syncResults() {
       match_id:   info.matchId,
       home_score: homeScore,
       away_score: awayScore,
-      status:     'FINISHED',
+      status:     m.status, // FINISHED, IN_PLAY ou PAUSED
     });
 
     console.log(`  ✅ ${info.matchId}: ${homeTla} ${score.home}x${score.away} ${awayTla} → [${info.matchId}] ${homeScore}x${awayScore}`);

@@ -90,7 +90,15 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
     <!-- VIEW 0: JOGOS DO DIA -->
     <section id="jogos-dia" class="view-panel active">
       <div class="glass-card" style="margin-bottom: 2rem;">
-        <h2 style="color: var(--color-primary); font-weight: 700; margin-bottom: 1rem;">📅 Jogos de Hoje</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+          <h2 style="color: var(--color-primary); font-weight: 700; margin: 0;">📅 Jogos de Hoje</h2>
+          <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+            <span id="last-update-label" style="font-size: 0.75rem; color: var(--text-muted);">Carregando...</span>
+            <button id="refresh-scores-btn" title="Atualizar placares agora" style="background: rgba(0,255,135,0.1); border: 1px solid var(--color-primary); color: var(--color-primary); border-radius: 8px; padding: 0.3rem 0.75rem; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 0.35rem; transition: all 0.2s;">
+              <span id="refresh-icon">🔄</span> Atualizar
+            </button>
+          </div>
+        </div>
         <div class="matches-list" id="today-matches-container">
           <!-- Populated via JS -->
         </div>
@@ -505,12 +513,18 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
           }
         }
 
-        const showScore = match.isFinished || forceShowScore;
+        const showScore = match.isFinished || match.isInPlay || forceShowScore;
         const hScore = (showScore && match.homeScore !== null) ? match.homeScore : '-';
         const aScore = (showScore && match.awayScore !== null) ? match.awayScore : '-';
 
+        const statusBadge = match.isFinished
+          ? '<span style="color: var(--color-primary); font-weight: bold; font-size: 0.75rem; margin-left: 0.5rem; border: 1px solid var(--color-primary); padding: 2px 6px; border-radius: 10px; background: rgba(0,255,135,0.1);">✅ Oficial</span>'
+          : match.isInPlay
+          ? '<span style="color: #ff4444; font-weight: bold; font-size: 0.75rem; margin-left: 0.5rem; border: 1px solid #ff4444; padding: 2px 6px; border-radius: 10px; background: rgba(255,68,68,0.15); animation: pulse-red 1.5s infinite;">🔴 AO VIVO</span>'
+          : '';
+
         return `
-          <div class="match-datetime">📅 ${match.datetime || ''} ${match.isFinished ? '<span style="color: var(--color-primary); font-weight: bold; font-size: 0.75rem; margin-left: 0.5rem; border: 1px solid var(--color-primary); padding: 2px 6px; border-radius: 10px; background: rgba(0,255,135,0.1);">✅ Oficial</span>' : ''}</div>
+          <div class="match-datetime">📅 ${match.datetime || ''} ${statusBadge}</div>
           <div class="match-venue" style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-align: center;">🏟️ ${match.stadium || ''}, ${match.city || ''}</div>
           <div class="match-row">
             <div class="match-team home">
@@ -1942,38 +1956,54 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       }
 
       loadLocalState();
-      
-      try {
-        let cleanUrl = (supabaseUrl || '').trim().replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
-        if (cleanUrl && supabaseAnonKey) {
+
+      // ─── SUPABASE FETCH (reutilizável para polling) ───────────────────────────
+      async function fetchSupabaseResults() {
+        const cleanUrl = (supabaseUrl || '').trim().replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
+        if (!cleanUrl || !supabaseAnonKey) return false;
+
+        let updated = false;
+        try {
           const res = await fetch(cleanUrl + '/rest/v1/resultados_reais?select=*', {
             headers: { 'apikey': supabaseAnonKey, 'Authorization': 'Bearer ' + supabaseAnonKey }
           });
           if (res.ok) {
             const realData = await res.json();
             realData.forEach(rr => {
-              if (rr.status === 'FINISHED' || rr.status === 'IN_PLAY') {
+              if (rr.status === 'FINISHED' || rr.status === 'IN_PLAY' || rr.status === 'PAUSED') {
                 const m = matches.find(x => x.id === rr.match_id);
                 if (m) {
-                  m.userHomeScore = m.homeScore;
-                  m.userAwayScore = m.awayScore;
+                  // Preserve user palpite only if not yet saved
+                  if (m.userHomeScore === undefined) m.userHomeScore = m.homeScore;
+                  if (m.userAwayScore === undefined) m.userAwayScore = m.awayScore;
+                  const prevHome = m.homeScore;
+                  const prevAway = m.awayScore;
                   m.homeScore = rr.home_score;
                   m.awayScore = rr.away_score;
                   m.isFinished = (rr.status === 'FINISHED');
+                  m.isInPlay = (rr.status === 'IN_PLAY' || rr.status === 'PAUSED');
+                  if (prevHome !== rr.home_score || prevAway !== rr.away_score) updated = true;
                 }
               }
             });
-            // Also override the saveLocalState function so it doesn't overwrite real results?
-            // saveLocalState just serializes the current `matches` state, which now includes the real results!
-            // Wait, this means user's local sim_data will start including the real results. This is correct!
+            // Update last update label
+            const lbl = document.getElementById('last-update-label');
+            if (lbl) {
+              const now = new Date();
+              const h = String(now.getHours()).padStart(2,'0');
+              const min = String(now.getMinutes()).padStart(2,'0');
+              const s = String(now.getSeconds()).padStart(2,'0');
+              lbl.textContent = `⏱ Atualizado às ${h}:${min}:${s}`;
+            }
           }
-        }
-      } catch(e) { console.error('Erro ao buscar resultados reais', e); }
+        } catch(e) { console.error('Erro ao buscar resultados reais', e); }
+        return updated;
+      }
 
-      // Buscar artilheiros oficiais do Supabase (sincronizados via api-football.com)
-      try {
-        let cleanUrl = (supabaseUrl || '').trim().replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
-        if (cleanUrl && supabaseAnonKey) {
+      async function fetchSupabaseScorers() {
+        const cleanUrl = (supabaseUrl || '').trim().replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
+        if (!cleanUrl || !supabaseAnonKey) return;
+        try {
           const artRes = await fetch(cleanUrl + '/rest/v1/artilheiros_reais?select=*&order=goals.desc&limit=20', {
             headers: { 'apikey': supabaseAnonKey, 'Authorization': 'Bearer ' + supabaseAnonKey }
           });
@@ -1989,13 +2019,50 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
             }));
             console.log(`⚽ ${artilheirosReais.length} artilheiro(s) carregados do Supabase.`);
           }
-        }
-      } catch(e) { console.error('Erro ao buscar artilheiros reais', e); }
+        } catch(e) { console.error('Erro ao buscar artilheiros reais', e); }
+      }
+
+      // Carga inicial
+      await fetchSupabaseResults();
+      await fetchSupabaseScorers();
 
       initGroups();
       calculateQualifiedTeams();
       renderArtilharia();
       parseUrlParams();
+
+      // ─── POLLING AUTOMÁTICO A CADA 5 MINUTOS ─────────────────────────────────
+      const POLL_INTERVAL_MS = 5 * 60 * 1000; // 5 minutos
+      setInterval(async () => {
+        console.log('🔄 Polling automático do Supabase...');
+        const changed = await fetchSupabaseResults();
+        await fetchSupabaseScorers();
+        if (changed) {
+          console.log('✅ Novos resultados detectados! Atualizando interface...');
+          updateGroupStandings && groups.forEach(g => updateGroupStandings(g));
+          calculateQualifiedTeams && calculateQualifiedTeams();
+          renderArtilharia && renderArtilharia();
+        }
+        renderJogosDoDia(); // Sempre re-renderiza jogos do dia
+      }, POLL_INTERVAL_MS);
+
+      // ─── BOTÃO DE REFRESH MANUAL ─────────────────────────────────────────────
+      const refreshBtn = document.getElementById('refresh-scores-btn');
+      const refreshIcon = document.getElementById('refresh-icon');
+      if (refreshBtn) {
+        refreshBtn.addEventListener('click', async () => {
+          refreshBtn.disabled = true;
+          if (refreshIcon) refreshIcon.style.animation = 'spin 0.8s linear infinite';
+          await fetchSupabaseResults();
+          await fetchSupabaseScorers();
+          groups.forEach(g => updateGroupStandings(g));
+          calculateQualifiedTeams();
+          renderArtilharia();
+          renderJogosDoDia();
+          if (refreshIcon) refreshIcon.style.animation = '';
+          refreshBtn.disabled = false;
+        });
+      }
     }
     initApp();
   </script>
