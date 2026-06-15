@@ -501,8 +501,8 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
           }
         }
 
-        const hScore = match.homeScore !== null ? match.homeScore : '-';
-        const aScore = match.awayScore !== null ? match.awayScore : '-';
+        const hScore = (match.isFinished && match.homeScore !== null) ? match.homeScore : '-';
+        const aScore = (match.isFinished && match.awayScore !== null) ? match.awayScore : '-';
 
         return `
           <div class="match-datetime">📅 ${match.datetime || ''} ${match.isFinished ? '<span style="color: var(--color-primary); font-weight: bold; font-size: 0.75rem; margin-left: 0.5rem; border: 1px solid var(--color-primary); padding: 2px 6px; border-radius: 10px; background: rgba(0,255,135,0.1);">✅ Oficial</span>' : ''}</div>
