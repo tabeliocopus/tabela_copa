@@ -66,7 +66,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
             <div class="step-number">3</div>
             <p>
               <strong>Top 3 Artilheiros</strong>
-              Clique na bola de futebol ⚽ ao lado do placar para cadastrar gols. Acompanhe em tempo real os 3 maiores artilheiros na aba <strong>Artilharia</strong>!
+              Acompanhe em tempo real os 3 maiores artilheiros oficiais da Copa do Mundo na aba <strong>Artilharia</strong>!
             </p>
           </div>
           <div class="step-item">
@@ -201,7 +201,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
           </tbody>
         </table>
         <div id="no-scorers-msg" class="text-center text-muted py-6">
-          Nenhum gol marcado ainda. Digite placares nos jogos e clique no ícone de bola de futebol ⚽ ao lado do placar para cadastrar os gols!
+          A lista oficial de artilheiros será atualizada automaticamente em tempo real assim que os primeiros gols da Copa forem marcados!
         </div>
       </div>
     </section>
@@ -361,17 +361,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       </div>
     </div>
 
-    <!-- MODAL 2: SELECT SCORER (ARTILHARIA SELECTION) -->
-    <div class="modal-overlay" id="scorer-modal">
-      <div class="glass-card modal-content" style="max-width: 400px;">
-        <button class="close-modal-btn" id="close-scorer-modal">&times;</button>
-        <h3 style="font-weight: 700; margin-bottom: 1rem; text-align: center; color: var(--color-secondary);" id="scorer-modal-title">Quem marcou o gol?</h3>
-        
-        <div class="squad-modal-grid" id="scorer-players-list">
-          <!-- Populated via JS -->
-        </div>
-      </div>
-    </div>
+    <!-- MODAL 2: REMOVED (ARTILHARIA IS NOW OFFICIAL ONLY) -->
 
     <!-- MODAL 3: SQUAD DETAILS (ELENCO DETAILS) -->
     <div class="modal-overlay" id="squad-modal">
@@ -429,7 +419,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
   <script is:inline define:vars={{ initialMatches, teams, groups, supabaseUrl, supabaseAnonKey }}>
     // We pass JSON variables safely from Astro metadata to browser JS
     let matches = JSON.parse(JSON.stringify(initialMatches));
-    let scorersDb = {}; // { "Cristiano Ronaldo": { goals: 2, teamCode: "pt", teamName: "Portugal" } }
+    let artilheirosReais = []; // Lista oficial atualizada em tempo real
     let bracket = Array(31).fill(null); // Bracket slots: R32 (0-15), R16 (16-23), QF (24-27), SF (28-29), Final (30)
 
     // Selectors
@@ -442,8 +432,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
     const downloadBtn = document.getElementById('download-btn');
     const resetBtn = document.getElementById('reset-btn');
     
-    const scorerModal = document.getElementById('scorer-modal');
-    const closeScorerModal = document.getElementById('close-scorer-modal');
+    // scorer modal logic removed
     
     const squadModal = document.getElementById('squad-modal');
     const closeSquadModal = document.getElementById('close-squad-modal');
@@ -538,9 +527,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
               <select class="score-input" id="${match.id}-home" data-match-id="${match.id}" data-side="home">
                 ${generateScoreOptions(match.homeScore)}
               </select>
-              <button class="goal-scorer-btn" data-match-id="${match.id}" data-side="home" style="background:none; border:none; cursor:pointer; font-size:0.8rem; display: ${match.homeScore > 0 ? 'inline' : 'none'};">⚽</button>
               <span class="match-vs">x</span>
-              <button class="goal-scorer-btn" data-match-id="${match.id}" data-side="away" style="background:none; border:none; cursor:pointer; font-size:0.8rem; display: ${match.awayScore > 0 ? 'inline' : 'none'};">⚽</button>
               <select class="score-input" id="${match.id}-away" data-match-id="${match.id}" data-side="away">
                 ${generateScoreOptions(match.awayScore)}
               </select>
@@ -1026,64 +1013,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       squadModal.classList.add('active');
     }
 
-    // Modal: Goal Scorer Modal (Artilharia Selector)
-    let activeMatchScorer = null;
-    let activeSideScorer = null;
-
-    function openScorerModal(matchId, side) {
-      const match = matches.find(m => m.id === matchId);
-      if (!match) return;
-
-      activeMatchScorer = matchId;
-      activeSideScorer = side;
-
-      const teamId = side === 'home' ? match.homeId : match.awayId;
-      const team = teams[teamId];
-
-      document.getElementById('scorer-modal-title').textContent = `Quem marcou por ${team.name}?`;
-      const listContainer = document.getElementById('scorer-players-list');
-      listContainer.innerHTML = '';
-
-      team.players.forEach(pName => {
-        const div = document.createElement('div');
-        div.className = 'player-card';
-        div.style.cursor = 'pointer';
-        
-        const currentGoals = (match.scorers[side] || []).filter(name => name === pName).length;
-        
-        div.innerHTML = `
-          <div class="player-info">
-            <div class="player-avatar">${pName.charAt(0)}</div>
-            <div>
-              <div class="player-name">${pName}</div>
-              <div class="player-role">${currentGoals > 0 ? `⚽ Marcou ${currentGoals} gol(s)` : 'Adicionar Gol'}</div>
-            </div>
-          </div>
-        `;
-
-        div.addEventListener('click', () => {
-          // Increment goal for this player
-          if (!match.scorers[side]) match.scorers[side] = [];
-          match.scorers[side].push(pName);
-
-          // Update Scorers DB
-          if (!scorersDb[pName]) {
-            scorersDb[pName] = { goals: 0, teamCode: team.code, teamName: team.name };
-          }
-          scorersDb[pName].goals += 1;
-
-          renderArtilharia();
-          saveLocalState();
-          
-          // Re-render modal to show incremented goal count
-          openScorerModal(matchId, side);
-        });
-
-        listContainer.appendChild(div);
-      });
-
-      scorerModal.classList.add('active');
-    }
+    // Modal Artilharia removed - now it's fully automated
 
     // Render Golden Boot / Artilharia list
     function renderArtilharia() {
@@ -1091,10 +1021,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       const noMsg = document.getElementById('no-scorers-msg');
       tbody.innerHTML = '';
 
-      const list = Object.keys(scorersDb)
-        .map(pName => ({ name: pName, ...scorersDb[pName] }))
-        .sort((a, b) => b.goals - a.goals)
-        .slice(0, 3); // Apenas top 3
+      const list = artilheirosReais.slice(0, 3); // Apenas top 3
 
       if (list.length > 0) {
         noMsg.style.display = 'none';
@@ -1119,14 +1046,13 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
     function saveLocalState() {
       localStorage.setItem('sim_matches', JSON.stringify(matches));
       localStorage.setItem('sim_bracket', JSON.stringify(bracket));
-      localStorage.setItem('sim_scorers', JSON.stringify(scorersDb));
     }
 
     // Load state locally
     function loadLocalState() {
       const savedMatches = localStorage.getItem('sim_matches');
       const savedBracket = localStorage.getItem('sim_bracket');
-      const savedScorers = localStorage.getItem('sim_scorers');
+      // sim_scorers local var removed
 
       let isValid = true;
       if (savedMatches) {
@@ -1157,19 +1083,12 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
             }
           } catch (e) {}
         }
-        if (savedScorers) {
-          try {
-            const parsedScorers = JSON.parse(savedScorers);
-            if (parsedScorers && typeof parsedScorers === 'object') {
-              scorersDb = parsedScorers;
-            }
-          } catch (e) {}
-        }
+        // local scorers load removed
       } else {
         console.warn("Outdated simulation state detected. Resetting local storage for compatibility.");
         localStorage.removeItem('sim_matches');
         localStorage.removeItem('sim_bracket');
-        localStorage.removeItem('sim_scorers');
+        // local scorers removeItem removed
       }
     }
 
