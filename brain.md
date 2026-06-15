@@ -712,3 +712,25 @@ DEPOIS:
 
 ### Arquivos Modificados:
 - `src/layouts/Layout.astro`
+
+---
+
+## Atualização — Refatoração para Tabela da Copa e Foco em Jogos de Hoje
+
+**Data:** 15 de Junho de 2026
+**Status:** Implementado e publicado no GitHub.
+
+### O que mudou:
+1. **Novo Conceito Principal (Tabela da Copa):**
+   - O termo "Simulador" foi globalmente substituído por "Tabela da Copa".
+   - O apelo agora é: **Preencha sua Tabela da Copa, baixe e imprima como recordação**. Todo o texto do onboarding e tooltips foi atualizado.
+
+2. **Jogos de Hoje em Destaque:**
+   - Adicionada uma nova visualização padrão **📅 Jogos Hoje** que exibe as partidas do dia atual (como informativos `- x -` até serem finalizadas) e os **Placares Oficiais de Ontem** (forçando a exibição do placar).
+
+3. **Artilharia Top 3 (Em tempo real):**
+   - A tabela de **Artilharia** foi modificada para exibir estritamente os **3 Maiores Artilheiros** (com medalhas 🥇, 🥈, 🥉).
+
+4. **Bolão do Brasil Exclusivo:**
+   - O Bolão teve seus textos e chamadas alterados para deixar extremamente claro que o foco competitivo da plataforma é participar do **Bolão apenas para os jogos da Seleção Brasileira**.
+   - Removidas menções a "Ranking Geral da Copa do Mundo", substituídas por "Ranking do Brasil".
