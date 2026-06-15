@@ -1961,6 +1961,28 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
         }
       } catch(e) { console.error('Erro ao buscar resultados reais', e); }
 
+      // Buscar artilheiros oficiais do Supabase (sincronizados via api-football.com)
+      try {
+        let cleanUrl = (supabaseUrl || '').trim().replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
+        if (cleanUrl && supabaseAnonKey) {
+          const artRes = await fetch(cleanUrl + '/rest/v1/artilheiros_reais?select=*&order=goals.desc&limit=20', {
+            headers: { 'apikey': supabaseAnonKey, 'Authorization': 'Bearer ' + supabaseAnonKey }
+          });
+          if (artRes.ok) {
+            const artData = await artRes.json();
+            artilheirosReais = artData.map(a => ({
+              name: a.player_name,
+              teamCode: a.team_code,
+              teamName: a.team_name,
+              goals: a.goals,
+              assists: a.assists || 0,
+              photo: a.player_photo || null,
+            }));
+            console.log(`⚽ ${artilheirosReais.length} artilheiro(s) carregados do Supabase.`);
+          }
+        }
+      } catch(e) { console.error('Erro ao buscar artilheiros reais', e); }
+
       initGroups();
       calculateQualifiedTeams();
       renderArtilharia();
