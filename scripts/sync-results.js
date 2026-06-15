@@ -1,31 +1,37 @@
-// sync-results.js - ESM compatible (Node 18+)
+// sync-results.js - Sincroniza placares da Copa 2026 via api-football.com
+// Usa o endpoint /fixtures com league=1 (World Cup) e season=2026
 
 // ─── CONFIG ────────────────────────────────────────────────────────────────
-const FOOTBALL_TOKEN = process.env.FOOTBALL_DATA_TOKEN || '738986c2808c4be681f13d3c3f54c81b';
-const SUPABASE_URL   = process.env.SUPABASE_URL        || 'https://lxmzkemrtbdburygyjxj.supabase.co';
-const SUPABASE_KEY   = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY || '';
+const API_FOOTBALL_KEY = process.env.API_FOOTBALL_KEY || '';
+const SUPABASE_URL     = process.env.SUPABASE_URL     || 'https://lxmzkemrtbdburygyjxj.supabase.co';
+const SUPABASE_KEY     = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY || '';
 
-// ─── MAPEAMENTO: TLA da API → nosso teamId interno ─────────────────────────
-const TLA_TO_ID = {
-  'MEX': 'MX', 'RSA': 'ZA', 'KOR': 'KR', 'CZE': 'CZ',
-  'CAN': 'CA', 'BIH': 'BA', 'QAT': 'QA', 'SUI': 'CH',
-  'BRA': 'BR', 'MAR': 'MA', 'HAI': 'HT', 'SCO': 'GB-SCT',
-  'USA': 'US', 'PAR': 'PY', 'AUS': 'AU', 'TUR': 'TR',
-  'GER': 'DE', 'CUW': 'CW', 'CIV': 'CI', 'ECU': 'EC',
-  'NED': 'NL', 'JPN': 'JP', 'SWE': 'SE', 'TUN': 'TN',
-  'ESP': 'ES', 'CPV': 'CV', 'BEL': 'BE', 'EGY': 'EG',
-  'IRN': 'IR', 'NZL': 'NZ', 'KSA': 'SA', 'URY': 'UY',
-  'FRA': 'FR', 'SEN': 'SN', 'IRQ': 'IQ', 'NOR': 'NO',
-  'ARG': 'AR', 'ALG': 'DZ', 'AUT': 'AT', 'JOR': 'JO',
-  'POR': 'PT', 'COD': 'CD', 'ENG': 'GB-ENG', 'CRO': 'HR',
-  'GHA': 'GH', 'PAN': 'PA', 'UZB': 'UZ', 'COL': 'CO',
-  'CON': 'CD', // fallback alternativo para Congo
+const WC_LEAGUE_ID = 1;
+const WC_SEASON    = 2026;
+
+// ─── MAPEAMENTO: nome do país (api-football) → nosso teamId interno ────────
+const COUNTRY_TO_CODE = {
+  'Mexico': 'MX', 'South Africa': 'ZA', 'South Korea': 'KR', 'Czech Republic': 'CZ',
+  'Canada': 'CA', 'Bosnia And Herzegovina': 'BA', 'Bosnia and Herzegovina': 'BA',
+  'Qatar': 'QA', 'Switzerland': 'CH',
+  'Brazil': 'BR', 'Morocco': 'MA', 'Haiti': 'HT', 'Scotland': 'GB-SCT',
+  'USA': 'US', 'United States': 'US', 'Paraguay': 'PY', 'Australia': 'AU', 'Turkey': 'TR',
+  'Germany': 'DE', 'Curacao': 'CW', 'Curaçao': 'CW',
+  'Ivory Coast': 'CI', 'Cote D\'Ivoire': 'CI', 'Côte d\'Ivoire': 'CI',
+  'Ecuador': 'EC',
+  'Netherlands': 'NL', 'Japan': 'JP', 'Sweden': 'SE', 'Tunisia': 'TN',
+  'Belgium': 'BE', 'Egypt': 'EG', 'Iran': 'IR', 'New Zealand': 'NZ',
+  'Cape Verde': 'CV', 'Cabo Verde': 'CV', 'Saudi Arabia': 'SA',
+  'Spain': 'ES', 'Uruguay': 'UY',
+  'France': 'FR', 'Senegal': 'SN', 'Iraq': 'IQ', 'Norway': 'NO',
+  'Argentina': 'AR', 'Algeria': 'DZ', 'Austria': 'AT', 'Jordan': 'JO',
+  'Portugal': 'PT', 'DR Congo': 'CD', 'Congo DR': 'CD',
+  'England': 'GB-ENG', 'Croatia': 'HR',
+  'Ghana': 'GH', 'Panama': 'PA', 'Uzbekistan': 'UZ', 'Colombia': 'CO',
 };
 
 // ─── MAPEAMENTO: grupo + times → nosso matchId interno ─────────────────────
 // Par de teamIds (sempre ordenado alfabeticamente) → matchId
-// Estrutura de cada grupo (T1, T2, T3, T4 seguindo a ordem em worldCupData.js):
-// M1: T1xT2, M2: T3xT4, M3: T1xT3, M4: T2xT4, M5: T1xT4, M6: T2xT3
 const GROUP_TEAMS = {
   A: ['MX', 'ZA', 'KR', 'CZ'],
   B: ['CA', 'BA', 'QA', 'CH'],
@@ -41,7 +47,6 @@ const GROUP_TEAMS = {
   L: ['HR', 'GB-ENG', 'GH', 'PA'],
 };
 
-// Constrói o mapa: "T1|T2" (sorted) → "X_MY" para todos os grupos
 const MATCH_PAIR_TO_ID = {};
 Object.keys(GROUP_TEAMS).forEach(g => {
   const [t1, t2, t3, t4] = GROUP_TEAMS[g];
@@ -57,19 +62,33 @@ Object.keys(GROUP_TEAMS).forEach(g => {
 });
 
 // ─── HELPERS ───────────────────────────────────────────────────────────────
-async function apiGet(url, headers) {
-  const res = await fetch(url, { headers });
-  if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text()}`);
-  return res.json();
+async function apiFootballGet(endpoint, params = {}) {
+  const url = new URL(`https://v3.football.api-sports.io/${endpoint}`);
+  Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+
+  const res = await fetch(url.toString(), {
+    headers: { 'x-apisports-key': API_FOOTBALL_KEY }
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`API-Football error ${res.status}: ${text}`);
+  }
+
+  const data = await res.json();
+  if (data.errors && Object.keys(data.errors).length > 0) {
+    throw new Error(`API-Football errors: ${JSON.stringify(data.errors)}`);
+  }
+  return data;
 }
 
-async function supabaseUpsert(url, key, rows) {
-  const res = await fetch(`${url}/rest/v1/resultados_reais`, {
+async function supabaseUpsert(rows) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/resultados_reais`, {
     method: 'POST',
     headers: {
       'Content-Type':  'application/json',
-      'apikey':        key,
-      'Authorization': `Bearer ${key}`,
+      'apikey':        SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
       'Prefer':        'resolution=merge-duplicates,return=minimal',
     },
     body: JSON.stringify(rows),
@@ -79,36 +98,46 @@ async function supabaseUpsert(url, key, rows) {
 
 // ─── MAIN ──────────────────────────────────────────────────────────────────
 async function syncResults() {
-  console.log('🔄 Sincronizando resultados da Copa 2026...\n');
+  console.log('🔄 Sincronizando resultados da Copa 2026 (api-football.com)...\n');
 
-  if (!SUPABASE_KEY) {
-    console.error('❌ SUPABASE_SERVICE_KEY não configurada!');
-    console.log('   Configure via: set SUPABASE_SERVICE_KEY=sua_chave');
+  if (!API_FOOTBALL_KEY) {
+    console.error('❌ API_FOOTBALL_KEY não configurada!');
+    console.log('   Configure via: set API_FOOTBALL_KEY=sua_chave');
     process.exit(1);
   }
 
-  // 1. Busca todos os jogos da fase de grupos na API
-  const apiData = await apiGet(
-    'https://api.football-data.org/v4/competitions/WC/matches?season=2026&stage=GROUP_STAGE',
-    { 'X-Auth-Token': FOOTBALL_TOKEN }
-  );
+  if (!SUPABASE_KEY) {
+    console.error('❌ SUPABASE_SERVICE_KEY não configurada!');
+    process.exit(1);
+  }
 
-  const matches = apiData.matches || [];
-  const finished = matches.filter(m => m.status === 'FINISHED');
+  // 1. Busca todos os jogos da Copa do Mundo
+  const apiData = await apiFootballGet('fixtures', {
+    league: WC_LEAGUE_ID,
+    season: WC_SEASON
+  });
+
+  const fixtures = apiData.response || [];
   
-  console.log(`📡 API retornou ${matches.length} jogos, sendo ${finished.length} finalizados.\n`);
+  // Na api-football, status 'FT' = finalizado, 'AET' = prorrogacao finalizada, 'PEN' = penaltis finalizado
+  // '1H', '2H', 'HT' = in play
+  const validStatuses = ['FT', 'AET', 'PEN', '1H', '2H', 'HT', 'ET', 'P'];
+  
+  const relevantFixtures = fixtures.filter(f => validStatuses.includes(f.fixture.status.short));
+  
+  console.log(`📡 API retornou ${fixtures.length} jogos, sendo ${relevantFixtures.length} em andamento ou finalizados.\n`);
 
-  // 2. Mapeia cada jogo finalizado para nosso matchId
+  // 2. Mapeia cada jogo para nosso matchId
   const toSync = [];
   
-  for (const m of finished) {
-    const homeTla = m.homeTeam.tla;
-    const awayTla = m.awayTeam.tla;
-    const homeId  = TLA_TO_ID[homeTla];
-    const awayId  = TLA_TO_ID[awayTla];
+  for (const f of relevantFixtures) {
+    const homeName = f.teams.home.name;
+    const awayName = f.teams.away.name;
+    const homeId  = COUNTRY_TO_CODE[homeName];
+    const awayId  = COUNTRY_TO_CODE[awayName];
 
     if (!homeId || !awayId) {
-      console.warn(`⚠️  TLA não mapeado: ${homeTla} ou ${awayTla}`);
+      // Ignora times não mapeados (pode ser mata-mata ainda indefinido)
       continue;
     }
 
@@ -116,44 +145,44 @@ async function syncResults() {
     const info = MATCH_PAIR_TO_ID[key];
 
     if (!info) {
-      console.warn(`⚠️  Par não encontrado no mapa: ${homeId} | ${awayId}`);
+      // Pode ser jogo de mata-mata real (que não mapeamos no MATCH_PAIR_TO_ID)
       continue;
     }
 
-    // Determina placar na orientação correta (home/away do nosso sistema)
-    // Nossa definição de "home" é sempre T1 na ordem do worldCupData.js
-    const score = m.score.fullTime;
-    let homeScore, awayScore;
+    const scoreHome = f.goals.home !== null ? f.goals.home : 0;
+    const scoreAway = f.goals.away !== null ? f.goals.away : 0;
+    
+    let finalHomeScore, finalAwayScore;
 
     if (homeId === info.homeId) {
-      // Mesma orientação que a API
-      homeScore = score.home;
-      awayScore = score.away;
+      finalHomeScore = scoreHome;
+      finalAwayScore = scoreAway;
     } else {
-      // Orientação invertida — swap
-      homeScore = score.away;
-      awayScore = score.home;
+      finalHomeScore = scoreAway;
+      finalAwayScore = scoreHome;
     }
+
+    const isFinished = ['FT', 'AET', 'PEN'].includes(f.fixture.status.short);
 
     toSync.push({
       match_id:   info.matchId,
-      home_score: homeScore,
-      away_score: awayScore,
-      status:     'FINISHED',
+      home_score: finalHomeScore,
+      away_score: finalAwayScore,
+      status:     isFinished ? 'FINISHED' : 'IN_PLAY',
     });
 
-    console.log(`  ✅ ${info.matchId}: ${homeTla} ${score.home}x${score.away} ${awayTla} → [${info.matchId}] ${homeScore}x${awayScore}`);
+    console.log(`  ✅ ${info.matchId}: ${homeName} ${scoreHome}x${scoreAway} ${awayName} → [${info.matchId}] ${finalHomeScore}x${finalAwayScore} (${isFinished ? 'FINISHED' : 'IN_PLAY'})`);
   }
 
   if (toSync.length === 0) {
-    console.log('\nℹ️  Nenhum jogo finalizado para sincronizar.');
+    console.log('\nℹ️  Nenhum jogo relevante para sincronizar.');
     return;
   }
 
   console.log(`\n📥 Enviando ${toSync.length} resultado(s) para o Supabase...`);
 
   // 3. Upsert em lotes no Supabase
-  const res = await supabaseUpsert(SUPABASE_URL, SUPABASE_KEY, toSync);
+  const res = await supabaseUpsert(toSync);
 
   if (res.status >= 200 && res.status < 300) {
     console.log(`\n🎉 Sincronização concluída! ${toSync.length} resultado(s) salvos.\n`);
