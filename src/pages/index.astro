@@ -417,6 +417,21 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
 
   <!-- CLIENT-SIDE LOGIC -->
   <script is:inline define:vars={{ initialMatches, teams, groups, supabaseUrl, supabaseAnonKey }}>
+    window.onerror = function(msg, url, line, col, error) {
+      document.body.innerHTML = `<div style="color:red; padding:2rem; background:white; font-size:1.5rem; z-index:9999; position:absolute; top:0; left:0; width:100%;">
+        <h3>JS Error:</h3>
+        <p>${msg}</p>
+        <p>Line: ${line}, Col: ${col}</p>
+        <p>${error ? error.stack : ''}</p>
+      </div>` + document.body.innerHTML;
+    };
+    window.onunhandledrejection = function(event) {
+      document.body.innerHTML = `<div style="color:red; padding:2rem; background:white; font-size:1.5rem; z-index:9999; position:absolute; top:0; left:0; width:100%;">
+        <h3>Unhandled Promise Rejection:</h3>
+        <p>${event.reason}</p>
+      </div>` + document.body.innerHTML;
+    };
+
     // We pass JSON variables safely from Astro metadata to browser JS
     let matches = JSON.parse(JSON.stringify(initialMatches));
     let artilheirosReais = []; // Lista oficial atualizada em tempo real
