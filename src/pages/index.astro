@@ -1232,14 +1232,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
         };
       });
 
-      const topScorers = Object.keys(scorersDb)
-        .map(player => ({
-          player,
-          team: scorersDb[player].teamName,
-          goals: scorersDb[player].goals
-        }))
-        .sort((a, b) => b.goals - a.goals)
-        .slice(0, 5);
+      const topScorers = artilheirosReais.slice(0, 5);
 
       return {
         champion: getTeamName(championId),
@@ -1247,8 +1240,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
         topScorers,
         bracketSummary,
         matches,
-        bracket,
-        scorers: scorersDb
+        bracket
       };
     }
 
