@@ -175,13 +175,21 @@ export const generateMatches = () => {
       { home: t2, away: t3, round: 3, pairingIdx: 1 }
     ];
 
-    const groupStartDays = {
-      'A': 11, 'B': 12, 'C': 13, 'D': 13, 'E': 14, 'F': 14,
-      'G': 15, 'H': 15, 'I': 16, 'J': 17, 'K': 17, 'L': 17
+    // Precise calendar days for Rounds 1 and 2 (June 2026) based on official API
+    const groupDates = {
+      'A': [11, 12, 18, 19],
+      'B': [12, 13, 18, 18],
+      'C': [13, 14, 19, 20],
+      'D': [13, 14, 19, 20],
+      'E': [14, 14, 20, 21],
+      'F': [14, 15, 20, 21],
+      'G': [15, 16, 21, 22],
+      'H': [15, 15, 21, 22],
+      'I': [16, 16, 22, 23],
+      'J': [17, 17, 22, 23],
+      'K': [17, 18, 23, 24],
+      'L': [17, 17, 23, 23]
     };
-    const startDay = groupStartDays[groupLetter];
-
-    const venues = groupVenues[groupLetter] || groupVenues["A"];
 
     function getMatchDateTime(round, pairingIdx) {
       function formatMatchDate(dVal, time) {
@@ -195,18 +203,13 @@ export const generateMatches = () => {
       let timeStr;
 
       if (round === 1) {
-        // Spread the two group openers over two days for most groups
-        dayVal = startDay + pairingIdx;
+        dayVal = groupDates[groupLetter][pairingIdx];
         timeStr = pairingIdx === 0 ? '16:00' : '19:00';
         
-        // Special case for Group A Opener logic (Match 1 is the very first)
-        if (groupLetter === 'A') {
-          dayVal = 11 + pairingIdx;
-          timeStr = pairingIdx === 0 ? '16:00' : '23:00';
-        }
+        // Special case for Mexico opening slot
+        if (groupLetter === 'A' && pairingIdx === 1) timeStr = '23:00';
       } else if (round === 2) {
-        // Move Round 2 to StartDay + 7 to allow for rest and better distribution
-        dayVal = startDay + 7 + pairingIdx;
+        dayVal = groupDates[groupLetter][pairingIdx + 2];
         timeStr = pairingIdx === 0 ? '16:00' : '19:00';
       } else {
         // Round 3 - Geographic clustering for simultaneous matches remains
