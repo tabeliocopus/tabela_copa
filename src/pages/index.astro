@@ -2037,8 +2037,8 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       renderArtilharia();
       parseUrlParams();
 
-      // ─── POLLING AUTOMÁTICO A CADA 5 MINUTOS ─────────────────────────────────
-      const POLL_INTERVAL_MS = 5 * 60 * 1000; // 5 minutos
+      // ─── POLLING AUTOMÁTICO A CADA 1 MINUTO ─────────────────────────────────
+      const POLL_INTERVAL_MS = 1 * 60 * 1000; // 1 minuto
       setInterval(async () => {
         console.log('🔄 Polling automático do Supabase...');
         const changed = await fetchSupabaseResults();

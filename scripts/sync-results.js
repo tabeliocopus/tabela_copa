@@ -14,12 +14,12 @@ const TLA_TO_ID = {
   'GER': 'DE', 'CUW': 'CW', 'CIV': 'CI', 'ECU': 'EC',
   'NED': 'NL', 'JPN': 'JP', 'SWE': 'SE', 'TUN': 'TN',
   'ESP': 'ES', 'CPV': 'CV', 'BEL': 'BE', 'EGY': 'EG',
-  'IRN': 'IR', 'NZL': 'NZ', 'KSA': 'SA', 'URU': 'UY',
+  'IRN': 'IR', 'NZL': 'NZ', 'KSA': 'SA', 'URU': 'UY', 'CUR': 'CW',
   'FRA': 'FR', 'SEN': 'SN', 'IRQ': 'IQ', 'NOR': 'NO',
   'ARG': 'AR', 'ALG': 'DZ', 'AUT': 'AT', 'JOR': 'JO',
   'POR': 'PT', 'COD': 'CD', 'ENG': 'GB-ENG', 'CRO': 'HR',
   'GHA': 'GH', 'PAN': 'PA', 'UZB': 'UZ', 'COL': 'CO',
-  'CON': 'CD', // fallback alternativo para Congo
+  'CON': 'CD', 'SAU': 'SA', // fallbacks extras
 };
 
 // ─── MAPEAMENTO: grupo + times → nosso matchId interno ─────────────────────
