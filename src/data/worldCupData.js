@@ -190,7 +190,7 @@ export const generateMatches = () => {
       'D': [13, 14, 19, 20],
       'E': [14, 14, 20, 21],
       'F': [14, 15, 20, 21],
-      'G': [15, 16, 21, 22],
+      'G': [15, 15, 21, 22],
       'H': [15, 15, 21, 22],
       'I': [16, 16, 22, 23],
       'J': [16, 16, 22, 23],
@@ -212,16 +212,15 @@ export const generateMatches = () => {
       if (round === 1) {
         dayVal = groupDates[groupLetter][pairingIdx];
         
-        // Distribution of kick-off times (14h, 17h, 20h, 23h)
-        const times = ['14:00', '17:00', '20:00', '23:00'];
         const groupIdx = groupLetter.charCodeAt(0) - 65;
-        timeStr = times[(groupIdx + pairingIdx) % 4];
-
-        // Specific overrides for today's groups (K and L) based on user report
-        if (groupLetter === 'K') {
-          timeStr = pairingIdx === 0 ? '14:00' : '23:00';
-        } else if (groupLetter === 'L') {
-          timeStr = pairingIdx === 0 ? '17:00' : '20:00';
+        
+        // Spread matches so they don't all cluster at the same hour
+        // Group G (6), I (8), K (10) -> idx 0 @ 14:00, idx 1 @ 20:00
+        // Group H (7), J (9), L (11) -> idx 0 @ 17:00, idx 1 @ 23:00
+        if (groupIdx % 2 === 0) {
+          timeStr = pairingIdx === 0 ? '14:00' : '20:00';
+        } else {
+          timeStr = pairingIdx === 0 ? '17:00' : '23:00';
         }
 
         // Special case for Mexico opening slot

@@ -92,6 +92,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       <div class="glass-card" style="margin-bottom: 2rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
           <h2 style="color: var(--color-primary); font-weight: 700; margin: 0;">📅 Jogos de Hoje</h2>
+          <span style="font-size: 0.7rem; color: var(--color-primary); opacity: 0.8; font-weight: 600; margin-left: 0.5rem; letter-spacing: 0.05em;">• Horários de Brasília (UTC-3)</span>
           <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
             <span id="last-update-label" style="font-size: 0.75rem; color: var(--text-muted);">Carregando...</span>
             <button id="refresh-scores-btn" title="Atualizar placares agora" style="background: rgba(0,255,135,0.1); border: 1px solid var(--color-primary); color: var(--color-primary); border-radius: 8px; padding: 0.3rem 0.75rem; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 0.35rem; transition: all 0.2s;">
