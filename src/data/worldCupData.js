@@ -193,7 +193,7 @@ export const generateMatches = () => {
       'G': [15, 16, 21, 22],
       'H': [15, 15, 21, 22],
       'I': [16, 16, 22, 23],
-      'J': [16, 17, 22, 23],
+      'J': [16, 16, 22, 23],
       'K': [17, 17, 23, 24],
       'L': [17, 17, 23, 23]
     };
@@ -211,13 +211,20 @@ export const generateMatches = () => {
 
       if (round === 1) {
         dayVal = groupDates[groupLetter][pairingIdx];
-        timeStr = pairingIdx === 0 ? '16:00' : '19:00';
         
+        // Real-world distribution of kick-off times (14h, 17h, 20h, 23h)
+        const times = ['14:00', '17:00', '20:00', '23:00'];
+        // Use group index + pairing to spread times across the day
+        const groupIdx = groupLetter.charCodeAt(0) - 65;
+        timeStr = times[(groupIdx + pairingIdx) % 4];
+
         // Special case for Mexico opening slot
         if (groupLetter === 'A' && pairingIdx === 1) timeStr = '23:00';
       } else if (round === 2) {
         dayVal = groupDates[groupLetter][pairingIdx + 2];
-        timeStr = pairingIdx === 0 ? '16:00' : '19:00';
+        const times = ['13:00', '16:00', '19:00', '21:30'];
+        const groupIdx = groupLetter.charCodeAt(0) - 65;
+        timeStr = times[(groupIdx + pairingIdx) % 4];
       } else {
         // Round 3 - Geographic clustering for simultaneous matches remains
         if (['A', 'B', 'C', 'D'].includes(groupLetter)) dayVal = 24;
