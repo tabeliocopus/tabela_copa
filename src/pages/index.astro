@@ -586,6 +586,10 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       const todayMatches = matches.filter(m => m.datetime.startsWith(todayStr));
       const yesterdayMatches = matches.filter(m => m.datetime.startsWith(yesterdayStr));
 
+      // Sort matches chronologically by time
+      todayMatches.sort((a, b) => a.datetime.localeCompare(b.datetime));
+      yesterdayMatches.sort((a, b) => a.datetime.localeCompare(b.datetime));
+
       todayContainer.innerHTML = '';
       yesterdayContainer.innerHTML = '';
 

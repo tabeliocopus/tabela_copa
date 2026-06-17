@@ -212,11 +212,17 @@ export const generateMatches = () => {
       if (round === 1) {
         dayVal = groupDates[groupLetter][pairingIdx];
         
-        // Real-world distribution of kick-off times (14h, 17h, 20h, 23h)
+        // Distribution of kick-off times (14h, 17h, 20h, 23h)
         const times = ['14:00', '17:00', '20:00', '23:00'];
-        // Use group index + pairing to spread times across the day
         const groupIdx = groupLetter.charCodeAt(0) - 65;
         timeStr = times[(groupIdx + pairingIdx) % 4];
+
+        // Specific overrides for today's groups (K and L) based on user report
+        if (groupLetter === 'K') {
+          timeStr = pairingIdx === 0 ? '14:00' : '23:00';
+        } else if (groupLetter === 'L') {
+          timeStr = pairingIdx === 0 ? '17:00' : '20:00';
+        }
 
         // Special case for Mexico opening slot
         if (groupLetter === 'A' && pairingIdx === 1) timeStr = '23:00';
