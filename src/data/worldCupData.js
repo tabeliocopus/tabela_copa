@@ -222,6 +222,8 @@ export const generateMatches = () => {
       return formatMatchDate(dayVal, timeStr);
     }
 
+    const venues = groupVenues[groupLetter] || groupVenues["A"];
+
     pairings.forEach((p, idx) => {
       const venueIdx = idx % 3;
       const venue = venues[venueIdx] || venues[0];
