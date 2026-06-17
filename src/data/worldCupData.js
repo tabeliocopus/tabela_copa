@@ -147,24 +147,31 @@ const groupVenues = {
 // Generate match schedules automatically for each group
 export const generateMatches = () => {
   const matches = [];
-  const groupTeams = {};
 
-  // Group teams by their group letter
-  Object.keys(teams).forEach(key => {
-    const team = teams[key];
-    if (!groupTeams[team.group]) {
-      groupTeams[team.group] = [];
-    }
-    groupTeams[team.group].push({ id: key, ...team });
-  });
+  // Explicitly define the team order for each group to ensure t1, t2, t3, t4 
+  // match the API mapping exactly, regardless of object key order.
+  const groupTeamsMap = {
+    A: ['MX', 'ZA', 'KR', 'CZ'],
+    B: ['CA', 'BA', 'QA', 'CH'],
+    C: ['BR', 'MA', 'HT', 'GB-SCT'],
+    D: ['US', 'PY', 'AU', 'TR'],
+    E: ['DE', 'CW', 'CI', 'EC'],
+    F: ['NL', 'JP', 'SE', 'TN'],
+    G: ['BE', 'EG', 'IR', 'NZ'],
+    H: ['ES', 'CV', 'SA', 'UY'],
+    I: ['FR', 'SN', 'IQ', 'NO'],
+    J: ['AR', 'DZ', 'AT', 'JO'],
+    K: ['PT', 'CD', 'UZ', 'CO'],
+    L: ['GB-ENG', 'HR', 'GH', 'PA'],
+  };
 
   // Official Pairing Pattern M1-M6 (Pattern: 1-2, 3-4, 4-2, 1-3, 4-1, 2-3)
-  Object.keys(groupTeams).forEach(groupLetter => {
-    const list = groupTeams[groupLetter];
-    const t1 = list[0];
-    const t2 = list[1];
-    const t3 = list[2];
-    const t4 = list[3];
+  Object.keys(groupTeamsMap).forEach(groupLetter => {
+    const teamIds = groupTeamsMap[groupLetter];
+    const t1 = { id: teamIds[0], ...teams[teamIds[0]] };
+    const t2 = { id: teamIds[1], ...teams[teamIds[1]] };
+    const t3 = { id: teamIds[2], ...teams[teamIds[2]] };
+    const t4 = { id: teamIds[3], ...teams[teamIds[3]] };
 
     const pairings = [
       { home: t1, away: t2, round: 1, pairingIdx: 0 },
