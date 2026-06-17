@@ -42,32 +42,32 @@ export const teams = {
   "NZ": { name: "Nova Zelândia", code: "nz", group: "G", players: ["Chris Wood", "Sarpreet Singh", "Liberato Cacace"] },
 
   // Group H
+  "ES": { name: "Espanha", code: "es", group: "H", players: ["Lamine Yamal", "Nico Williams", "Rodri"] },
   "CV": { name: "Cabo Verde", code: "cv", group: "H", players: ["Ryan Mendes", "Garry Rodrigues", "Jovane Cabral"] },
   "SA": { name: "Arábia Saudita", code: "sa", group: "H", players: ["Salem Al-Dawsari", "Firas Al-Buraikan", "Saud Abdulhamid"] },
-  "ES": { name: "Espanha", code: "es", group: "H", players: ["Lamine Yamal", "Nico Williams", "Rodri"] },
   "UY": { name: "Uruguai", code: "uy", group: "H", players: ["Darwin Núñez", "Federico Valverde", "Luis Suárez"] },
 
   // Group I
   "FR": { name: "França", code: "fr", group: "I", players: ["Kylian Mbappé", "Antoine Griezmann", "Ousmane Dembélé"] },
+  "SN": { name: "Senegal", code: "sn", group: "I", players: ["Sadio Mané", "Nicolas Jackson", "Kalidou Koulibaly"] },
   "IQ": { name: "Iraque", code: "iq", group: "I", players: ["Aymen Hussein", "Ali Jasim", "Ibrahim Bayesh"] },
   "NO": { name: "Noruega", code: "no", group: "I", players: ["Erling Haaland", "Martin Ødegaard", "Oscar Bobb"] },
-  "SN": { name: "Senegal", code: "sn", group: "I", players: ["Sadio Mané", "Nicolas Jackson", "Kalidou Koulibaly"] },
 
   // Group J
-  "DZ": { name: "Argélia", code: "dz", group: "J", players: ["Riyad Mahrez", "Said Benrahma", "Amine Gouiri"] },
   "AR": { name: "Argentina", code: "ar", group: "J", players: ["Lionel Messi", "Lautaro Martínez", "Julián Álvarez"] },
+  "DZ": { name: "Argélia", code: "dz", group: "J", players: ["Riyad Mahrez", "Said Benrahma", "Amine Gouiri"] },
   "AT": { name: "Áustria", code: "at", group: "J", players: ["David Alaba", "Marcel Sabitzer", "Konrad Laimer"] },
   "JO": { name: "Jordânia", code: "jo", group: "J", players: ["Musa Al-Taamari", "Yazan Al-Naimat", "Ali Olwan"] },
 
   // Group K
-  "CO": { name: "Colômbia", code: "co", group: "K", players: ["Luis Díaz", "James Rodríguez", "Jhon Durán"] },
-  "CD": { name: "RD Congo", code: "cd", group: "K", players: ["Yoane Wissa", "Chancel Mbemba", "Arthur Masuaku"] },
   "PT": { name: "Portugal", code: "pt", group: "K", players: ["Cristiano Ronaldo", "Bruno Fernandes", "Rafael Leão"] },
+  "CD": { name: "RD Congo", code: "cd", group: "K", players: ["Yoane Wissa", "Chancel Mbemba", "Arthur Masuaku"] },
   "UZ": { name: "Uzbequistão", code: "uz", group: "K", players: ["Eldor Shomurodov", "Abbosbek Fayzullaev", "Oston Urunov"] },
+  "CO": { name: "Colômbia", code: "co", group: "K", players: ["Luis Díaz", "James Rodríguez", "Jhon Durán"] },
 
   // Group L
-  "HR": { name: "Croácia", code: "hr", group: "L", players: ["Luka Modrić", "Mateo Kovačić", "Joško Gvardiol"] },
   "GB-ENG": { name: "Inglaterra", code: "gb-eng", group: "L", players: ["Harry Kane", "Jude Bellingham", "Bukayo Saka"] },
+  "HR": { name: "Croácia", code: "hr", group: "L", players: ["Luka Modrić", "Mateo Kovačić", "Joško Gvardiol"] },
   "GH": { name: "Gana", code: "gh", group: "L", players: ["Mohammed Kudus", "Inaki Williams", "Jordan Ayew"] },
   "PA": { name: "Panamá", code: "pa", group: "L", players: ["Adalberto Carrasquilla", "José Fajardo", "Aníbal Godoy"] }
 };
@@ -158,10 +158,7 @@ export const generateMatches = () => {
     groupTeams[team.group].push({ id: key, ...team });
   });
 
-  // Schedule for 4 teams (T1, T2, T3, T4):
-  // Round 1: T1 vs T2, T3 vs T4
-  // Round 2: T1 vs T3, T2 vs T4
-  // Round 3: T1 vs T4, T2 vs T3 (Simultaneous)
+  // Official Pairing Pattern M1-M6 (Pattern: 1-2, 3-4, 4-2, 1-3, 4-1, 2-3)
   Object.keys(groupTeams).forEach(groupLetter => {
     const list = groupTeams[groupLetter];
     const t1 = list[0];
@@ -170,19 +167,23 @@ export const generateMatches = () => {
     const t4 = list[3];
 
     const pairings = [
-      { home: t1, away: t2, round: 1, venueIdx: 0 },
-      { home: t3, away: t4, round: 1, venueIdx: 1 },
-      { home: t1, away: t3, round: 2, venueIdx: 0 },
-      { home: t2, away: t4, round: 2, venueIdx: 2 },
-      { home: t1, away: t4, round: 3, venueIdx: 1 },
-      { home: t2, away: t3, round: 3, venueIdx: 2 }
+      { home: t1, away: t2, round: 1, pairingIdx: 0 },
+      { home: t3, away: t4, round: 1, pairingIdx: 1 },
+      { home: t4, away: t2, round: 2, pairingIdx: 0 },
+      { home: t1, away: t3, round: 2, pairingIdx: 1 },
+      { home: t4, away: t1, round: 3, pairingIdx: 0 },
+      { home: t2, away: t3, round: 3, pairingIdx: 1 }
     ];
 
-    const groupIndex = groupLetter.charCodeAt(0) - 65; // A=0 ... L=11
+    const groupStartDays = {
+      'A': 11, 'B': 12, 'C': 13, 'D': 13, 'E': 14, 'F': 14,
+      'G': 15, 'H': 15, 'I': 16, 'J': 17, 'K': 17, 'L': 17
+    };
+    const startDay = groupStartDays[groupLetter];
+
     const venues = groupVenues[groupLetter] || groupVenues["A"];
 
-    function getMatchDateTime(round, pairingIdx, day) {
-      // Helper to format date cleanly using UTC to prevent timezone shifts
+    function getMatchDateTime(round, pairingIdx) {
       function formatMatchDate(dVal, time) {
         const dObj = new Date(Date.UTC(2026, 5, dVal, 12, 0, 0));
         const dName = getWeekDay(dObj);
@@ -190,37 +191,33 @@ export const generateMatches = () => {
         return `${dStr}/06/2026 (${dName}) – ${time}`;
       }
 
-      // Custom schedule for Brazil's actual Group C matches
-      if (groupLetter === 'C') {
-        if (round === 1) {
-          if (pairingIdx === 0) return formatMatchDate(13, '19:00'); // Brasil x Marrocos
-          if (pairingIdx === 1) return formatMatchDate(13, '16:00'); // Haiti x Escócia
-        } else if (round === 2) {
-          if (pairingIdx === 0) return formatMatchDate(19, '21:30'); // Brasil x Haiti
-          if (pairingIdx === 1) return formatMatchDate(19, '18:00'); // Marrocos x Escócia
-        } else if (round === 3) {
-          if (pairingIdx === 0) return formatMatchDate(24, '19:00'); // Escócia x Brasil
-          if (pairingIdx === 1) return formatMatchDate(24, '19:00'); // Marrocos x Haiti
+      let dayVal;
+      let timeStr;
+
+      if (round === 1) {
+        dayVal = startDay;
+        timeStr = pairingIdx === 0 ? '16:00' : '19:00';
+        if (groupLetter === 'A' && pairingIdx === 1) {
+          dayVal = 11;
+          timeStr = '23:00'; // Special opener slot for Mexico Group A
         }
+      } else if (round === 2) {
+        dayVal = startDay + 6;
+        timeStr = pairingIdx === 0 ? '16:00' : '19:00';
+      } else {
+        // Round 3 - Geographic clustering for simultaneous matches
+        if (['A', 'B', 'C', 'D'].includes(groupLetter)) dayVal = 24;
+        else if (['E', 'F', 'G', 'H'].includes(groupLetter)) dayVal = 25;
+        else dayVal = 26;
+        timeStr = pairingIdx === 0 ? '16:00' : '20:00';
       }
 
-      const timeStr = round === 3 ? '16:00' : (pairingIdx === 0 ? '14:00' : '17:00');
-      return formatMatchDate(day, timeStr);
+      return formatMatchDate(dayVal, timeStr);
     }
 
     pairings.forEach((p, idx) => {
-      const startOffset = Math.floor(groupIndex / 2);
-      let dayVal;
-      if (p.round === 1) {
-        dayVal = 11 + startOffset + (idx % 2);
-      } else if (p.round === 2) {
-        dayVal = 17 + startOffset + (idx % 2);
-      } else {
-        dayVal = 23 + Math.floor(groupIndex / 3);
-      }
-      dayVal = Math.min(dayVal, 27);
-
-      const venue = venues[p.venueIdx] || venues[0];
+      const venueIdx = idx % 3;
+      const venue = venues[venueIdx] || venues[0];
 
       matches.push({
         id: `${groupLetter}_M${idx + 1}`,
@@ -231,7 +228,7 @@ export const generateMatches = () => {
         homeScore: null,
         awayScore: null,
         scorers: { home: [], away: [] },
-        datetime: getMatchDateTime(p.round, idx % 2, dayVal),
+        datetime: getMatchDateTime(p.round, p.pairingIdx),
         stadium: venue.stadium,
         city: venue.city
       });

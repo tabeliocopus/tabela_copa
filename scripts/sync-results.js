@@ -14,7 +14,7 @@ const TLA_TO_ID = {
   'GER': 'DE', 'CUW': 'CW', 'CIV': 'CI', 'ECU': 'EC',
   'NED': 'NL', 'JPN': 'JP', 'SWE': 'SE', 'TUN': 'TN',
   'ESP': 'ES', 'CPV': 'CV', 'BEL': 'BE', 'EGY': 'EG',
-  'IRN': 'IR', 'NZL': 'NZ', 'KSA': 'SA', 'URY': 'UY',
+  'IRN': 'IR', 'NZL': 'NZ', 'KSA': 'SA', 'URU': 'UY',
   'FRA': 'FR', 'SEN': 'SN', 'IRQ': 'IQ', 'NOR': 'NO',
   'ARG': 'AR', 'ALG': 'DZ', 'AUT': 'AT', 'JOR': 'JO',
   'POR': 'PT', 'COD': 'CD', 'ENG': 'GB-ENG', 'CRO': 'HR',
@@ -34,11 +34,11 @@ const GROUP_TEAMS = {
   E: ['DE', 'CW', 'CI', 'EC'],
   F: ['NL', 'JP', 'SE', 'TN'],
   G: ['BE', 'EG', 'IR', 'NZ'],
-  H: ['CV', 'SA', 'ES', 'UY'],
-  I: ['FR', 'IQ', 'NO', 'SN'],
-  J: ['DZ', 'AR', 'AT', 'JO'],
-  K: ['CO', 'CD', 'PT', 'UZ'],
-  L: ['HR', 'GB-ENG', 'GH', 'PA'],
+  H: ['ES', 'CV', 'SA', 'UY'],
+  I: ['FR', 'SN', 'IQ', 'NO'],
+  J: ['AR', 'DZ', 'AT', 'JO'],
+  K: ['PT', 'CD', 'UZ', 'CO'],
+  L: ['GB-ENG', 'HR', 'GH', 'PA'],
 };
 
 // Constrói o mapa: "T1|T2" (sorted) → "X_MY" para todos os grupos
@@ -47,8 +47,8 @@ Object.keys(GROUP_TEAMS).forEach(g => {
   const [t1, t2, t3, t4] = GROUP_TEAMS[g];
   const pairings = [
     [t1, t2, `${g}_M1`], [t3, t4, `${g}_M2`],
-    [t1, t3, `${g}_M3`], [t2, t4, `${g}_M4`],
-    [t1, t4, `${g}_M5`], [t2, t3, `${g}_M6`],
+    [t4, t2, `${g}_M3`], [t1, t3, `${g}_M4`],
+    [t4, t1, `${g}_M5`], [t2, t3, `${g}_M6`],
   ];
   pairings.forEach(([ta, tb, mid]) => {
     const key = [ta, tb].sort().join('|');
