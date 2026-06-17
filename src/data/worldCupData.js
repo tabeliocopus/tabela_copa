@@ -195,17 +195,21 @@ export const generateMatches = () => {
       let timeStr;
 
       if (round === 1) {
-        dayVal = startDay;
+        // Spread the two group openers over two days for most groups
+        dayVal = startDay + pairingIdx;
         timeStr = pairingIdx === 0 ? '16:00' : '19:00';
-        if (groupLetter === 'A' && pairingIdx === 1) {
-          dayVal = 11;
-          timeStr = '23:00'; // Special opener slot for Mexico Group A
+        
+        // Special case for Group A Opener logic (Match 1 is the very first)
+        if (groupLetter === 'A') {
+          dayVal = 11 + pairingIdx;
+          timeStr = pairingIdx === 0 ? '16:00' : '23:00';
         }
       } else if (round === 2) {
-        dayVal = startDay + 6;
+        // Move Round 2 to StartDay + 7 to allow for rest and better distribution
+        dayVal = startDay + 7 + pairingIdx;
         timeStr = pairingIdx === 0 ? '16:00' : '19:00';
       } else {
-        // Round 3 - Geographic clustering for simultaneous matches
+        // Round 3 - Geographic clustering for simultaneous matches remains
         if (['A', 'B', 'C', 'D'].includes(groupLetter)) dayVal = 24;
         else if (['E', 'F', 'G', 'H'].includes(groupLetter)) dayVal = 25;
         else dayVal = 26;
