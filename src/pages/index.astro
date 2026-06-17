@@ -1077,43 +1077,44 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
     function loadLocalState() {
       const savedMatches = localStorage.getItem('sim_matches');
       const savedBracket = localStorage.getItem('sim_bracket');
-      // sim_scorers local var removed
 
-      let isValid = true;
       if (savedMatches) {
         try {
           const parsed = JSON.parse(savedMatches);
-          const teamsExist = Array.isArray(parsed) && parsed.length === initialMatches.length && parsed.every(m => teams[m.homeId] && teams[m.awayId]);
-          if (teamsExist) {
-            matches = parsed.map((m, idx) => ({
-              ...m,
-              datetime: initialMatches[idx]?.datetime || m.datetime,
-              stadium: initialMatches[idx]?.stadium || m.stadium,
-              city: initialMatches[idx]?.city || m.city
-            }));
-          } else {
-            isValid = false;
+          if (Array.isArray(parsed)) {
+            // CRITICAL: We only restore scores and user-related fields.
+            // Team IDs, names, dates, stadiums MUST come from initialMatches (source of truth).
+            matches = initialMatches.map((m, idx) => {
+              const saved = parsed.find(s => s.id === m.id);
+              if (saved) {
+                return {
+                  ...m,
+                  homeScore: saved.homeScore,
+                  awayScore: saved.awayScore,
+                  userHomeScore: saved.userHomeScore,
+                  userAwayScore: saved.userAwayScore,
+                  scorers: saved.scorers || { home: [], away: [] },
+                  isFinished: saved.isFinished,
+                  isInPlay: saved.isInPlay
+                };
+              }
+              return m;
+            });
           }
         } catch (e) {
-          isValid = false;
+          console.error("Error parsing saved matches:", e);
         }
       }
 
-      if (isValid) {
-        if (savedBracket) {
-          try {
-            const parsedBracket = JSON.parse(savedBracket);
-            if (Array.isArray(parsedBracket) && parsedBracket.length === 31) {
-              bracket = parsedBracket;
-            }
-          } catch (e) {}
+      if (savedBracket) {
+        try {
+          const parsedBracket = JSON.parse(savedBracket);
+          if (Array.isArray(parsedBracket) && parsedBracket.length === 31) {
+            bracket = parsedBracket;
+          }
+        } catch (e) {
+          console.error("Error parsing saved bracket:", e);
         }
-        // local scorers load removed
-      } else {
-        console.warn("Outdated simulation state detected. Resetting local storage for compatibility.");
-        localStorage.removeItem('sim_matches');
-        localStorage.removeItem('sim_bracket');
-        // local scorers removeItem removed
       }
     }
 
