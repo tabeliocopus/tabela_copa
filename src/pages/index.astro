@@ -18,7 +18,10 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       <img src="/logo-copa.png" alt="FIFA World Cup 2026 Logo" class="official-logo" style="width: 140px; height: auto; margin: 0 auto 1.5rem auto; display: block;" />
       <div class="logo-badge">United States • Canada • Mexico 2026</div>
       <h1>TABELA DA COPA DO MUNDO 2026</h1>
-      <p class="subtitle">Preencha os resultados dos jogos e monte a sua Tabela da Copa para baixar, imprimir e guardar de recordação!</p>
+      <div id="live-indicator" class="live-indicator-badge" style="display: none;">
+        <span class="live-dot"></span> JOGO AO VIVO
+      </div>
+      <p class="subtitle">Acompanhe todos os jogos, placares em tempo real, chaveamento do mata-mata e artilharia oficial da Copa 2026!</p>
       
       <!-- NAV TABS -->
       <div class="tabs-container">
@@ -40,7 +43,6 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       </div>
     </header>
 
-    <!-- HOW IT WORKS INSTRUCTIONS -->
     <div class="instructions-card glass-card expanded" id="instructions-container">
       <div class="instructions-header" id="toggle-instructions">
         <span>💡 Como funciona esta Tabela?</span>
@@ -51,36 +53,31 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
           <div class="step-item">
             <div class="step-number">1</div>
             <p>
-              <strong>Acompanhe os Jogos</strong>
-              Na aba principal, veja os jogos programados para hoje e os placares oficiais de ontem!
+              <strong>Resultados Oficiais</strong>
+              Veja os jogos programados para hoje e os placares oficiais de ontem atualizados via API!
             </p>
           </div>
           <div class="step-item">
             <div class="step-number">2</div>
             <p>
-              <strong>Preencha sua Tabela</strong>
-              Na aba <strong>Tabela da Copa</strong> e <strong>Mata-Mata</strong>, preencha os placares. Ao final, clique em "Baixar Imagem" para guardar de recordação!
+              <strong>Tabela Atualizada</strong>
+              Acompanhe a classificação dos grupos e o chaveamento automático do mata-mata em tempo real.
             </p>
           </div>
           <div class="step-item">
             <div class="step-number">3</div>
             <p>
-              <strong>Top 3 Artilheiros</strong>
-              Acompanhe em tempo real os 3 maiores artilheiros oficiais da Copa do Mundo na aba <strong>Artilharia</strong>!
+              <strong>Top 5 Artilheiros</strong>
+              Veja quem está na briga pela Chuteira de Ouro com a lista dos 5 maiores artilheiros!
             </p>
           </div>
           <div class="step-item">
             <div class="step-number">4</div>
             <p>
               <strong>Bolão do Brasil</strong>
-              Vá na aba <strong>Bolão & Ranking</strong> e cadastre-se para competir com seus amigos focando exclusivamente nos jogos da Seleção Brasileira!
+              Participe do nosso bolão exclusivo focado nos jogos da Seleção Brasileira e dispute o ranking!
             </p>
           </div>
-        </div>
-        
-        <div class="auto-fill-box" style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-          <button class="btn" id="auto-fill-btn">⚡ Preenchimento Automático (Placares aleatórios)</button>
-          <button class="btn" id="reset-sim-btn">🗑️ Limpar Tabela</button>
         </div>
       </div>
     </div>
@@ -89,6 +86,12 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
 
     <!-- VIEW 0: JOGOS DO DIA -->
     <section id="jogos-dia" class="view-panel active">
+      <!-- COUNTDOWN BANNER -->
+      <div id="countdown-banner" class="glass-card" style="display: none; padding: 1rem; margin-bottom: 1.5rem; text-align: center; background: linear-gradient(135deg, rgba(96, 165, 250, 0.08), rgba(0, 255, 135, 0.04)); border-color: rgba(96, 165, 250, 0.2);">
+        <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 0.25rem;">⏱ Próximo Jogo Começa Em:</span>
+        <div id="countdown-timer" style="font-size: 1.5rem; font-weight: 800; color: var(--color-secondary); font-family: monospace;">00d 00h 00m 00s</div>
+      </div>
+
       <div class="glass-card" style="margin-bottom: 2rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
           <h2 style="color: var(--color-primary); font-weight: 700; margin: 0;">📅 Jogos de Hoje</h2>
@@ -101,6 +104,14 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
           </div>
         </div>
         <div class="matches-list" id="today-matches-container">
+          <!-- Populated via JS -->
+        </div>
+      </div>
+
+      <!-- UPCOMING MATCHES SECTION -->
+      <div class="glass-card" style="margin-bottom: 2rem;" id="upcoming-matches-section">
+        <h2 style="color: var(--color-secondary); font-weight: 700; margin-bottom: 1rem;">📅 Próximos Jogos</h2>
+        <div class="upcoming-matches-grid" id="upcoming-matches-container">
           <!-- Populated via JS -->
         </div>
       </div>
@@ -331,30 +342,16 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
             </p>
             <a href="/bolao/ranking-global" class="btn btn-primary" style="display: inline-block; width: auto; font-size: 0.9rem; text-decoration: none;">🏆 Ver Ranking do Brasil →</a>
           </div>
-
         </div>
       </div>
     </section>
 
-    <!-- ACTION FLOATING BAR -->
-    <div class="action-bar">
-      <button class="action-btn" id="share-btn">
-        <span>📢 Compartilhar</span>
-      </button>
-      <button class="action-btn secondary-action" id="download-btn">
-        <span>🖼️ Baixar Imagem</span>
-      </button>
-      <button class="action-btn secondary-action" id="reset-btn">
-        <span>🔄 Reiniciar</span>
-      </button>
-    </div>
-
-    <!-- MODAL 1: LEAD CAPTURE (CADASTRO) -->
+    <!-- MODAL 1: LEAD CAPTURE (CADASTRO PARA O BOLÃO) -->
     <div class="modal-overlay" id="lead-modal">
       <div class="glass-card modal-content">
         <button class="close-modal-btn" id="close-lead-modal">&times;</button>
-        <h2 style="font-weight: 800; margin-bottom: 0.5rem; text-align: center; color: var(--color-primary);">CADASTRE-SE</h2>
-        <p class="text-muted text-center text-sm" style="margin-bottom: 1.5rem;">Cadastre-se rapidamente para participar do ranking global, criar bolões com amigos e salvar seus palpites!</p>
+        <h2 style="font-weight: 800; margin-bottom: 0.5rem; text-align: center; color: var(--color-primary);">PARTICIPE DO BOLÃO!</h2>
+        <p class="text-muted text-center text-sm mb-6">Cadastre-se rapidamente para participar do Bolão do Brasil, salvar seu progresso e competir com amigos!</p>
         
         <form id="lead-form">
           <div class="form-group">
@@ -365,47 +362,43 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
             <label class="form-label" for="lead-email">E-mail</label>
             <input type="email" id="lead-email" class="form-input" placeholder="seu@email.com" required />
           </div>
-          <button type="submit" class="btn btn-primary mt-2">Salvar & Gerar Link ➜</button>
+          <button type="submit" class="btn btn-primary mt-2">Cadastrar no Bolão ➜</button>
         </form>
       </div>
     </div>
 
-    <!-- MODAL 2: REMOVED (ARTILHARIA IS NOW OFFICIAL ONLY) -->
-
-    <!-- MODAL 3: SQUAD DETAILS (ELENCO DETAILS) -->
+    <!-- MODAL 2: SQUAD DETAILS (ELENCO DETAILS) -->
     <div class="modal-overlay" id="squad-modal">
       <div class="glass-card modal-content" style="max-width: 450px;">
         <button class="close-modal-btn" id="close-squad-modal">&times;</button>
         <h3 style="font-weight: 800; margin-bottom: 1rem; text-align: center; color: var(--color-primary);" id="squad-modal-title">Elenco</h3>
-        
         <div class="squad-modal-grid" id="squad-players-list">
           <!-- Populated via JS -->
         </div>
       </div>
     </div>
 
-    <!-- MODAL 4: WELCOME MANUAL (CAROUSEL) -->
+    <!-- MODAL 3: WELCOME ONBOARDING CAROUSEL -->
     <div class="modal-overlay" id="welcome-modal">
       <div class="glass-card modal-content" style="max-width: 450px; padding: 0; overflow: hidden; display: flex; flex-direction: column;">
-        
         <div class="carousel-container" id="welcome-carousel">
           <!-- Slide 1 -->
           <div class="carousel-slide active" style="padding: 2.5rem 1.5rem; text-align: center;">
-            <div style="font-size: 4rem; margin-bottom: 1rem; animation: float 3s ease-in-out infinite;">🎮</div>
-            <h2 style="color: var(--color-primary); margin-bottom: 1rem; font-weight: 800; font-size: 1.5rem;">Preencha a Tabela</h2>
-            <p class="text-muted" style="line-height: 1.6;">Preencha os placares dos jogos. A fase de mata-mata se desenha automaticamente até a grande final com base nos seus resultados!</p>
+            <div style="font-size: 4rem; margin-bottom: 1rem; animation: float 3s ease-in-out infinite;">📊</div>
+            <h2 style="color: var(--color-primary); margin-bottom: 1rem; font-weight: 800; font-size: 1.5rem;">Resultados em Tempo Real</h2>
+            <p class="text-muted" style="line-height: 1.6;">Acompanhe todos os placares, classificação dos grupos e o chaveamento oficial do mata-mata atualizados automaticamente a cada minuto!</p>
           </div>
           <!-- Slide 2 -->
           <div class="carousel-slide" style="padding: 2.5rem 1.5rem; text-align: center; display: none;">
-            <div style="font-size: 4rem; margin-bottom: 1rem; animation: float 3s ease-in-out infinite;">🏆</div>
+            <div style="font-size: 4rem; margin-bottom: 1rem; animation: float 3s ease-in-out infinite;">👥</div>
             <h2 style="color: var(--color-secondary); margin-bottom: 1rem; font-weight: 800; font-size: 1.5rem;">Bolão com Amigos</h2>
-            <p class="text-muted" style="line-height: 1.6;">Crie grupos privados com amigos e dispute o ranking focado exclusivamente nos jogos da Seleção Brasileira!</p>
+            <p class="text-muted" style="line-height: 1.6;">Cadastre-se para criar grupos privados, convidar seus amigos e ver quem acerta mais nos jogos da Seleção Brasileira!</p>
           </div>
           <!-- Slide 3 -->
           <div class="carousel-slide" style="padding: 2.5rem 1.5rem; text-align: center; display: none;">
-            <div style="font-size: 4rem; margin-bottom: 1rem; animation: float 3s ease-in-out infinite;">⚡</div>
-            <h2 style="color: #00ff87; margin-bottom: 1rem; font-weight: 800; font-size: 1.5rem;">Placares Oficiais</h2>
-            <p class="text-muted" style="line-height: 1.6;">Não se preocupe em atualizar! Nossos robôs travam os placares reais assim que o jogo oficial acaba.</p>
+            <div style="font-size: 4rem; margin-bottom: 1rem; animation: float 3s ease-in-out infinite;">👟</div>
+            <h2 style="color: #00ff87; margin-bottom: 1rem; font-weight: 800; font-size: 1.5rem;">Artilharia Oficial</h2>
+            <p class="text-muted" style="line-height: 1.6;">Confira quem está liderando a briga pela Chuteira de Ouro com estatísticas oficiais vindas direto de campo!</p>
           </div>
         </div>
 
@@ -425,8 +418,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
   </main>
 
   <!-- CLIENT-SIDE LOGIC -->
-  <script is:inline define:vars={{ initialMatches, teams, groups, supabaseUrl, supabaseAnonKey }}>
-    window.onerror = function(msg, url, line, col, error) {
+  <script is:inline define:vars={{ initialMatches, teams, groups, supabaseUrl, supabaseAnonKey }}>window.onerror = function(msg, url, line, col, error) {
       document.body.innerHTML = `<div style="color:red; padding:2rem; background:white; font-size:1.5rem; z-index:9999; position:absolute; top:0; left:0; width:100%;">
         <h3>JS Error:</h3>
         <p>${msg}</p>
@@ -441,10 +433,12 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       </div>` + document.body.innerHTML;
     };
 
-    // We pass JSON variables safely from Astro metadata to browser JS
+    // pass JSON variables safely from Astro metadata to browser JS
     let matches = JSON.parse(JSON.stringify(initialMatches));
     let artilheirosReais = []; // Lista oficial atualizada em tempo real
-    let bracket = Array(31).fill(null); // Bracket slots: R32 (0-15), R16 (16-23), QF (24-27), SF (28-29), Final (30)
+    let bracket = Array.from({ length: 31 }, () => ({
+      homeId: null, awayId: null, homeScore: null, awayScore: null, isFinished: false, isInPlay: false
+    }));
 
     // Selectors
     const tabs = document.querySelectorAll('.tab-btn');
@@ -452,11 +446,6 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
     const leadModal = document.getElementById('lead-modal');
     const closeLeadModal = document.getElementById('close-lead-modal');
     const leadForm = document.getElementById('lead-form');
-    const shareBtn = document.getElementById('share-btn');
-    const downloadBtn = document.getElementById('download-btn');
-    const resetBtn = document.getElementById('reset-btn');
-    
-    // scorer modal logic removed
     
     const squadModal = document.getElementById('squad-modal');
     const closeSquadModal = document.getElementById('close-squad-modal');
@@ -479,96 +468,66 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       return `https://flagcdn.com/w40/${code.toLowerCase()}.png`;
     }
 
-    // Helper: Generate Score Select Options (0 to 15)
-    function generateScoreOptions(selectedVal) {
-      let opts = `<option value="" ${selectedVal === null || selectedVal === '' ? 'selected' : ''}>-</option>`;
-      for (let i = 0; i <= 15; i++) {
-        opts += `<option value="${i}" ${selectedVal === i ? 'selected' : ''}>${i}</option>`;
+    // Helper: Parse Datetime in Brasilia UTC-3
+    function parseDatetime(dtStr) {
+      try {
+        const parts = dtStr.split(' – ');
+        const datePart = parts[0].split(' ')[0]; // "dd/mm/yyyy"
+        const timePart = parts[1]; // "hh:mm"
+        const [day, month, year] = datePart.split('/').map(Number);
+        const [hours, minutes] = timePart.split(':').map(Number);
+        const utcDateStr = `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}T${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:00-03:00`;
+        return new Date(utcDateStr);
+      } catch (e) {
+        console.error("Error parsing datetime string:", dtStr, e);
+        return null;
       }
-      return opts;
     }
 
-    // Render logic for single match card HTML
-    function getMatchCardHTML(match, isSimulationView = false, forceShowScore = false) {
+    // Render logic for single match card HTML (purely static)
+    function getMatchCardHTML(match, forceShowScore = false) {
       const homeTeam = teams[match.homeId];
       const awayTeam = teams[match.awayId];
       
-      if (match.isFinished || !isSimulationView) {
-        let feedbackHtml = '';
-        if (match.isFinished && match.userHomeScore !== undefined && match.userHomeScore !== null && match.userAwayScore !== undefined && match.userAwayScore !== null) {
-          const uHome = parseInt(match.userHomeScore);
-          const uAway = parseInt(match.userAwayScore);
-          const rHome = parseInt(match.homeScore);
-          const rAway = parseInt(match.awayScore);
-          
-          if (uHome === rHome && uAway === rAway) {
-            feedbackHtml = `<div style="font-size: 0.75rem; color: var(--bg-main); font-weight: bold; text-align: center; margin-top: 0.75rem; background: var(--color-primary); border-radius: 4px; padding: 4px;">✅ Na mosca! Você cravou ${uHome}x${uAway}</div>`;
-          } else if (
-            (uHome > uAway && rHome > rAway) ||
-            (uHome < uAway && rHome < rAway) ||
-            (uHome === uAway && rHome === rAway)
-          ) {
-            feedbackHtml = `<div style="font-size: 0.75rem; color: var(--bg-main); font-weight: bold; text-align: center; margin-top: 0.75rem; background: var(--color-accent); border-radius: 4px; padding: 4px;">👍 Quase! Acertou o vencedor (Seu palpite: ${uHome}x${uAway})</div>`;
-          } else {
-            feedbackHtml = `<div style="font-size: 0.75rem; color: white; font-weight: bold; text-align: center; margin-top: 0.75rem; background: var(--color-danger); border-radius: 4px; padding: 4px;">❌ Zebra! Seu palpite era ${uHome}x${uAway}</div>`;
-          }
-        }
+      const showScore = match.isFinished || match.isInPlay || forceShowScore;
+      const hScore = showScore ? (match.homeScore !== null ? match.homeScore : 0) : '-';
+      const aScore = showScore ? (match.awayScore !== null ? match.awayScore : 0) : '-';
 
-        const showScore = match.isFinished || match.isInPlay || forceShowScore;
-        const hScore = (showScore && match.homeScore !== null) ? match.homeScore : '-';
-        const aScore = (showScore && match.awayScore !== null) ? match.awayScore : '-';
+      const statusBadge = match.isFinished
+        ? '<span style="color: var(--color-primary); font-weight: bold; font-size: 0.75rem; margin-left: 0.5rem; border: 1px solid var(--color-primary); padding: 2px 6px; border-radius: 10px; background: rgba(0,255,135,0.1);">✅ Oficial</span>'
+        : match.isInPlay
+        ? '<span style="color: #ff4444; font-weight: bold; font-size: 0.75rem; margin-left: 0.5rem; border: 1px solid #ff4444; padding: 2px 6px; border-radius: 10px; background: rgba(255,68,68,0.15); animation: pulse-red 1.5s infinite;">🔴 AO VIVO</span>'
+        : '';
 
-        const statusBadge = match.isFinished
-          ? '<span style="color: var(--color-primary); font-weight: bold; font-size: 0.75rem; margin-left: 0.5rem; border: 1px solid var(--color-primary); padding: 2px 6px; border-radius: 10px; background: rgba(0,255,135,0.1);">✅ Oficial</span>'
-          : match.isInPlay
-          ? '<span style="color: #ff4444; font-weight: bold; font-size: 0.75rem; margin-left: 0.5rem; border: 1px solid #ff4444; padding: 2px 6px; border-radius: 10px; background: rgba(255,68,68,0.15); animation: pulse-red 1.5s infinite;">🔴 AO VIVO</span>'
-          : '';
+      const homeRank = window.teamRanks?.[match.homeId] ? `<span class="team-rank">#${window.teamRanks[match.homeId]}</span>` : '';
+      const awayRank = window.teamRanks?.[match.awayId] ? `<span class="team-rank">#${window.teamRanks[match.awayId]}</span>` : '';
 
-        return `
-          <div class="match-datetime">📅 ${match.datetime || ''} ${statusBadge}</div>
-          <div class="match-venue" style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-align: center;">🏟️ ${match.stadium || ''}, ${match.city || ''}</div>
-          <div class="match-row">
-            <div class="match-team home">
-              <span class="team-name" data-team-id="${match.homeId}">${homeTeam.name}</span>
-              <img src="${getFlagUrl(homeTeam.code)}" alt="${homeTeam.name}" class="flag-emoji" />
-            </div>
-            <div class="match-scores-inputs">
-              <div style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 0.4rem 0.8rem; font-weight: bold; color: white; min-width: 45px; text-align: center;">${hScore}</div>
-              <span class="match-vs" style="margin: 0 0.5rem; color: var(--color-primary);">x</span>
-              <div style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 0.4rem 0.8rem; font-weight: bold; color: white; min-width: 45px; text-align: center;">${aScore}</div>
-            </div>
-            <div class="match-team away">
-              <img src="${getFlagUrl(awayTeam.code)}" alt="${awayTeam.name}" class="flag-emoji" />
-              <span class="team-name" data-team-id="${match.awayId}">${awayTeam.name}</span>
-            </div>
+      const phaseBadge = match.group ? `<span class="phase-badge">Grupo ${match.group}</span>` : '';
+
+      return `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; font-size: 0.7rem;">
+          ${phaseBadge}
+          <div class="match-datetime" style="letter-spacing: 0.02em;">📅 ${match.datetime || ''} ${statusBadge}</div>
+        </div>
+        <div class="match-venue" style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-align: center;">🏟️ ${match.stadium || ''}, ${match.city || ''}</div>
+        <div class="match-row">
+          <div class="match-team home">
+            <span class="team-name" data-team-id="${match.homeId}">${homeTeam.name}</span>
+            ${homeRank}
+            <img src="${getFlagUrl(homeTeam.code)}" alt="${homeTeam.name}" class="flag-emoji" />
           </div>
-          ${feedbackHtml}
-        `;
-      } else {
-        return `
-          <div class="match-datetime">📅 ${match.datetime || ''}</div>
-          <div class="match-venue" style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-align: center;">🏟️ ${match.stadium || ''}, ${match.city || ''}</div>
-          <div class="match-row">
-            <div class="match-team home">
-              <span class="team-name" data-team-id="${match.homeId}">${homeTeam.name}</span>
-              <img src="${getFlagUrl(homeTeam.code)}" alt="${homeTeam.name}" class="flag-emoji" />
-            </div>
-            <div class="match-scores-inputs">
-              <select class="score-input" id="${match.id}-home" data-match-id="${match.id}" data-side="home">
-                ${generateScoreOptions(match.homeScore)}
-              </select>
-              <span class="match-vs">x</span>
-              <select class="score-input" id="${match.id}-away" data-match-id="${match.id}" data-side="away">
-                ${generateScoreOptions(match.awayScore)}
-              </select>
-            </div>
-            <div class="match-team away">
-              <img src="${getFlagUrl(awayTeam.code)}" alt="${awayTeam.name}" class="flag-emoji" />
-              <span class="team-name" data-team-id="${match.awayId}">${awayTeam.name}</span>
-            </div>
+          <div class="match-scores-inputs">
+            <div style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 0.4rem 0.8rem; font-weight: bold; color: white; min-width: 45px; text-align: center;">${hScore}</div>
+            <span class="match-vs" style="margin: 0 0.5rem; color: var(--color-primary);">x</span>
+            <div style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 0.4rem 0.8rem; font-weight: bold; color: white; min-width: 45px; text-align: center;">${aScore}</div>
           </div>
-        `;
-      }
+          <div class="match-team away">
+            <img src="${getFlagUrl(awayTeam.code)}" alt="${awayTeam.name}" class="flag-emoji" />
+            ${awayRank}
+            <span class="team-name" data-team-id="${match.awayId}">${awayTeam.name}</span>
+          </div>
+        </div>
+      `;
     }
 
     // Render Jogos do Dia
@@ -587,7 +546,6 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       const todayMatches = matches.filter(m => m.datetime.startsWith(todayStr));
       const yesterdayMatches = matches.filter(m => m.datetime.startsWith(yesterdayStr));
 
-      // Sort matches chronologically by time
       todayMatches.sort((a, b) => a.datetime.localeCompare(b.datetime));
       yesterdayMatches.sort((a, b) => a.datetime.localeCompare(b.datetime));
 
@@ -600,7 +558,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
         todayMatches.forEach(match => {
           const card = document.createElement('div');
           card.className = 'match-card';
-          card.innerHTML = getMatchCardHTML(match, false, false);
+          card.innerHTML = getMatchCardHTML(match, false);
           todayContainer.appendChild(card);
         });
       }
@@ -611,69 +569,155 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
         yesterdayMatches.forEach(match => {
           const card = document.createElement('div');
           card.className = 'match-card';
-          card.innerHTML = getMatchCardHTML(match, false, true);
+          card.innerHTML = getMatchCardHTML(match, true);
           yesterdayContainer.appendChild(card);
         });
       }
     }
 
+    // Render Upcoming Matches Grid (next 3)
+    function renderUpcomingMatches() {
+      const container = document.getElementById('upcoming-matches-container');
+      const section = document.getElementById('upcoming-matches-section');
+      if (!container || !section) return;
+
+      const now = new Date();
+      const future = matches
+        .filter(m => !m.isFinished && !m.isInPlay)
+        .map(m => ({ match: m, date: parseDatetime(m.datetime) }))
+        .filter(x => x.date !== null && x.date > now)
+        .sort((a, b) => a.date - b.date)
+        .slice(0, 3);
+
+      if (future.length === 0) {
+        section.style.display = 'none';
+        return;
+      }
+
+      section.style.display = 'block';
+      container.innerHTML = '';
+
+      future.forEach(({ match }) => {
+        const homeTeam = teams[match.homeId];
+        const awayTeam = teams[match.awayId];
+        const phaseName = match.group ? `Grupo ${match.group}` : 'Mata-Mata';
+        
+        const homeRank = window.teamRanks?.[match.homeId] ? `#${window.teamRanks[match.homeId]} no grupo` : '';
+        const awayRank = window.teamRanks?.[match.awayId] ? `#${window.teamRanks[match.awayId]} no grupo` : '';
+
+        const card = document.createElement('div');
+        card.className = 'upcoming-match-card';
+        card.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span class="upcoming-match-badge">${phaseName}</span>
+            <span class="upcoming-match-date">${match.datetime.split(' – ')[1]}</span>
+          </div>
+          <div class="upcoming-match-teams">
+            <div class="upcoming-match-team">
+              <span style="display: flex; align-items: center; gap: 0.5rem;">
+                <img src="${getFlagUrl(homeTeam.code)}" alt="" class="flag-emoji" style="margin-right: 0;" />
+                <span>${homeTeam.name}</span>
+              </span>
+              <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">${homeRank}</span>
+            </div>
+            <div class="upcoming-match-team">
+              <span style="display: flex; align-items: center; gap: 0.5rem;">
+                <img src="${getFlagUrl(awayTeam.code)}" alt="" class="flag-emoji" style="margin-right: 0;" />
+                <span>${awayTeam.name}</span>
+              </span>
+              <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">${awayRank}</span>
+            </div>
+          </div>
+          <div style="font-size: 0.7rem; color: var(--text-muted); border-top: 1px solid rgba(255, 255, 255, 0.03); padding-top: 0.4rem; margin-top: 0.25rem;">
+            📅 ${match.datetime.split(' – ')[0]}<br/>
+            🏟️ ${match.stadium}, ${match.city}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // Next match countdown
+    let countdownIntervalId = null;
+    function startCountdown() {
+      if (countdownIntervalId) clearInterval(countdownIntervalId);
+      
+      const timerEl = document.getElementById('countdown-timer');
+      const bannerEl = document.getElementById('countdown-banner');
+      if (!timerEl || !bannerEl) return;
+
+      function update() {
+        const hasLiveMatch = matches.some(m => m.isInPlay) || bracket.some(m => m && m.isInPlay);
+        if (hasLiveMatch) {
+          bannerEl.style.display = 'none';
+          return;
+        }
+
+        const now = new Date();
+        const futureMatches = matches
+          .filter(m => !m.isFinished && !m.isInPlay)
+          .map(m => ({ match: m, date: parseDatetime(m.datetime) }))
+          .filter(x => x.date !== null && x.date > now)
+          .sort((a, b) => a.date - b.date);
+
+        if (futureMatches.length === 0) {
+          bannerEl.style.display = 'none';
+          return;
+        }
+
+        const next = futureMatches[0];
+        const diff = next.date - now;
+
+        bannerEl.style.display = 'block';
+
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+        const dStr = days > 0 ? `${days}d ` : '';
+        timerEl.textContent = `${dStr}${String(hours).padStart(2, '0')}h ${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`;
+        
+        const nextHome = teams[next.match.homeId]?.name || '';
+        const nextAway = teams[next.match.awayId]?.name || '';
+        const labelEl = bannerEl.querySelector('span');
+        if (labelEl) {
+          labelEl.innerHTML = `⏱ Próximo Jogo: <strong>${nextHome} x ${nextAway}</strong> em:`;
+        }
+      }
+
+      update();
+      countdownIntervalId = setInterval(update, 1000);
+    }
+
+    // Render live indicator in header
+    function renderLiveIndicator() {
+      const indicatorEl = document.getElementById('live-indicator');
+      if (!indicatorEl) return;
+      const isAnyLive = matches.some(m => m.isInPlay) || bracket.some(m => m && m.isInPlay);
+      indicatorEl.style.display = isAnyLive ? 'flex' : 'none';
+    }
+
     // Initialize/Render phase of the groups matches
     function initGroups() {
       groups.forEach(groupLetter => {
-        // Render empty standings first
         updateGroupStandings(groupLetter);
 
-        // Render matches
         const matchesContainer = document.getElementById(`matches-${groupLetter}`);
-        matchesContainer.innerHTML = '';
-
-        const groupMatches = matches.filter(m => m.group === groupLetter);
-        groupMatches.forEach(match => {
-          const matchCard = document.createElement('div');
-          matchCard.className = 'match-card';
-          matchCard.innerHTML = getMatchCardHTML(match, true);
-          matchesContainer.appendChild(matchCard);
-        });
+        if (matchesContainer) {
+          matchesContainer.innerHTML = '';
+          const groupMatches = matches.filter(m => m.group === groupLetter);
+          groupMatches.forEach(match => {
+            const matchCard = document.createElement('div');
+            matchCard.className = 'match-card';
+            matchCard.innerHTML = getMatchCardHTML(match);
+            matchesContainer.appendChild(matchCard);
+          });
+        }
       });
 
-      // Render Jogos do Dia
       renderJogosDoDia();
-
-      // Bind input events
-      document.querySelectorAll('.score-input').forEach(input => {
-        input.addEventListener('change', (e) => {
-          const matchId = e.target.dataset.matchId;
-          const side = e.target.dataset.side;
-          const scoreVal = e.target.value === '' ? null : parseInt(e.target.value, 10);
-          
-          const match = matches.find(m => m.id === matchId);
-          if (match) {
-            match[`${side}Score`] = scoreVal;
-            
-            // Show/Hide goal scorer selector button based on score value
-            const btn = document.querySelector(`.goal-scorer-btn[data-match-id="${matchId}"][data-side="${side}"]`);
-            if (btn) {
-              btn.style.display = scoreVal > 0 ? 'inline' : 'none';
-            }
-
-            // Recalculate group table & update bracket
-            updateGroupStandings(match.group);
-            calculateQualifiedTeams();
-            saveLocalState();
-            renderJogosDoDia(); // Update today view as well
-          }
-        });
-      });
-
-      // Bind Team Name clicks to show squad modal
-      document.querySelectorAll('.team-name').forEach(el => {
-        el.addEventListener('click', () => {
-          showSquadModal(el.dataset.teamId);
-        });
-      });
-
-      // Bind Goal Scorer buttons
-      // Scorers logic is now fully automated and global
+      renderUpcomingMatches();
     }
 
     // Recalculate Group Standings
@@ -694,29 +738,31 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
           const home = groupTeams.find(t => t.id === m.homeId);
           const away = groupTeams.find(t => t.id === m.awayId);
 
-          home.games += 1;
-          away.games += 1;
-          home.gf += m.homeScore;
-          home.ga += m.awayScore;
-          away.gf += m.awayScore;
-          away.ga += m.homeScore;
-          
-          home.gd = home.gf - home.ga;
-          away.gd = away.gf - away.ga;
+          if (home && away) {
+            home.games += 1;
+            away.games += 1;
+            home.gf += m.homeScore;
+            home.ga += m.awayScore;
+            away.gf += m.awayScore;
+            away.ga += m.homeScore;
+            
+            home.gd = home.gf - home.ga;
+            away.gd = away.gf - away.ga;
 
-          if (m.homeScore > m.awayScore) {
-            home.pts += 3;
-            home.w += 1;
-            away.l += 1;
-          } else if (m.homeScore < m.awayScore) {
-            away.pts += 3;
-            away.w += 1;
-            home.l += 1;
-          } else {
-            home.pts += 1;
-            away.pts += 1;
-            home.d += 1;
-            away.d += 1;
+            if (m.homeScore > m.awayScore) {
+              home.pts += 3;
+              home.w += 1;
+              away.l += 1;
+            } else if (m.homeScore < m.awayScore) {
+              away.pts += 3;
+              away.w += 1;
+              home.l += 1;
+            } else {
+              home.pts += 1;
+              away.pts += 1;
+              home.d += 1;
+              away.d += 1;
+            }
           }
         }
       });
@@ -729,13 +775,17 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
         return a.name.localeCompare(b.name);
       });
 
-      // Render standings HTML
+      if (!window.teamRanks) window.teamRanks = {};
+      groupTeams.forEach((t, idx) => {
+        window.teamRanks[t.id] = idx + 1;
+      });
+
       const tableBody = document.getElementById(`standings-${groupLetter}`);
       if (tableBody) {
         tableBody.innerHTML = '';
         groupTeams.forEach((team, idx) => {
           let qualifyClass = '';
-          if (idx < 2) qualifyClass = 'qualify-direct'; // Top 2 qualify
+          if (idx < 2) qualifyClass = 'qualify-direct';
           
           const tr = document.createElement('tr');
           tr.className = qualifyClass;
@@ -757,10 +807,9 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
 
     // Calculate qualified teams from Group Stage
     function calculateQualifiedTeams() {
-      // 1. Gather all group placements
-      const groupWinners = []; // 1st places (12 teams)
-      const groupRunnersUp = []; // 2nd places (12 teams)
-      const groupThirds = []; // 3rd places (12 teams)
+      const groupWinners = [];
+      const groupRunnersUp = [];
+      const groupThirds = [];
 
       groups.forEach(groupLetter => {
         const groupTeams = Object.keys(teams)
@@ -778,14 +827,16 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
             const home = groupTeams.find(t => t.id === m.homeId);
             const away = groupTeams.find(t => t.id === m.awayId);
             
-            home.gf += m.homeScore;
-            home.ga = (home.ga || 0) + m.awayScore;
-            away.gf += m.awayScore;
-            away.ga = (away.ga || 0) + m.homeScore;
+            if (home && away) {
+              home.gf += m.homeScore;
+              home.ga = (home.ga || 0) + m.awayScore;
+              away.gf += m.awayScore;
+              away.ga = (away.ga || 0) + m.homeScore;
 
-            if (m.homeScore > m.awayScore) { home.pts += 3; home.w += 1; }
-            else if (m.homeScore < m.awayScore) { away.pts += 3; away.w += 1; }
-            else { home.pts += 1; away.pts += 1; }
+              if (m.homeScore > m.awayScore) { home.pts += 3; home.w += 1; }
+              else if (m.homeScore < m.awayScore) { away.pts += 3; away.w += 1; }
+              else { home.pts += 1; away.pts += 1; }
+            }
           }
         });
 
@@ -803,7 +854,6 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
         groupThirds.push(groupTeams[2]);
       });
 
-      // 2. Select 8 best third-placed teams
       groupThirds.sort((a, b) => {
         if (b.pts !== a.pts) return b.pts - a.pts;
         if (b.gd !== a.gd) return b.gd - a.gd;
@@ -812,104 +862,86 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       });
 
       const bestThirds = groupThirds.slice(0, 8);
-
-      // Pairings list for the Round of 32 (16 matches):
-      // Winners: 1A-1L (12 teams)
-      // Runners-up: 2A-2L (12 teams)
-      // Best Thirds: T1-T8 (8 teams)
       
       const pairings = [
-        // 1. Winner vs Best Third (8 matches)
-        { home: groupWinners[0], away: bestThirds[0] }, // 1A vs T1
-        { home: groupWinners[1], away: bestThirds[1] }, // 1B vs T2
-        { home: groupWinners[2], away: bestThirds[2] }, // 1C vs T3
-        { home: groupWinners[3], away: bestThirds[3] }, // 1D vs T4
-        { home: groupWinners[4], away: bestThirds[4] }, // 1E vs T5
-        { home: groupWinners[5], away: bestThirds[5] }, // 1F vs T6
-        { home: groupWinners[6], away: bestThirds[6] }, // 1G vs T7
-        { home: groupWinners[7], away: bestThirds[7] }, // 1H vs T8
-        
-        // 2. Winner vs Runner-up (4 matches)
-        { home: groupWinners[8], away: groupRunnersUp[0] }, // 1I vs 2A
-        { home: groupWinners[9], away: groupRunnersUp[1] }, // 1J vs 2B
-        { home: groupWinners[10], away: groupRunnersUp[2] }, // 1K vs 2C
-        { home: groupWinners[11], away: groupRunnersUp[3] }, // 1L vs 2D
-        
-        // 3. Runner-up vs Runner-up (4 matches)
-        { home: groupRunnersUp[4], away: groupRunnersUp[5] }, // 2E vs 2F
-        { home: groupRunnersUp[6], away: groupRunnersUp[7] }, // 2G vs 2H
-        { home: groupRunnersUp[8], away: groupRunnersUp[9] }, // 2I vs 2J
-        { home: groupRunnersUp[10], away: groupRunnersUp[11] } // 2K vs 2L
+        { home: groupWinners[0], away: bestThirds[0] },
+        { home: groupWinners[1], away: bestThirds[1] },
+        { home: groupWinners[2], away: bestThirds[2] },
+        { home: groupWinners[3], away: bestThirds[3] },
+        { home: groupWinners[4], away: bestThirds[4] },
+        { home: groupWinners[5], away: bestThirds[5] },
+        { home: groupWinners[6], away: bestThirds[6] },
+        { home: groupWinners[7], away: bestThirds[7] },
+        { home: groupWinners[8], away: groupRunnersUp[0] },
+        { home: groupWinners[9], away: groupRunnersUp[1] },
+        { home: groupWinners[10], away: groupRunnersUp[2] },
+        { home: groupWinners[11], away: groupRunnersUp[3] },
+        { home: groupRunnersUp[4], away: groupRunnersUp[5] },
+        { home: groupRunnersUp[6], away: groupRunnersUp[7] },
+        { home: groupRunnersUp[8], away: groupRunnersUp[9] },
+        { home: groupRunnersUp[10], away: groupRunnersUp[11] }
       ];
 
-      // Update bracket inputs for Round of 32 (indices 0 to 15)
       for (let i = 0; i < 16; i++) {
         const pair = pairings[i];
         if (!bracket[i]) {
-          bracket[i] = { homeId: null, awayId: null, homeScore: null, awayScore: null };
+          bracket[i] = { homeId: null, awayId: null, homeScore: null, awayScore: null, isFinished: false, isInPlay: false };
         }
+        // Only override if real results don't specify the team yet (to maintain dynamic progression logic)
         bracket[i].homeId = pair.home ? pair.home.id : null;
         bracket[i].awayId = pair.away ? pair.away.id : null;
       }
 
-      // Propagate bracket winner updates
       updateBracketFlow();
       renderBracket();
     }
 
     // Propagate winners from R32 -> R16 -> QF -> SF -> Final
     function updateBracketFlow() {
-      // Indices:
-      // R32: 0-15
-      // R16: 16-23 (derived from R32)
-      // QF: 24-27 (derived from R16)
-      // SF: 28-29 (derived from QF)
-      // Final: 30 (derived from SF)
-
-      // R16 Propagation (indices 16 to 23)
+      // R16 Propagation
       for (let i = 0; i < 8; i++) {
         const matchLeft = bracket[i * 2];
         const matchRight = bracket[i * 2 + 1];
         
         if (!bracket[16 + i]) {
-          bracket[16 + i] = { homeId: null, awayId: null, homeScore: null, awayScore: null };
+          bracket[16 + i] = { homeId: null, awayId: null, homeScore: null, awayScore: null, isFinished: false, isInPlay: false };
         }
         
         bracket[16 + i].homeId = getMatchWinner(matchLeft);
         bracket[16 + i].awayId = getMatchWinner(matchRight);
       }
 
-      // QF Propagation (indices 24 to 27)
+      // QF Propagation
       for (let i = 0; i < 4; i++) {
         const matchLeft = bracket[16 + i * 2];
         const matchRight = bracket[16 + i * 2 + 1];
         
         if (!bracket[24 + i]) {
-          bracket[24 + i] = { homeId: null, awayId: null, homeScore: null, awayScore: null };
+          bracket[24 + i] = { homeId: null, awayId: null, homeScore: null, awayScore: null, isFinished: false, isInPlay: false };
         }
         
         bracket[24 + i].homeId = getMatchWinner(matchLeft);
         bracket[24 + i].awayId = getMatchWinner(matchRight);
       }
 
-      // SF Propagation (indices 28 to 29)
+      // SF Propagation
       for (let i = 0; i < 2; i++) {
         const matchLeft = bracket[24 + i * 2];
         const matchRight = bracket[24 + i * 2 + 1];
         
         if (!bracket[28 + i]) {
-          bracket[28 + i] = { homeId: null, awayId: null, homeScore: null, awayScore: null };
+          bracket[28 + i] = { homeId: null, awayId: null, homeScore: null, awayScore: null, isFinished: false, isInPlay: false };
         }
         
         bracket[28 + i].homeId = getMatchWinner(matchLeft);
         bracket[28 + i].awayId = getMatchWinner(matchRight);
       }
 
-      // Final Propagation (index 30)
+      // Final Propagation
       const sfLeft = bracket[28];
       const sfRight = bracket[29];
       if (!bracket[30]) {
-        bracket[30] = { homeId: null, awayId: null, homeScore: null, awayScore: null };
+        bracket[30] = { homeId: null, awayId: null, homeScore: null, awayScore: null, isFinished: false, isInPlay: false };
       }
       bracket[30].homeId = getMatchWinner(sfLeft);
       bracket[30].awayId = getMatchWinner(sfRight);
@@ -918,17 +950,14 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       const champId = getMatchWinner(bracket[30]);
       const champDisplay = document.getElementById('champion-display');
       
-      if (champId) {
-        document.getElementById('champion-flag-img').src = getFlagUrl(teams[champId].code);
-        document.getElementById('champion-team-name').textContent = teams[champId].name;
+      if (champId && teams[champId]) {
+        const flagImg = document.getElementById('champion-flag-img');
+        if (flagImg) flagImg.src = getFlagUrl(teams[champId].code);
+        const nameEl = document.getElementById('champion-team-name');
+        if (nameEl) nameEl.textContent = teams[champId].name;
         champDisplay.style.display = 'flex';
-
-        // Trigger lead modal automatically after a tiny delay
-        setTimeout(() => {
-          triggerLeadCaptureModal('champion_selected');
-        }, 1000);
       } else {
-        champDisplay.style.display = 'none';
+        if (champDisplay) champDisplay.style.display = 'none';
       }
     }
 
@@ -940,7 +969,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       return match.homeId; // Tie default to home team
     }
 
-    // Render Bracket Tree
+    // Render Bracket Tree (purely static)
     function renderBracket() {
       const rounds = [
         { id: 'round-32', start: 0, count: 16, title: 'Rodada de 32' },
@@ -952,8 +981,9 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
 
       rounds.forEach(r => {
         const container = document.getElementById(r.id);
-        // Clear all except title
-        const titleHtml = container.querySelector('h3').outerHTML;
+        if (!container) return;
+        const titleEl = container.querySelector('h3');
+        const titleHtml = titleEl ? titleEl.outerHTML : `<h3 class="text-center text-muted text-xs font-bold uppercase tracking-wider mb-2">${r.title}</h3>`;
         
         container.innerHTML = titleHtml + '<div class="bracket-matches"></div>';
         const matchesContainer = container.querySelector('.bracket-matches');
@@ -962,57 +992,38 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
           const bracketIdx = r.start + i;
           const match = bracket[bracketIdx];
           
-          const homeTeam = match.homeId ? teams[match.homeId] : { name: 'A definir', code: 'placeholder' };
-          const awayTeam = match.awayId ? teams[match.awayId] : { name: 'A definir', code: 'placeholder' };
+          const hasHome = match && match.homeId;
+          const homeTeam = hasHome ? teams[match.homeId] : { name: 'A definir', code: 'placeholder' };
+          const hasAway = match && match.awayId;
+          const awayTeam = hasAway ? teams[match.awayId] : { name: 'A definir', code: 'placeholder' };
 
-          const isHomeWinner = match.homeScore !== null && match.awayScore !== null && match.homeScore >= match.awayScore;
-          const isAwayWinner = match.homeScore !== null && match.awayScore !== null && match.awayScore > match.homeScore;
+          const isHomeWinner = match && match.homeScore !== null && match.awayScore !== null && match.homeScore >= match.awayScore;
+          const isAwayWinner = match && match.homeScore !== null && match.awayScore !== null && match.awayScore > match.homeScore;
+
+          const hScore = match && (match.homeScore !== null) ? match.homeScore : '-';
+          const aScore = match && (match.awayScore !== null) ? match.awayScore : '-';
 
           const matchDiv = document.createElement('div');
-          matchDiv.className = 'glass-card bracket-match';
+          matchDiv.className = `glass-card bracket-match ${(!hasHome || !hasAway) ? 'bracket-match-pending' : ''}`;
           matchDiv.innerHTML = `
             <div class="bracket-match-title">${r.title} - Jogo ${i + 1}</div>
-            <div class="bracket-team-row ${isHomeWinner ? 'winner' : ''}">
+            <div class="bracket-team-row ${isHomeWinner ? 'winner' : ''} ${!hasHome ? 'team-pending' : ''}">
               <div class="bracket-team-info">
-                ${match.homeId ? `<img src="${getFlagUrl(homeTeam.code)}" class="flag-emoji" />` : ''}
+                ${hasHome ? `<img src="${getFlagUrl(homeTeam.code)}" class="flag-emoji" />` : ''}
                 <span>${homeTeam.name}</span>
               </div>
-              <select class="score-input bracket-score" 
-                data-idx="${bracketIdx}" data-side="home" 
-                ${!match.homeId || !match.awayId ? 'disabled' : ''}>
-                ${generateScoreOptions(match.homeScore)}
-              </select>
+              <div class="bracket-score-display">${hScore}</div>
             </div>
-            <div class="bracket-team-row ${isAwayWinner ? 'winner' : ''}">
+            <div class="bracket-team-row ${isAwayWinner ? 'winner' : ''} ${!hasAway ? 'team-pending' : ''}">
               <div class="bracket-team-info">
-                ${match.awayId ? `<img src="${getFlagUrl(awayTeam.code)}" class="flag-emoji" />` : ''}
+                ${hasAway ? `<img src="${getFlagUrl(awayTeam.code)}" class="flag-emoji" />` : ''}
                 <span>${awayTeam.name}</span>
               </div>
-              <select class="score-input bracket-score" 
-                data-idx="${bracketIdx}" data-side="away" 
-                ${!match.homeId || !match.awayId ? 'disabled' : ''}>
-                ${generateScoreOptions(match.awayScore)}
-              </select>
+              <div class="bracket-score-display">${aScore}</div>
             </div>
           `;
           matchesContainer.appendChild(matchDiv);
         }
-      });
-
-      // Bind bracket inputs
-      document.querySelectorAll('.bracket-score').forEach(input => {
-        input.addEventListener('change', (e) => {
-          const idx = parseInt(e.target.dataset.idx, 10);
-          const side = e.target.dataset.side;
-          const scoreVal = e.target.value === '' ? null : parseInt(e.target.value, 10);
-
-          if (bracket[idx]) {
-            bracket[idx][`${side}Score`] = scoreVal;
-            updateBracketFlow();
-            renderBracket();
-            saveLocalState();
-          }
-        });
       });
     }
 
@@ -1021,8 +1032,11 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       const team = teams[teamId];
       if (!team) return;
 
-      document.getElementById('squad-modal-title').textContent = `Elenco - ${team.name}`;
+      const titleEl = document.getElementById('squad-modal-title');
       const listContainer = document.getElementById('squad-players-list');
+      if (!titleEl || !listContainer) return;
+
+      titleEl.textContent = `Elenco - ${team.name}`;
       listContainer.innerHTML = '';
 
       team.players.forEach(pName => {
@@ -1043,23 +1057,23 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       squadModal.classList.add('active');
     }
 
-    // Modal Artilharia removed - now it's fully automated
-
     // Render Golden Boot / Artilharia list
     function renderArtilharia() {
       const tbody = document.getElementById('artilharia-body');
       const noMsg = document.getElementById('no-scorers-msg');
-      tbody.innerHTML = '';
+      if (!tbody || !noMsg) return;
 
-      const list = artilheirosReais.slice(0, 3); // Apenas top 3
+      tbody.innerHTML = '';
+      const list = artilheirosReais.slice(0, 5); // Top 5 artilheiros
 
       if (list.length > 0) {
         noMsg.style.display = 'none';
         list.forEach((p, index) => {
-          const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉';
+          const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '';
+          const rank = index > 2 ? `<span style="font-size: 0.8rem; opacity: 0.6; margin-right: 0.5rem;">${index + 1}º</span>` : '';
           const tr = document.createElement('tr');
           tr.innerHTML = `
-            <td class="align-left">${medal} ${p.name}</td>
+            <td class="align-left">${medal}${rank} ${p.name}</td>
             <td class="align-left">
               <img src="${getFlagUrl(p.teamCode)}" class="flag-emoji" /> ${p.teamName}
             </td>
@@ -1072,75 +1086,8 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       }
     }
 
-    // Save state locally
-    function saveLocalState() {
-      localStorage.setItem('sim_matches', JSON.stringify(matches));
-      localStorage.setItem('sim_bracket', JSON.stringify(bracket));
-    }
-
-    // Load state locally
-    function loadLocalState() {
-      const savedMatches = localStorage.getItem('sim_matches');
-      const savedBracket = localStorage.getItem('sim_bracket');
-
-      if (savedMatches) {
-        try {
-          const parsed = JSON.parse(savedMatches);
-          if (Array.isArray(parsed)) {
-            // CRITICAL: We only restore scores and user-related fields.
-            // Team IDs, names, dates, stadiums MUST come from initialMatches (source of truth).
-            matches = initialMatches.map((m, idx) => {
-              const saved = parsed.find(s => s.id === m.id);
-              if (saved) {
-                return {
-                  ...m,
-                  homeScore: saved.homeScore,
-                  awayScore: saved.awayScore,
-                  userHomeScore: saved.userHomeScore,
-                  userAwayScore: saved.userAwayScore,
-                  scorers: saved.scorers || { home: [], away: [] },
-                  isFinished: saved.isFinished,
-                  isInPlay: saved.isInPlay
-                };
-              }
-              return m;
-            });
-          }
-        } catch (e) {
-          console.error("Error parsing saved matches:", e);
-        }
-      }
-
-      if (savedBracket) {
-        try {
-          const parsedBracket = JSON.parse(savedBracket);
-          if (Array.isArray(parsedBracket) && parsedBracket.length === 31) {
-            bracket = parsedBracket;
-          }
-        } catch (e) {
-          console.error("Error parsing saved bracket:", e);
-        }
-      }
-    }
-
-    // Reset simulator
-    function resetSimulation() {
-      if (confirm('Tem certeza de que deseja apagar todos os palpites e reiniciar a simulação?')) {
-        localStorage.clear();
-        matches = JSON.parse(JSON.stringify(initialMatches));
-        bracket = Array(31).fill(null);
-        scorersDb = {};
-        
-        initGroups();
-        calculateQualifiedTeams();
-        renderArtilharia();
-        
-        alert('Tabela limpa com sucesso!');
-      }
-    }
-
     // COMPARTILHAR / LEAD GATE
-    let pendingAction = null; // 'share' or 'download'
+    let pendingAction = null;
     let leadModalTriggered = false;
 
     function triggerLeadCaptureModal(reason = '') {
@@ -1149,20 +1096,8 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
 
       leadModalTriggered = true;
       console.log('Lead capture modal triggered due to:', reason);
-      leadModal.classList.add('active');
+      if (leadModal) leadModal.classList.add('active');
     }
-
-    // Exit Intent Detection
-    document.addEventListener('mouseleave', (e) => {
-      if (e.clientY < 0) {
-        triggerLeadCaptureModal('exit_intent');
-      }
-    });
-
-    // 45 seconds Timer trigger
-    setTimeout(() => {
-      triggerLeadCaptureModal('timer_45s');
-    }, 45000);
 
     function checkRegistrationAndExecute(action) {
       const isRegistered = localStorage.getItem('lead_cadastrado');
@@ -1174,22 +1109,8 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       }
     }
 
-    shareBtn.addEventListener('click', () => {
-      checkRegistrationAndExecute('share');
-    });
-
-    downloadBtn.addEventListener('click', () => {
-      checkRegistrationAndExecute('download');
-    });
-
     function getLegacyShareUrl() {
-      let payload = '';
-      matches.forEach(m => {
-        if (m.homeScore !== null && m.awayScore !== null) {
-          payload += `${m.id}-${m.homeScore}-${m.awayScore}_`;
-        }
-      });
-      return `${window.location.origin}${window.location.pathname}?sim=${btoa(payload)}`;
+      return `${window.location.origin}${window.location.pathname}`;
     }
 
     function appendRefCode(urlStr) {
@@ -1231,45 +1152,10 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
         runnerUpId = championId === finalMatch.homeId ? finalMatch.awayId : finalMatch.homeId;
       }
 
-      const rounds = [
-        { name: 'Rodada de 32', start: 0, count: 16 },
-        { name: 'Oitavas de Final', start: 16, count: 8 },
-        { name: 'Quartas de Final', start: 24, count: 4 },
-        { name: 'Semifinais', start: 28, count: 2 },
-        { name: 'Final', start: 30, count: 1 }
-      ];
-
-      const bracketSummary = rounds.map(round => {
-        const roundMatches = [];
-        for (let i = 0; i < round.count; i++) {
-          const match = bracket[round.start + i];
-          if (!match) continue;
-
-          roundMatches.push({
-            home: getTeamName(match.homeId),
-            away: getTeamName(match.awayId),
-            homeScore: match.homeScore,
-            awayScore: match.awayScore,
-            winner: getTeamName(getMatchWinner(match))
-          });
-        }
-
-        return {
-          name: round.name,
-          teams: roundMatches
-            .flatMap(match => [match.home, match.away])
-            .filter(Boolean),
-          matches: roundMatches
-        };
-      });
-
-      const topScorers = artilheirosReais.slice(0, 5);
-
       return {
         champion: getTeamName(championId),
         runnerUp: getTeamName(runnerUpId),
-        topScorers,
-        bracketSummary,
+        topScorers: artilheirosReais.slice(0, 5),
         matches,
         bracket
       };
@@ -1401,8 +1287,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
     async function executeAction(action) {
       let shareUrl = action === 'share' ? await ensurePublicPredictionUrl() : getShareUrl();
       shareUrl = appendRefCode(shareUrl);
-      const winnerName = document.getElementById('champion-team-name').textContent || 'Brasil';
-      const text = `A minha Tabela da Copa 2026 deu que o campeão será o(a) *${winnerName}*! 🏆 Faça seu palpite e me desafie: ${shareUrl}`;
+      const text = `Acompanhe a Tabela da Copa 2026 em tempo real e participe do Bolão dos amigos! Participe: ${shareUrl}`;
 
       if (action === 'share') {
         const lead = getSavedLead();
@@ -1426,43 +1311,6 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
         } else {
           window.open(waUrl, '_blank');
         }
-      } else if (action === 'download') {
-        // Switch to mata-mata tab so the elements are rendered in DOM for html2canvas
-        const mataMataTab = document.querySelector('.tab-btn[data-tab="mata-mata"]');
-        if (mataMataTab) mataMataTab.click();
-
-        // Show loading state
-        const originalText = downloadBtn.innerHTML;
-        downloadBtn.innerHTML = '<span>⏳ Gerando Imagem...</span>';
-        downloadBtn.disabled = true;
-
-        setTimeout(() => {
-          const container = document.getElementById('bracket-container');
-          
-          html2canvas(container, {
-            backgroundColor: '#060913',
-            scale: 2,
-            logging: false,
-            useCORS: true,
-            scrollX: 0,
-            scrollY: -window.scrollY,
-            windowWidth: container.scrollWidth + 100, // ensure full width is captured
-            windowHeight: container.scrollHeight + 100
-          }).then(canvas => {
-            const link = document.createElement('a');
-            link.download = `tabela-copa-2026-${winnerName.toLowerCase()}.png`;
-            link.href = canvas.toDataURL('image/png');
-            link.click();
-            
-            downloadBtn.innerHTML = originalText;
-            downloadBtn.disabled = false;
-          }).catch(err => {
-            console.error('Erro ao gerar imagem:', err);
-            alert('Não foi possível gerar a imagem automaticamente. Experimente tirar um print da tela!');
-            downloadBtn.innerHTML = originalText;
-            downloadBtn.disabled = false;
-          });
-        }, 300); // short delay to ensure rendering completes
       }
     }
 
@@ -1470,144 +1318,113 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       return 'COPUS-' + Math.random().toString(36).substring(2, 6).toUpperCase();
     }
 
-    leadForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      
-      const nome = document.getElementById('lead-name').value;
-      const email = document.getElementById('lead-email').value;
-      let shareUrl = getLegacyShareUrl();
-      const simulationSnapshot = getSimulationSnapshot();
+    if (leadForm) {
+      leadForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const nome = document.getElementById('lead-name').value;
+        const email = document.getElementById('lead-email').value;
+        let shareUrl = getLegacyShareUrl();
+        const simulationSnapshot = getSimulationSnapshot();
 
-      const savedLead = getSavedLead();
-      const refCode = savedLead?.refCode || generateRefCode();
+        const savedLead = getSavedLead();
+        const refCode = savedLead?.refCode || generateRefCode();
 
-      // Save Lead Data Locally
-      const leadData = { nome, email, url: shareUrl, refCode };
-      localStorage.setItem('lead_cadastrado', JSON.stringify(leadData));
+        const leadData = { nome, email, url: shareUrl, refCode };
+        localStorage.setItem('lead_cadastrado', JSON.stringify(leadData));
 
-      // Close modal
-      leadModal.classList.remove('active');
+        if (leadModal) leadModal.classList.remove('active');
 
-      // Send to Supabase (REST api) if credentials exist
-      if (supabaseUrl && supabaseAnonKey) {
-        try {
-          const payload = {
-            nome: nome,
-            email: email,
-            simulacao_data: simulationSnapshot,
-            url_compartilhamento: shareUrl,
-            ref_code: refCode
-          };
+        if (supabaseUrl && supabaseAnonKey) {
+          try {
+            const payload = {
+              nome: nome,
+              email: email,
+              simulacao_data: simulationSnapshot,
+              url_compartilhamento: shareUrl,
+              ref_code: refCode
+            };
 
-          // Sanitize url to remove trailing slashes or /rest/v1/ suffix
-          let cleanUrl = getCleanSupabaseUrl();
+            let cleanUrl = getCleanSupabaseUrl();
 
-          const leadRes = await fetch(`${cleanUrl}/rest/v1/leads`, {
-            method: 'POST',
-            headers: {
-              'apikey': supabaseAnonKey,
-              'Authorization': `Bearer ${supabaseAnonKey}`,
-              'Content-Type': 'application/json',
-              'Prefer': 'return=representation'
-            },
-            body: JSON.stringify(payload)
-          });
+            const leadRes = await fetch(`${cleanUrl}/rest/v1/leads`, {
+              method: 'POST',
+              headers: {
+                'apikey': supabaseAnonKey,
+                'Authorization': `Bearer ${supabaseAnonKey}`,
+                'Content-Type': 'application/json',
+                'Prefer': 'return=representation'
+              },
+              body: JSON.stringify(payload)
+            });
 
-          if (leadRes.ok) {
-            const savedLeads = await leadRes.json();
-            const savedLeadId = savedLeads?.[0]?.id || null;
-            if (savedLeadId) {
-              const updatedLeadData = { ...leadData, leadId: savedLeadId };
-              localStorage.setItem('lead_cadastrado', JSON.stringify(updatedLeadData));
-              await recordEngagementEvent('simulation_created', 10, `simulation:${savedLeadId}`, {
-                leadId: savedLeadId
-              });
+            if (leadRes.ok) {
+              const savedLeads = await leadRes.json();
+              const savedLeadId = savedLeads?.[0]?.id || null;
+              if (savedLeadId) {
+                const updatedLeadData = { ...leadData, leadId: savedLeadId };
+                localStorage.setItem('lead_cadastrado', JSON.stringify(updatedLeadData));
+                await recordEngagementEvent('simulation_created', 10, `simulation:${savedLeadId}`, {
+                  leadId: savedLeadId
+                });
 
-              // Handle Referral Code Invite
-              const refCodeConvite = localStorage.getItem('ref_code_convite');
-              if (refCodeConvite) {
-                try {
-                  const referrerRes = await fetch(`${cleanUrl}/rest/v1/leads?ref_code=eq.${encodeURIComponent(refCodeConvite)}&select=id&limit=1`, {
-                    headers: { 'apikey': supabaseAnonKey, 'Authorization': `Bearer ${supabaseAnonKey}` }
-                  });
-                  if (referrerRes.ok) {
-                    const referrerData = await referrerRes.json();
-                    const referrerId = referrerData[0]?.id;
-                    if (referrerId && referrerId !== savedLeadId) {
-                      const refCreateRes = await fetch(`${cleanUrl}/rest/v1/referrals`, {
-                        method: 'POST',
-                        headers: {
-                          'apikey': supabaseAnonKey,
-                          'Authorization': `Bearer ${supabaseAnonKey}`,
-                          'Content-Type': 'application/json',
-                          'Prefer': 'return=minimal'
-                        },
-                        body: JSON.stringify({ referrer_id: referrerId, invited_id: savedLeadId })
-                      });
-                      if (refCreateRes.ok) {
-                        await recordEngagementEvent('friend_invited', 15, `friend_invited:${referrerId}:${savedLeadId}`, {
-                          leadId: referrerId,
-                          invitedId: savedLeadId
+                const refCodeConvite = localStorage.getItem('ref_code_convite');
+                if (refCodeConvite) {
+                  try {
+                    const referrerRes = await fetch(`${cleanUrl}/rest/v1/leads?ref_code=eq.${encodeURIComponent(refCodeConvite)}&select=id&limit=1`, {
+                      headers: { 'apikey': supabaseAnonKey, 'Authorization': `Bearer ${supabaseAnonKey}` }
+                    });
+                    if (referrerRes.ok) {
+                      const referrerData = await referrerRes.json();
+                      const referrerId = referrerData[0]?.id;
+                      if (referrerId && referrerId !== savedLeadId) {
+                        const refCreateRes = await fetch(`${cleanUrl}/rest/v1/referrals`, {
+                          method: 'POST',
+                          headers: {
+                            'apikey': supabaseAnonKey,
+                            'Authorization': `Bearer ${supabaseAnonKey}`,
+                            'Content-Type': 'application/json',
+                            'Prefer': 'return=minimal'
+                          },
+                          body: JSON.stringify({ referrer_id: referrerId, invited_id: savedLeadId })
                         });
-                        await recordEngagementEvent('invited_by_friend', 15, `invited_by_friend:${savedLeadId}`, {
-                          leadId: savedLeadId,
-                          referrerId: referrerId
-                        });
-                        localStorage.removeItem('ref_code_convite');
+                        if (refCreateRes.ok) {
+                          await recordEngagementEvent('friend_invited', 15, `friend_invited:${referrerId}:${savedLeadId}`, {
+                            leadId: referrerId,
+                            invitedId: savedLeadId
+                          });
+                          await recordEngagementEvent('invited_by_friend', 15, `invited_by_friend:${savedLeadId}`, {
+                            leadId: savedLeadId,
+                            referrerId: referrerId
+                          });
+                          localStorage.removeItem('ref_code_convite');
+                        }
                       }
                     }
+                  } catch (err) {
+                    console.error("Erro ao registrar indicacao no banco:", err);
                   }
-                } catch (err) {
-                  console.error("Erro ao registrar indicacao no banco:", err);
                 }
               }
             }
+            console.log("Lead sincronizado com Supabase com sucesso.");
+          } catch (err) {
+            console.error("Erro ao sincronizar com Supabase:", err);
           }
-          console.log("Lead sincronizado com Supabase com sucesso.");
-        } catch (err) {
-          console.error("Erro ao sincronizar com Supabase:", err);
         }
-      }
 
-      // Execute action
-      if (pendingAction) {
-        await executeAction(pendingAction);
-        pendingAction = null;
-      }
-      
-      alert('Cadastro concluído com sucesso!');
-    });
-
-    // Parse URL simulation params if they exist
-    function parseUrlParams() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const simData = urlParams.get('sim');
-      if (simData) {
-        try {
-          const decoded = atob(simData);
-          const parts = decoded.split('_');
-          parts.forEach(part => {
-            if (!part) return;
-            const [id, home, away] = part.split('-');
-            const match = matches.find(m => m.id === id);
-            if (match) {
-              match.homeScore = parseInt(home, 10);
-              match.awayScore = parseInt(away, 10);
-            }
-          });
-          calculateQualifiedTeams();
-        } catch (err) {
-          console.error("Erro ao carregar simulação da URL", err);
+        if (pendingAction) {
+          await executeAction(pendingAction);
+          pendingAction = null;
         }
-      }
+        
+        alert('Cadastro concluído com sucesso!');
+      });
     }
 
-    // Modal closures
-    closeLeadModal.addEventListener('click', () => leadModal.classList.remove('active'));
-    closeSquadModal.addEventListener('click', () => squadModal.classList.remove('active'));
-    resetBtn.addEventListener('click', resetSimulation);
+    if (closeLeadModal) closeLeadModal.addEventListener('click', () => leadModal && leadModal.classList.remove('active'));
+    if (closeSquadModal) closeSquadModal.addEventListener('click', () => squadModal && squadModal.classList.remove('active'));
 
-    // Close on overlay click
     window.addEventListener('click', (e) => {
       if (e.target === leadModal) leadModal.classList.remove('active');
       if (e.target === squadModal) squadModal.classList.remove('active');
@@ -1625,70 +1442,13 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       });
     }
 
-    // Auto-fill random scores
-    const autoFillBtn = document.getElementById('auto-fill-btn');
-    if (autoFillBtn) {
-      autoFillBtn.addEventListener('click', () => {
-        if (confirm('Deseja preencher todos os placares da fase de grupos com resultados aleatórios? Os palpites atuais serão substituídos.')) {
-          matches.forEach(m => {
-            m.homeScore = Math.floor(Math.random() * 4); // 0 a 3 gols
-            m.awayScore = Math.floor(Math.random() * 4);
-            
-            // Update UI elements
-            const homeInput = document.getElementById(`${m.id}-home`);
-            const awayInput = document.getElementById(`${m.id}-away`);
-            if (homeInput) homeInput.value = m.homeScore;
-            if (awayInput) awayInput.value = m.awayScore;
-
-            // Update scorer button visibility
-            const homeScorerBtn = document.querySelector(`.goal-scorer-btn[data-match-id="${m.id}"][data-side="home"]`);
-            const awayScorerBtn = document.querySelector(`.goal-scorer-btn[data-match-id="${m.id}"][data-side="away"]`);
-            if (homeScorerBtn) homeScorerBtn.style.display = m.homeScore > 0 ? 'inline' : 'none';
-            if (awayScorerBtn) awayScorerBtn.style.display = m.awayScore > 0 ? 'inline' : 'none';
-          });
-
-          // Recalculate standings, update UI, and propagate bracket
-          groups.forEach(g => updateGroupStandings(g));
-          calculateQualifiedTeams();
-          saveLocalState();
-          
-          alert('Placares gerados! Agora vá na aba "Mata-Mata" para palpitar na fase eliminatória.');
-        }
-      });
-    }
-    // Reset simulator scores & state
-    const resetSimBtn = document.getElementById('reset-sim-btn');
-    if (resetSimBtn) {
-      resetSimBtn.addEventListener('click', () => {
-        if (confirm('Deseja limpar todos os seus palpites e reiniciar a tabela do zero?')) {
-          // 1. Reset match list scores and visibility
-          matches.forEach(m => {
-            m.homeScore = null;
-            m.awayScore = null;
-            m.scorers = { home: [], away: [] };
-
-            const homeInput = document.getElementById(`${m.id}-home`);
-            const awayInput = document.getElementById(`${m.id}-away`);
-            if (homeInput) homeInput.value = '';
-            if (awayInput) awayInput.value = '';
-
-            const homeScorerBtn = document.querySelector(`.goal-scorer-btn[data-match-id="${m.id}"][data-side="home"]`);
-            const awayScorerBtn = document.querySelector(`.goal-scorer-btn[data-match-id="${m.id}"][data-side="away"]`);
-            if (homeScorerBtn) homeScorerBtn.style.display = 'none';
-            if (awayScorerBtn) awayScorerBtn.style.display = 'none';
-          });
-
-          // 2. Clear all local storages
-          localStorage.removeItem('sim_matches');
-          localStorage.removeItem('sim_bracket');
-          localStorage.removeItem('sim_scorers');
-
-          // 3. Reload page to cleanly restore initial state
-          window.location.reload();
-        }
-      });
-    }
-
+    // Global event delegation for squad click
+    document.addEventListener('click', (e) => {
+      const teamEl = e.target.closest('.team-name');
+      if (teamEl && teamEl.dataset.teamId) {
+        showSquadModal(teamEl.dataset.teamId);
+      }
+    });
 
     // =============================================
     // BOLAO LOGIC
@@ -1715,7 +1475,6 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
         panel.style.display = 'block';
         renderMyGroups();
 
-        // Handle legacy users without refCode
         let refCode = lead.refCode;
         if (!refCode) {
           refCode = 'COPUS-' + Math.random().toString(36).substring(2, 6).toUpperCase();
@@ -1737,7 +1496,6 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
           }
         }
 
-        // Populate Referral card
         const refLinkInput = document.getElementById('ref-link-input');
         const refCodeDisplay = document.getElementById('ref-code-display');
         if (refLinkInput && refCodeDisplay) {
@@ -1745,7 +1503,6 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
           refLinkInput.value = `${window.location.origin}${window.location.pathname}?ref=${refCode}`;
         }
 
-        // Load achievements dynamically
         if (supabaseUrl && supabaseAnonKey && lead.leadId) {
           const cleanUrl = getCleanSupabaseUrl();
           Promise.all([
@@ -1805,7 +1562,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       const grps = getSavedGroups();
       const list = document.getElementById('bolao-groups-list');
       if (!list) return;
-      if (grps.length === 0) { list.innerHTML = '<p class="text-muted text-center" style="padding:2rem;">Voce ainda nao participa de nenhum grupo.<br/>Crie ou entre em um acima!</p>'; return; }
+      if (grps.length === 0) { list.innerHTML = '<p class="text-muted text-center" style="padding:2rem;">Você ainda não participa de nenhum grupo.<br/>Crie ou entre em um acima!</p>'; return; }
       list.innerHTML = grps.map((g, i) => '<div class="bolao-group-item glass-card" data-index="'+i+'"><div class="bolao-group-info"><span class="bolao-group-name">'+g.nome+'</span><span class="bolao-code-pill">'+g.codigo+'</span></div><button class="bolao-view-btn" data-index="'+i+'">Ver Ranking &rarr;</button></div>').join('');
       list.querySelectorAll('.bolao-view-btn').forEach(btn => { btn.addEventListener('click', () => { openLeaderboard(getSavedGroups()[parseInt(btn.dataset.index)]); }); });
     }
@@ -1828,9 +1585,9 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       let cleanUrl = rawUrl.trim().replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
       if (!cleanUrl || !anonKey) { tbody.innerHTML = '<tr><td colspan="5" class="text-muted text-center" style="padding:1rem;">Configure o Supabase para ver participantes.</td></tr>'; return; }
       try {
-        const res = await fetch(cleanUrl + '/rest/v1/grupo_membros?grupo_id=eq.' + group.id + '&select=joined_at,leads(nome,url_compartilhamento)&order=joined_at.asc', { headers: { 'apikey': anonKey, 'Authorization': 'Bearer ' + anonKey } });
+        const res = await fetch(cleanUrl + '/rest/v1/grupo_membros?grupo_id=' + group.id + '&select=joined_at,leads(nome,url_compartilhamento)&order=joined_at.asc', { headers: { 'apikey': anonKey, 'Authorization': 'Bearer ' + anonKey } });
         const members = await res.json();
-        if (!members || members.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="text-muted text-center" style="padding:1rem;">Nenhum participante ainda. Compartilhe o codigo!</td></tr>'; return; }
+        if (!members || members.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="text-muted text-center" style="padding:1rem;">Nenhum participante ainda. Compartilhe o código!</td></tr>'; return; }
         tbody.innerHTML = members.map((m, i) => { const lead = m.leads || {}; const medal = i===0?'1º':i===1?'2º':i===2?'3º':(i+1)+'º'; return '<tr><td style="text-align:center;font-weight:800;">' + medal + '</td><td class="align-left" style="font-weight:600;">' + (lead.nome||'Anônimo') + '</td><td style="text-align:center;">' + (lead.url_compartilhamento ? '<a href="' + lead.url_compartilhamento + '" target="_blank" style="color:var(--color-secondary);font-size:0.8rem;">Ver Link</a>' : '-') + '</td><td style="text-align:center;font-weight:700;color:var(--color-accent);">0 pts</td></tr>'; }).join('');
       } catch(err) { tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted" style="padding:1rem;">Erro ao carregar.</td></tr>'; console.error(err); }
     }
@@ -1938,10 +1695,12 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       function showSlide(index) {
         slides.forEach((s, i) => s.style.display = i === index ? 'block' : 'none');
         dots.forEach((d, i) => d.classList.toggle('active', i === index));
-        if (index === slides.length - 1) {
-          nextBtn.textContent = 'Começar! 🎉';
-        } else {
-          nextBtn.innerHTML = 'Próximo ➔';
+        if (nextBtn) {
+          if (index === slides.length - 1) {
+            nextBtn.textContent = 'Começar! 🎉';
+          } else {
+            nextBtn.innerHTML = 'Próximo ➔';
+          }
         }
       }
 
@@ -1951,7 +1710,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
             currentSlide++;
             showSlide(currentSlide);
           } else {
-            welcomeModal.classList.remove('active');
+            if (welcomeModal) welcomeModal.classList.remove('active');
             localStorage.setItem('hasSeenWelcome', 'true');
           }
         });
@@ -1960,8 +1719,6 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       if (!localStorage.getItem('hasSeenWelcome') && welcomeModal) {
         setTimeout(() => welcomeModal.classList.add('active'), 800);
       }
-
-      loadLocalState();
 
       // ─── SUPABASE FETCH (reutilizável para polling) ───────────────────────────
       async function fetchSupabaseResults() {
@@ -1977,22 +1734,44 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
             const realData = await res.json();
             realData.forEach(rr => {
               if (rr.status === 'FINISHED' || rr.status === 'IN_PLAY' || rr.status === 'PAUSED') {
-                const m = matches.find(x => x.id === rr.match_id);
-                if (m) {
-                  // Preserve user palpite only if not yet saved
-                  if (m.userHomeScore === undefined) m.userHomeScore = m.homeScore;
-                  if (m.userAwayScore === undefined) m.userAwayScore = m.awayScore;
-                  const prevHome = m.homeScore;
-                  const prevAway = m.awayScore;
-                  m.homeScore = rr.home_score;
-                  m.awayScore = rr.away_score;
-                  m.isFinished = (rr.status === 'FINISHED');
-                  m.isInPlay = (rr.status === 'IN_PLAY' || rr.status === 'PAUSED');
-                  if (prevHome !== rr.home_score || prevAway !== rr.away_score) updated = true;
+                if (rr.match_id.startsWith('R32_') || rr.match_id.startsWith('R16_') || rr.match_id.startsWith('QF_') || rr.match_id.startsWith('SF_') || rr.match_id.startsWith('F_')) {
+                  let idx = -1;
+                  const parts = rr.match_id.split('_M');
+                  if (parts.length > 1) {
+                    const matchNum = parseInt(parts[1], 10) - 1;
+                    if (rr.match_id.startsWith('R32_')) idx = 0 + matchNum;
+                    else if (rr.match_id.startsWith('R16_')) idx = 16 + matchNum;
+                    else if (rr.match_id.startsWith('QF_')) idx = 24 + matchNum;
+                    else if (rr.match_id.startsWith('SF_')) idx = 28 + matchNum;
+                    else if (rr.match_id.startsWith('F_')) idx = 30 + matchNum;
+                  }
+
+                  if (idx >= 0 && idx < 31) {
+                    if (!bracket[idx]) {
+                      bracket[idx] = { homeId: null, awayId: null, homeScore: null, awayScore: null, isFinished: false, isInPlay: false };
+                    }
+                    const prevHome = bracket[idx].homeScore;
+                    const prevAway = bracket[idx].awayScore;
+                    bracket[idx].homeScore = rr.home_score;
+                    bracket[idx].awayScore = rr.away_score;
+                    bracket[idx].isFinished = (rr.status === 'FINISHED');
+                    bracket[idx].isInPlay = (rr.status === 'IN_PLAY' || rr.status === 'PAUSED');
+                    if (prevHome !== rr.home_score || prevAway !== rr.away_score) updated = true;
+                  }
+                } else {
+                  const m = matches.find(x => x.id === rr.match_id);
+                  if (m) {
+                    const prevHome = m.homeScore;
+                    const prevAway = m.awayScore;
+                    m.homeScore = rr.home_score;
+                    m.awayScore = rr.away_score;
+                    m.isFinished = (rr.status === 'FINISHED');
+                    m.isInPlay = (rr.status === 'IN_PLAY' || rr.status === 'PAUSED');
+                    if (prevHome !== rr.home_score || prevAway !== rr.away_score) updated = true;
+                  }
                 }
               }
             });
-            // Update last update label
             const lbl = document.getElementById('last-update-label');
             if (lbl) {
               const now = new Date();
@@ -2028,29 +1807,34 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
         } catch(e) { console.error('Erro ao buscar artilheiros reais', e); }
       }
 
-      // Carga inicial
       await fetchSupabaseResults();
       await fetchSupabaseScorers();
 
       initGroups();
       calculateQualifiedTeams();
       renderArtilharia();
-      parseUrlParams();
+      renderLiveIndicator();
+      startCountdown();
 
-      // ─── POLLING AUTOMÁTICO A CADA 1 MINUTO ─────────────────────────────────
-      const POLL_INTERVAL_MS = 1 * 60 * 1000; // 1 minuto
-      setInterval(async () => {
+      // ─── POLLING AUTOMÁTICO ADAPTATIVO ───────────────────────────────────────
+      let pollTimeoutId = null;
+      async function runPolling() {
         console.log('🔄 Polling automático do Supabase...');
         const changed = await fetchSupabaseResults();
         await fetchSupabaseScorers();
-        if (changed) {
-          console.log('✅ Novos resultados detectados! Atualizando interface...');
-          updateGroupStandings && groups.forEach(g => updateGroupStandings(g));
-          calculateQualifiedTeams && calculateQualifiedTeams();
-          renderArtilharia && renderArtilharia();
-        }
-        renderJogosDoDia(); // Sempre re-renderiza jogos do dia
-      }, POLL_INTERVAL_MS);
+        
+        groups.forEach(g => updateGroupStandings(g));
+        calculateQualifiedTeams();
+        renderArtilharia();
+        renderJogosDoDia();
+        renderLiveIndicator();
+        renderUpcomingMatches();
+
+        const interval = (matches.some(m => m.isInPlay) || bracket.some(m => m && m.isInPlay)) ? 30_000 : 60_000;
+        console.log(`⏱ Próximo polling em ${interval / 1000}s`);
+        pollTimeoutId = setTimeout(runPolling, interval);
+      }
+      runPolling();
 
       // ─── BOTÃO DE REFRESH MANUAL ─────────────────────────────────────────────
       const refreshBtn = document.getElementById('refresh-scores-btn');
@@ -2059,18 +1843,22 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
         refreshBtn.addEventListener('click', async () => {
           refreshBtn.disabled = true;
           if (refreshIcon) refreshIcon.style.animation = 'spin 0.8s linear infinite';
+          if (pollTimeoutId) clearTimeout(pollTimeoutId);
           await fetchSupabaseResults();
           await fetchSupabaseScorers();
           groups.forEach(g => updateGroupStandings(g));
           calculateQualifiedTeams();
           renderArtilharia();
           renderJogosDoDia();
+          renderLiveIndicator();
+          renderUpcomingMatches();
           if (refreshIcon) refreshIcon.style.animation = '';
           refreshBtn.disabled = false;
+          // Resume normal polling loop
+          const interval = (matches.some(m => m.isInPlay) || bracket.some(m => m && m.isInPlay)) ? 30_000 : 60_000;
+          pollTimeoutId = setTimeout(runPolling, interval);
         });
       }
-    }
-    initApp();
-  </script>
+    }</script>
 </Layout>
 
