@@ -844,41 +844,193 @@ footer a:hover {
   text-transform: uppercase;
 }
 
-/* Media Queries for Responsiveness */
+/* =============================================
+   MOBILE-FIRST RESPONSIVE OVERHAUL
+   ============================================= */
+
+/* ── Tablet (≤ 768px) ─────────────────────────────── */
 @media (max-width: 768px) {
   body {
     padding-bottom: 2rem;
   }
+
   .container {
-    padding: 0 0.75rem 2rem 0.75rem;
+    padding: 0 0.85rem 2rem;
+  }
+
+  /* Header compacto */
+  header {
+    padding: 1.75rem 0 1.25rem;
+  }
+
+  h1 {
+    font-size: 1.85rem;
+    letter-spacing: -0.01em;
+  }
+
+  .subtitle {
+    font-size: 0.9rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .logo-badge {
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+  }
+
+  /* Tabs: scroll horizontal, sem quebra */
+  .tabs-container {
+    justify-content: flex-start;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 0.5rem;
+    margin-bottom: 1.75rem;
+    padding-bottom: 4px; /* espaço p/ o indicador ativo */
+  }
+  .tabs-container::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tab-btn {
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+    border-radius: 24px;
+  }
+
+  /* Groups grid: 1 coluna em tablet */
+  .groups-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+  }
+
+  /* Instructions card compacto */
+  .instructions-card {
+    margin-bottom: 1.25rem;
+  }
+
+  .steps-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  /* Standings table */
+  .standing-table {
+    font-size: 0.82rem;
+  }
+
+  /* Bracket scroll suave */
+  .bracket-wrapper {
+    padding: 1rem 0;
+  }
+
+  /* Ads banner empilhado */
+  .ads-banner {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.75rem;
+    padding: 1rem;
   }
 }
 
+/* ── Mobile (≤ 480px) ─────────────────────────────── */
 @media (max-width: 480px) {
-  .group-card {
-    padding: 0.75rem 0.5rem;
+  /* Header menor */
+  header {
+    padding: 1.25rem 0 1rem;
   }
-  .standing-table {
+
+  h1 {
+    font-size: 1.45rem;
+    line-height: 1.2;
+  }
+
+  .subtitle {
+    font-size: 0.8rem;
+    margin-bottom: 1rem;
+  }
+
+  .logo-badge {
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.3rem;
+  }
+
+  /* Logo menor */
+  .official-logo {
+    width: 90px !important;
+    margin-bottom: 1rem !important;
+  }
+
+  /* Tabs ainda menores */
+  .tab-btn {
+    padding: 0.5rem 0.75rem;
     font-size: 0.78rem;
+    gap: 0.3rem;
   }
-  .standing-table th, .standing-table td {
+
+  /* Groups */
+  .groups-grid {
+    gap: 0.75rem;
+  }
+
+  .group-card {
+    padding: 0.85rem 0.65rem;
+  }
+
+  .group-title {
+    font-size: 1rem;
+    margin-bottom: 0.65rem;
+  }
+
+  /* Standing table mobile */
+  .standing-table {
+    font-size: 0.76rem;
+  }
+
+  .standing-table th,
+  .standing-table td {
     padding: 0.35rem 0.1rem;
   }
 
-  /* ---- Layout 2-linhas para as partidas no mobile ---- */
-  .match-row {
-    flex-wrap: wrap;
-    gap: 0.3rem 0;
-    font-size: 0.8rem;
+  .group-card .standing-table th:first-child,
+  .group-card .standing-table td:first-child {
+    width: 48%;
   }
 
-  /* Times ficam na 1ª linha, cada um com 50% */
+  .flag-emoji {
+    width: 16px;
+    height: 11px;
+    margin-right: 0.3rem;
+  }
+
+  /* ---- Match row: 2-linha layout no mobile ---- */
+  .match-card {
+    padding: 0.4rem 0.5rem;
+  }
+
+  .match-datetime {
+    font-size: 0.62rem;
+  }
+
+  .match-row {
+    flex-wrap: wrap;
+    gap: 0.2rem 0;
+    font-size: 0.78rem;
+  }
+
+  /* Times: cada um ocupa 50% na 1ª linha */
   .match-team {
     flex: 0 0 calc(50% - 2px);
     max-width: calc(50% - 2px);
   }
 
-  /* Home: vira à esquerda com flag primeiro */
+  /* Home: à esquerda, flag antes do nome */
   .match-team.home {
     order: 1;
     justify-content: flex-start;
@@ -886,14 +1038,14 @@ footer a:hover {
     text-align: left;
   }
   .match-team.home .flag-emoji {
-    margin-right: 0.35rem;
+    margin-right: 0.3rem;
     margin-left: 0;
   }
   .match-team.home .team-name {
     text-align: left;
   }
 
-  /* Away: fica à direita */
+  /* Away: à direita */
   .match-team.away {
     order: 2;
     justify-content: flex-end;
@@ -901,24 +1053,29 @@ footer a:hover {
   }
   .match-team.away .flag-emoji {
     margin-right: 0;
-    margin-left: 0.35rem;
+    margin-left: 0.3rem;
   }
 
-  /* Placar vai para a 2ª linha, centralizado */
+  /* Placar: 2ª linha, centralizado */
   .match-scores-inputs {
     order: 3;
     flex: 0 0 100%;
     justify-content: center;
-    gap: 0.4rem;
-    padding: 0.2rem 0;
+    gap: 0.3rem;
+    padding: 0.15rem 0;
   }
 
   .match-vs {
-    margin: 0 0.15rem;
+    margin: 0 0.1rem;
   }
 
-  /* ---------------------------------------------------- */
+  /* Instructions: 1 coluna */
+  .steps-grid {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+  }
 
+  /* Bolão */
   .bolao-form-row {
     flex-direction: column;
     align-items: stretch;
@@ -927,8 +1084,37 @@ footer a:hover {
   .bolao-form-row .btn {
     width: 100%;
   }
+
+  /* Modal */
   .modal-content {
-    padding: 1.5rem 1rem;
+    padding: 1.25rem 0.9rem;
+    width: 95%;
+  }
+
+  /* Artilharia card compacto */
+  .player-card {
+    padding: 0.6rem 0.75rem;
+  }
+
+  .player-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 0.85rem;
+  }
+
+  .player-name {
+    font-size: 0.85rem;
+  }
+
+  /* Live badge menor */
+  .live-indicator-badge {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.65rem;
+  }
+
+  /* Upcoming matches: 1 coluna */
+  .upcoming-matches-grid {
+    grid-template-columns: 1fr;
   }
 }
 
