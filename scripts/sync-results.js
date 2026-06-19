@@ -19,7 +19,7 @@ const TLA_TO_ID = {
   'ARG': 'AR', 'ALG': 'DZ', 'AUT': 'AT', 'JOR': 'JO',
   'POR': 'PT', 'COD': 'CD', 'ENG': 'GB-ENG', 'CRO': 'HR',
   'GHA': 'GH', 'PAN': 'PA', 'UZB': 'UZ', 'COL': 'CO',
-  'CON': 'CD', 'SAU': 'SA', // fallbacks extras
+  'CON': 'CD', 'SAU': 'SA', 'URY': 'UY', // fallbacks extras — URY e SAU usados pela API football-data.org
 };
 
 // ─── MAPEAMENTO: grupo + times → nosso matchId interno ─────────────────────
