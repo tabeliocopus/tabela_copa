@@ -1734,7 +1734,11 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
             const realData = await res.json();
             realData.forEach(rr => {
               if (rr.status === 'FINISHED' || rr.status === 'IN_PLAY' || rr.status === 'PAUSED') {
-                if (rr.match_id.startsWith('R32_') || rr.match_id.startsWith('R16_') || rr.match_id.startsWith('QF_') || rr.match_id.startsWith('SF_') || rr.match_id.startsWith('F_')) {
+                // Knockout match IDs: R32_M*, R16_M*, QF_M*, SF_M*, FNL_M*
+                // Group match IDs: A_M*, B_M*, ... L_M* (single letter prefix)
+                // IMPORTANT: Do NOT use startsWith('F_') — it collides with Group F match IDs!
+                const isKnockout = rr.match_id.startsWith('R32_') || rr.match_id.startsWith('R16_') || rr.match_id.startsWith('QF_') || rr.match_id.startsWith('SF_') || rr.match_id.startsWith('FNL_');
+                if (isKnockout) {
                   let idx = -1;
                   const parts = rr.match_id.split('_M');
                   if (parts.length > 1) {
@@ -1743,7 +1747,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
                     else if (rr.match_id.startsWith('R16_')) idx = 16 + matchNum;
                     else if (rr.match_id.startsWith('QF_')) idx = 24 + matchNum;
                     else if (rr.match_id.startsWith('SF_')) idx = 28 + matchNum;
-                    else if (rr.match_id.startsWith('F_')) idx = 30 + matchNum;
+                    else if (rr.match_id.startsWith('FNL_')) idx = 30 + matchNum;
                   }
 
                   if (idx >= 0 && idx < 31) {
