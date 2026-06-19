@@ -5,7 +5,7 @@ const jsonLd = {
   "@context": "https://schema.org",
   "@type": "WebApplication",
   "name": "Bolão da Copa do Mundo 2026",
-  "description": "Crie bolões da Copa 2026 com seus amigos! Monte grupos, compare simulações e descubra quem entende mais de futebol.",
+  "description": "Crie bolões da Copa 2026 com seus amigos! Monte grupos, dê seus palpites nos jogos do Brasil e dispute a liderança do ranking.",
   "url": "https://tabelacopa.com/bolao-copa-2026",
   "applicationCategory": "SportsApplication",
   "operatingSystem": "Web",
@@ -13,16 +13,16 @@ const jsonLd = {
 };
 
 const steps = [
-  { num: '1', title: 'Simule os Jogos', desc: 'Preencha os placares de todos os grupos e do mata-mata no simulador interativo.' },
-  { num: '2', title: 'Cadastre-se Gratuitamente', desc: 'Salve sua simulação com nome e e-mail para participar do bolão.' },
+  { num: '1', title: 'Dê Seus Palpites', desc: 'Acesse a aba do Bolão e prepare seus palpites exclusivos para os jogos do Brasil.' },
+  { num: '2', title: 'Cadastre-se Gratuitamente', desc: 'Salve seu cadastro com nome e e-mail para validar seus palpites no Bolão.' },
   { num: '3', title: 'Crie ou Entre em um Grupo', desc: 'Gere um código exclusivo e convide amigos, ou entre em um grupo existente.' },
-  { num: '4', title: 'Compare e Dispute!', desc: 'Veja o ranking do grupo, quem fez os melhores palpites e dispute a liderança!' }
+  { num: '4', title: 'Compare e Dispute!', desc: 'Veja o ranking do grupo, quem fez os melhores palpites nos jogos do Brasil e dispute a liderança!' }
 ];
 ---
 
 <Layout
   title="Bolão Copa 2026 — Crie Grupos e Dispute com Amigos"
-  description="Crie seu bolão gratuito da Copa do Mundo 2026! Monte grupos com amigos, compare simulações e veja quem acerta mais. Totalmente online e interativo."
+  description="Participe do bolão gratuito da Copa do Mundo 2026! Crie grupos com amigos, dê seus palpites nos jogos do Brasil e veja quem lidera o ranking."
 >
   <main class="container seo-group-page">
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
@@ -30,7 +30,7 @@ const steps = [
     <header>
       <div class="logo-badge">Copa do Mundo 2026</div>
       <h1>BOLÃO DA COPA DO MUNDO 2026</h1>
-      <p class="subtitle">Crie grupos com seus amigos, compare palpites e descubra quem manja mais de futebol — 100% gratuito!</p>
+      <p class="subtitle">Crie grupos com seus amigos, dê palpites nos jogos do Brasil e dispute o ranking oficial — 100% gratuito!</p>
     </header>
 
     <section class="glass-card seo-section">
@@ -59,8 +59,8 @@ const steps = [
 
     <section class="glass-card seo-section seo-cta-section">
       <h2>🏆 Comece Seu Bolão Agora!</h2>
-      <p>Simule os jogos, cadastre-se e crie seu grupo. É rápido e divertido!</p>
-      <a href="/" class="btn btn-primary seo-cta-btn">CRIAR MINHA SIMULAÇÃO →</a>
+      <p>Cadastre-se, dê seus palpites nos jogos do Brasil e chame seus amigos para a disputa!</p>
+      <a href="/" class="btn btn-primary seo-cta-btn">CRIAR MEU BOLÃO →</a>
     </section>
   </main>
 

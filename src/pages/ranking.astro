@@ -104,9 +104,9 @@ const totalPoints = rawRanking.reduce((sum, row) => sum + row.points, 0);
 const leader = rawRanking[0] || null;
 
 const badgesDefinition: Record<string, { label: string; icon: string; desc: string }> = {
-  palpiteiro: { label: 'Palpiteiro', icon: '⚽', desc: 'Fez a primeira simulação' },
+  palpiteiro: { label: 'Participante', icon: '⚽', desc: 'Fez o cadastro inicial no Bolão' },
   criador: { label: 'Fundador', icon: '👥', desc: 'Criou um grupo no Bolão' },
-  propagador: { label: 'Divulgador', icon: '📢', desc: 'Compartilhou a simulação' },
+  propagador: { label: 'Divulgador', icon: '📢', desc: 'Compartilhou o Bolão' },
   influenciador: { label: 'Influenciador', icon: '🔥', desc: 'Convidou 5 ou mais amigos' },
   embaixador: { label: 'Embaixador', icon: '👑', desc: 'Convidou 10 ou mais amigos' },
   elite: { label: 'Elite', icon: '🏆', desc: 'Está no Top 100 Global' }
@@ -154,8 +154,8 @@ const ranking = rawRanking.map((row, index) => {
 });
 
 const eventLabels: Record<string, { label: string; points: number }> = {
-  simulation_created: { label: 'Criou simulacao', points: 10 },
-  simulation_shared: { label: 'Compartilhou', points: 20 },
+  simulation_created: { label: 'Cadastrou no bolão', points: 10 },
+  simulation_shared: { label: 'Compartilhou o bolão', points: 20 },
   group_created: { label: 'Criou grupo', points: 30 },
   friend_invited: { label: 'Convidou amigo', points: 15 },
   invited_by_friend: { label: 'Cadastro por indicação', points: 15 },
@@ -164,16 +164,16 @@ const eventLabels: Record<string, { label: string; points: number }> = {
 ---
 
 <Layout
-  title="Ranking Global | Simulador Copa 2026"
-  description="Veja o ranking geral dos participantes do Simulador da Copa 2026, com pontuacao por simulacoes, compartilhamentos e grupos."
+  title="Ranking Global | Tabela da Copa 2026"
+  description="Veja o ranking geral dos participantes do Bolão da Copa 2026, com pontuação por convites, compartilhamentos e grupos."
 >
   <main class="container ranking-page">
     <header>
       <div class="logo-badge">Ranking Global</div>
       <h1>QUEM MAIS MOVIMENTA A COPA 2026</h1>
-      <p class="subtitle">Pontuacao por engajamento: simulacoes, compartilhamentos, grupos e participacao no bolao.</p>
+      <p class="subtitle">Pontuação por engajamento: compartilhamentos, grupos e convites de amigos no Bolão.</p>
       <div class="ranking-actions">
-        <a href="/" class="btn btn-primary">CRIAR MINHA SIMULAÇÃO</a>
+        <a href="/" class="btn btn-primary">VER TABELA DA COPA</a>
       </div>
     </header>
 

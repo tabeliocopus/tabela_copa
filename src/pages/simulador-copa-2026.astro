@@ -4,8 +4,8 @@ import Layout from '../layouts/Layout.astro';
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  "name": "Simulador da Copa do Mundo 2026",
-  "description": "Simulador interativo e gratuito da Copa do Mundo 2026. Monte seus palpites da fase de grupos ao mata-mata e descubra quem será campeão!",
+  "name": "Tabela da Copa do Mundo 2026",
+  "description": "Tabela interativa da Copa do Mundo 2026. Acompanhe os resultados reais da fase de grupos ao mata-mata e participe do Bolão do Brasil!",
   "url": "https://tabelacopa.com/simulador-copa-2026",
   "applicationCategory": "SportsApplication",
   "operatingSystem": "Web",
@@ -13,26 +13,26 @@ const jsonLd = {
 };
 
 const features = [
-  { icon: '⚽', title: 'Fase de Grupos Completa', desc: 'Preencha placares dos 12 grupos com 48 seleções e veja a classificação ao vivo.' },
-  { icon: '🏆', title: 'Mata-Mata Automático', desc: 'Classificados avançam automaticamente. Defina os resultados até a grande final!' },
-  { icon: '👟', title: 'Artilharia', desc: 'Escolha os goleadores de cada jogo e veja o ranking de artilheiros da Copa.' },
-  { icon: '👥', title: 'Mini-Bolão', desc: 'Crie grupos com amigos, compare palpites e veja quem acerta mais!' },
-  { icon: '📢', title: 'Compartilhamento', desc: 'Salve sua simulação e compartilhe no WhatsApp, redes sociais ou por link.' },
-  { icon: '📊', title: 'Ranking Global', desc: 'Ganhe pontos por simular, compartilhar e convidar amigos. Suba no ranking!' }
+  { icon: '⚽', title: 'Fase de Grupos', desc: 'Acompanhe a classificação dos 12 grupos com 48 seleções e os resultados oficiais em tempo real.' },
+  { icon: '🏆', title: 'Mata-Mata Oficial', desc: 'Chaveamento oficial atualizado automaticamente com base nos resultados reais até a grande final.' },
+  { icon: '👟', title: 'Artilharia Oficial', desc: 'Acompanhe a corrida pela Chuteira de Ouro com a lista oficial de artilheiros da Copa.' },
+  { icon: '👥', title: 'Bolão do Brasil', desc: 'Crie grupos com amigos, faça seus palpites para os jogos do Brasil e dispute a liderança.' },
+  { icon: '📢', title: 'Compartilhamento', desc: 'Compartilhe o código ou o link do seu grupo do Bolão com amigos facilmente.' },
+  { icon: '📊', title: 'Ranking Global', desc: 'Ganhe pontos por cadastros, compartilhamentos e indicações. Suba no ranking de engajamento!' }
 ];
 ---
 
 <Layout
-  title="Simulador Copa 2026 — Monte Seus Palpites Gratuitamente"
-  description="Use o simulador gratuito da Copa do Mundo 2026! Preencha placares, monte o chaveamento, escolha artilheiros e compartilhe com amigos. Totalmente interativo!"
+  title="Tabela Copa 2026 — Resultados e Classificação ao Vivo"
+  description="Acompanhe a Tabela da Copa do Mundo 2026 em tempo real! Confira placares ao vivo, classificação dos grupos, chaveamento oficial e o Bolão do Brasil."
 >
   <main class="container seo-group-page">
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 
     <header>
       <div class="logo-badge">Copa do Mundo 2026</div>
-      <h1>SIMULADOR DA COPA DO MUNDO 2026</h1>
-      <p class="subtitle">Monte seus palpites, defina o campeão e compartilhe com seus amigos — 100% gratuito e interativo!</p>
+      <h1>TABELA DA COPA DO MUNDO 2026</h1>
+      <p class="subtitle">Acompanhe resultados, classificação, chaveamento do mata-mata e o Bolão do Brasil em tempo real!</p>
     </header>
 
     <section class="glass-card seo-section">
@@ -50,8 +50,8 @@ const features = [
 
     <section class="glass-card seo-section seo-cta-section">
       <h2>🚀 Comece Agora!</h2>
-      <p>É rápido, gratuito e divertido. Clique abaixo para criar sua simulação personalizada da Copa do Mundo 2026!</p>
-      <a href="/" class="btn btn-primary seo-cta-btn">CRIAR MINHA SIMULAÇÃO →</a>
+      <p>Acesse o painel em tempo real, veja a classificação atualizada e cadastre-se para participar do Bolão do Brasil!</p>
+      <a href="/" class="btn btn-primary seo-cta-btn">VER TABELA DA COPA →</a>
     </section>
   </main>
 

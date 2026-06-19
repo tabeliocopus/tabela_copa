@@ -22,7 +22,7 @@ export function getGroupSEO(letter) {
     slug,
     teams: groupTeams,
     title: `Grupo ${letter} da Copa do Mundo FIFA 2026 — ${teamNames}`,
-    description: `Veja as seleções do Grupo ${letter} da Copa do Mundo FIFA 2026: ${teamNames}. Confira jogos, classificação e simule os resultados!`,
+    description: `Veja as seleções do Grupo ${letter} da Copa do Mundo FIFA 2026: ${teamNames}. Confira jogos, classificação e placares em tempo real!`,
     h1: `Grupo ${letter} — Copa do Mundo FIFA 2026`,
     jsonLd: {
       "@context": "https://schema.org",
