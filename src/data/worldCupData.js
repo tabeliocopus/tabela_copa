@@ -184,17 +184,17 @@ export const generateMatches = () => {
 
     // Precise calendar days for Rounds 1 and 2 (June 2026) based on official API
     const groupDates = {
-      'A': [11, 12, 18, 19],
+      'A': [11, 11, 18, 18],
       'B': [12, 13, 18, 18],
-      'C': [13, 14, 19, 20],
-      'D': [13, 14, 19, 20],
-      'E': [14, 14, 20, 21],
-      'F': [14, 15, 20, 21],
-      'G': [15, 15, 21, 22],
-      'H': [15, 15, 21, 22],
-      'I': [16, 16, 22, 23],
-      'J': [16, 16, 22, 23],
-      'K': [17, 17, 23, 24],
+      'C': [13, 13, 19, 19],
+      'D': [12, 13, 19, 19],
+      'E': [14, 14, 20, 20],
+      'F': [14, 14, 20, 20],
+      'G': [15, 15, 21, 21],
+      'H': [15, 15, 21, 21],
+      'I': [16, 16, 22, 22],
+      'J': [16, 16, 22, 22],
+      'K': [17, 17, 23, 23],
       'L': [17, 17, 23, 23]
     };
 
@@ -232,9 +232,12 @@ export const generateMatches = () => {
         timeStr = times[(groupIdx + pairingIdx) % 4];
       } else {
         // Round 3 - Geographic clustering for simultaneous matches remains
-        if (['A', 'B', 'C', 'D'].includes(groupLetter)) dayVal = 24;
-        else if (['E', 'F', 'G', 'H'].includes(groupLetter)) dayVal = 25;
-        else dayVal = 26;
+        const round3Days = {
+          'A': 24, 'B': 24, 'C': 24, 'D': 25,
+          'E': 25, 'F': 25, 'G': 26, 'H': 26,
+          'I': 26, 'J': 27, 'K': 27, 'L': 27
+        };
+        dayVal = round3Days[groupLetter];
         timeStr = pairingIdx === 0 ? '16:00' : '20:00';
       }
 
