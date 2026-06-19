@@ -494,9 +494,9 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       const aScore = showScore ? (match.awayScore !== null ? match.awayScore : 0) : '-';
 
       const statusBadge = match.isFinished
-        ? '<span style="color: var(--color-primary); font-weight: bold; font-size: 0.75rem; margin-left: 0.5rem; border: 1px solid var(--color-primary); padding: 2px 6px; border-radius: 10px; background: rgba(0,255,135,0.1);">✅ Oficial</span>'
+        ? '<span style="color: var(--color-primary); font-weight: bold; font-size: 0.65rem; margin-left: 0.5rem; border: 1px solid var(--color-primary); padding: 2px 6px; border-radius: 10px; background: rgba(0,255,135,0.1); display: inline-block; white-space: nowrap; vertical-align: middle;">✅ Oficial</span>'
         : match.isInPlay
-        ? '<span style="color: #ff4444; font-weight: bold; font-size: 0.75rem; margin-left: 0.5rem; border: 1px solid #ff4444; padding: 2px 6px; border-radius: 10px; background: rgba(255,68,68,0.15); animation: pulse-red 1.5s infinite;">🔴 AO VIVO</span>'
+        ? '<span style="color: #ff4444; font-weight: bold; font-size: 0.65rem; margin-left: 0.5rem; border: 1px solid #ff4444; padding: 2px 6px; border-radius: 10px; background: rgba(255,68,68,0.15); animation: pulse-red 1.5s infinite; display: inline-block; white-space: nowrap; vertical-align: middle;">🔴 AO VIVO</span>'
         : '';
 
       const homeRank = window.teamRanks?.[match.homeId] ? `<span class="team-rank">#${window.teamRanks[match.homeId]}</span>` : '';
