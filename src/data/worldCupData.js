@@ -1,3 +1,5 @@
+import { officialMatches } from './officialMatches.js';
+
 export const teams = {
   // Group A
   "MX": { name: "México", code: "mx", group: "A", players: ["Santiago Giménez", "Edson Álvarez", "Chucky Lozano"] },
@@ -144,129 +146,14 @@ const groupVenues = {
   ]
 };
 
-// Generate match schedules automatically for each group
+// Generate match schedules using official real schedules from API
 export const generateMatches = () => {
-  const matches = [];
-
-  // Explicitly define the team order for each group to ensure t1, t2, t3, t4 
-  // match the API mapping exactly, regardless of object key order.
-  const groupTeamsMap = {
-    A: ['MX', 'ZA', 'KR', 'CZ'],
-    B: ['CA', 'BA', 'QA', 'CH'],
-    C: ['BR', 'MA', 'HT', 'GB-SCT'],
-    D: ['US', 'PY', 'AU', 'TR'],
-    E: ['DE', 'CW', 'CI', 'EC'],
-    F: ['NL', 'JP', 'SE', 'TN'],
-    G: ['BE', 'EG', 'IR', 'NZ'],
-    H: ['ES', 'CV', 'SA', 'UY'],
-    I: ['FR', 'SN', 'IQ', 'NO'],
-    J: ['AR', 'DZ', 'AT', 'JO'],
-    K: ['PT', 'CD', 'UZ', 'CO'],
-    L: ['GB-ENG', 'HR', 'GH', 'PA'],
-  };
-
-  // Official Pairing Pattern M1-M6 (Pattern: 1-2, 3-4, 4-2, 1-3, 4-1, 2-3)
-  Object.keys(groupTeamsMap).forEach(groupLetter => {
-    const teamIds = groupTeamsMap[groupLetter];
-    const t1 = { id: teamIds[0], ...teams[teamIds[0]] };
-    const t2 = { id: teamIds[1], ...teams[teamIds[1]] };
-    const t3 = { id: teamIds[2], ...teams[teamIds[2]] };
-    const t4 = { id: teamIds[3], ...teams[teamIds[3]] };
-
-    const pairings = [
-      { home: t1, away: t2, round: 1, pairingIdx: 0 },
-      { home: t3, away: t4, round: 1, pairingIdx: 1 },
-      { home: t4, away: t2, round: 2, pairingIdx: 0 },
-      { home: t1, away: t3, round: 2, pairingIdx: 1 },
-      { home: t4, away: t1, round: 3, pairingIdx: 0 },
-      { home: t2, away: t3, round: 3, pairingIdx: 1 }
-    ];
-
-    // Precise calendar days for Rounds 1 and 2 (June 2026) based on official API
-    const groupDates = {
-      'A': [11, 11, 18, 18],
-      'B': [12, 13, 18, 18],
-      'C': [13, 13, 19, 19],
-      'D': [12, 13, 19, 19],
-      'E': [14, 14, 20, 20],
-      'F': [14, 14, 20, 20],
-      'G': [15, 15, 21, 21],
-      'H': [15, 15, 21, 21],
-      'I': [16, 16, 22, 22],
-      'J': [16, 16, 22, 22],
-      'K': [17, 17, 23, 23],
-      'L': [17, 17, 23, 23]
-    };
-
-    function getMatchDateTime(round, pairingIdx) {
-      function formatMatchDate(dVal, time) {
-        const dObj = new Date(Date.UTC(2026, 5, dVal, 12, 0, 0));
-        const dName = getWeekDay(dObj);
-        const dStr = String(dVal).padStart(2, '0');
-        return `${dStr}/06/2026 (${dName}) – ${time}`;
-      }
-
-      let dayVal;
-      let timeStr;
-
-      if (round === 1) {
-        dayVal = groupDates[groupLetter][pairingIdx];
-        
-        const groupIdx = groupLetter.charCodeAt(0) - 65;
-        
-        // Spread matches so they don't all cluster at the same hour
-        // Group G (6), I (8), K (10) -> idx 0 @ 14:00, idx 1 @ 20:00
-        // Group H (7), J (9), L (11) -> idx 0 @ 17:00, idx 1 @ 23:00
-        if (groupIdx % 2 === 0) {
-          timeStr = pairingIdx === 0 ? '14:00' : '20:00';
-        } else {
-          timeStr = pairingIdx === 0 ? '17:00' : '23:00';
-        }
-
-        // Special case for Mexico opening slot
-        if (groupLetter === 'A' && pairingIdx === 1) timeStr = '23:00';
-      } else if (round === 2) {
-        dayVal = groupDates[groupLetter][pairingIdx + 2];
-        const times = ['13:00', '16:00', '19:00', '21:30'];
-        const groupIdx = groupLetter.charCodeAt(0) - 65;
-        timeStr = times[(groupIdx + pairingIdx) % 4];
-      } else {
-        // Round 3 - Geographic clustering for simultaneous matches remains
-        const round3Days = {
-          'A': 24, 'B': 24, 'C': 24, 'D': 25,
-          'E': 25, 'F': 25, 'G': 26, 'H': 26,
-          'I': 26, 'J': 27, 'K': 27, 'L': 27
-        };
-        dayVal = round3Days[groupLetter];
-        timeStr = pairingIdx === 0 ? '16:00' : '20:00';
-      }
-
-      return formatMatchDate(dayVal, timeStr);
-    }
-
-    const venues = groupVenues[groupLetter] || groupVenues["A"];
-
-    pairings.forEach((p, idx) => {
-      const venueIdx = idx % 3;
-      const venue = venues[venueIdx] || venues[0];
-
-      matches.push({
-        id: `${groupLetter}_M${idx + 1}`,
-        group: groupLetter,
-        round: p.round,
-        homeId: p.home.id,
-        awayId: p.away.id,
-        homeScore: null,
-        awayScore: null,
-        scorers: { home: [], away: [] },
-        datetime: getMatchDateTime(p.round, p.pairingIdx),
-        stadium: venue.stadium,
-        city: venue.city
-      });
-    });
-  });
-
-  return matches;
+  return officialMatches.map(m => ({
+    ...m,
+    homeScore: null,
+    awayScore: null,
+    scorers: { home: [], away: [] }
+  }));
 };
 
 // Automatic audit function for build validation

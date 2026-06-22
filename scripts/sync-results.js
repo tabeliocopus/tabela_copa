@@ -1,4 +1,5 @@
 // sync-results.js - ESM compatible (Node 18+)
+import { teams, groups, generateMatches } from '../src/data/worldCupData.js';
 
 // ─── CONFIG ────────────────────────────────────────────────────────────────
 const FOOTBALL_TOKEN = process.env.FOOTBALL_DATA_TOKEN || '738986c2808c4be681f13d3c3f54c81b';
@@ -19,13 +20,10 @@ const TLA_TO_ID = {
   'ARG': 'AR', 'ALG': 'DZ', 'AUT': 'AT', 'JOR': 'JO',
   'POR': 'PT', 'COD': 'CD', 'ENG': 'GB-ENG', 'CRO': 'HR',
   'GHA': 'GH', 'PAN': 'PA', 'UZB': 'UZ', 'COL': 'CO',
-  'CON': 'CD', 'SAU': 'SA', 'URY': 'UY', // fallbacks extras — URY e SAU usados pela API football-data.org
+  'CON': 'CD', 'SAU': 'SA', 'URY': 'UY',
 };
 
 // ─── MAPEAMENTO: grupo + times → nosso matchId interno ─────────────────────
-// Par de teamIds (sempre ordenado alfabeticamente) → matchId
-// Estrutura de cada grupo (T1, T2, T3, T4 seguindo a ordem em worldCupData.js):
-// M1: T1xT2, M2: T3xT4, M3: T1xT3, M4: T2xT4, M5: T1xT4, M6: T2xT3
 const GROUP_TEAMS = {
   A: ['MX', 'ZA', 'KR', 'CZ'],
   B: ['CA', 'BA', 'QA', 'CH'],
@@ -41,7 +39,7 @@ const GROUP_TEAMS = {
   L: ['GB-ENG', 'HR', 'GH', 'PA'],
 };
 
-// Constrói o mapa: "T1|T2" (sorted) → "X_MY" para todos os grupos
+// Constrói o mapa de grupos: "T1|T2" (sorted) → matchId
 const MATCH_PAIR_TO_ID = {};
 Object.keys(GROUP_TEAMS).forEach(g => {
   const [t1, t2, t3, t4] = GROUP_TEAMS[g];
@@ -77,9 +75,18 @@ async function supabaseUpsert(url, key, rows) {
   return { status: res.status, body: await res.text() };
 }
 
+// Helper to determine winner
+function getMatchWinner(match) {
+  if (!match || match.homeId === null || match.awayId === null) return null;
+  if (match.homeScore === null || match.awayScore === null) return null;
+  if (match.homeScore > match.awayScore) return match.homeId;
+  if (match.homeScore < match.awayScore) return match.awayId;
+  return match.homeId; // Empate favorece home por padrão
+}
+
 // ─── MAIN ──────────────────────────────────────────────────────────────────
 async function syncResults() {
-  console.log('🔄 Sincronizando resultados da Copa 2026...\n');
+  console.log('🔄 Iniciando sincronização completa da Copa 2026...\n');
 
   if (!SUPABASE_KEY) {
     console.error('❌ SUPABASE_SERVICE_KEY não configurada!');
@@ -87,32 +94,35 @@ async function syncResults() {
     process.exit(1);
   }
 
-  // 1. Busca todos os jogos da fase de grupos na API
+  // 1. Busca todos os jogos do torneio na API (sem filtro de stage para vir mata-mata também)
   const apiData = await apiGet(
-    'https://api.football-data.org/v4/competitions/WC/matches?season=2026&stage=GROUP_STAGE',
+    'https://api.football-data.org/v4/competitions/WC/matches?season=2026',
     { 'X-Auth-Token': FOOTBALL_TOKEN }
   );
 
-  const matches = apiData.matches || [];
-  const finished = matches.filter(m => 
+  const apiMatches = apiData.matches || [];
+  const finishedOrLive = apiMatches.filter(m => 
     m.status === 'FINISHED' || 
     m.status === 'IN_PLAY' || 
-    m.status === 'PAUSED'   // Intervalo do jogo
+    m.status === 'PAUSED'
   );
   
-  console.log(`📡 API retornou ${matches.length} jogos, sendo ${finished.length} finalizados.\n`);
+  console.log(`📡 API retornou ${apiMatches.length} jogos no total, sendo ${finishedOrLive.length} finalizados/ao vivo.\n`);
 
-  // 2. Mapeia cada jogo finalizado para nosso matchId
+  // Local state para classificação e chaveamento
+  const localMatches = generateMatches(); // lista padrão de 72 jogos de grupos
   const toSync = [];
-  
-  for (const m of finished) {
+
+  // 2. Mapeamento da FASE DE GRUPOS
+  const apiGroupMatches = finishedOrLive.filter(m => m.stage === 'GROUP_STAGE');
+  for (const m of apiGroupMatches) {
     const homeTla = m.homeTeam.tla;
     const awayTla = m.awayTeam.tla;
     const homeId  = TLA_TO_ID[homeTla];
     const awayId  = TLA_TO_ID[awayTla];
 
     if (!homeId || !awayId) {
-      console.warn(`⚠️  TLA não mapeado: ${homeTla} ou ${awayTla}`);
+      console.warn(`⚠️  TLA não mapeado no grupo: ${homeTla} ou ${awayTla}`);
       continue;
     }
 
@@ -120,21 +130,17 @@ async function syncResults() {
     const info = MATCH_PAIR_TO_ID[key];
 
     if (!info) {
-      console.warn(`⚠️  Par não encontrado no mapa: ${homeId} | ${awayId}`);
+      console.warn(`⚠️  Par de grupo não encontrado no mapa: ${homeId} | ${awayId}`);
       continue;
     }
 
-    // Determina placar na orientação correta (home/away do nosso sistema)
-    // Nossa definição de "home" é sempre T1 na ordem do worldCupData.js
     const score = m.score.fullTime;
     let homeScore, awayScore;
 
     if (homeId === info.homeId) {
-      // Mesma orientação que a API
       homeScore = score.home;
       awayScore = score.away;
     } else {
-      // Orientação invertida — swap
       homeScore = score.away;
       awayScore = score.home;
     }
@@ -143,30 +149,212 @@ async function syncResults() {
       match_id:   info.matchId,
       home_score: homeScore,
       away_score: awayScore,
-      status:     m.status, // FINISHED, IN_PLAY ou PAUSED
+      status:     m.status,
     });
 
-    console.log(`  ✅ ${info.matchId}: ${homeTla} ${score.home}x${score.away} ${awayTla} → [${info.matchId}] ${homeScore}x${awayScore}`);
+    // Atualiza o localMatches para calcular a classificação correta
+    const matchRef = localMatches.find(x => x.id === info.matchId);
+    if (matchRef) {
+      matchRef.homeScore = homeScore;
+      matchRef.awayScore = awayScore;
+    }
   }
 
+  // 3. CALCULAR CLASSIFICAÇÃO DOS GRUPOS E MONTAR O CHAVEAMENTO MATA-MATA
+  const groupWinners = [];
+  const groupRunnersUp = [];
+  const groupThirds = [];
+
+  groups.forEach(groupLetter => {
+    const groupTeams = Object.keys(teams)
+      .filter(key => teams[key].group === groupLetter)
+      .map(key => ({
+        id: key,
+        name: teams[key].name,
+        pts: 0, gd: 0, gf: 0, ga: 0, w: 0
+      }));
+
+    const groupMatches = localMatches.filter(m => m.group === groupLetter);
+    groupMatches.forEach(m => {
+      if (m.homeScore !== null && m.awayScore !== null) {
+        const home = groupTeams.find(t => t.id === m.homeId);
+        const away = groupTeams.find(t => t.id === m.awayId);
+        
+        if (home && away) {
+          home.gf += m.homeScore;
+          home.ga += m.awayScore;
+          away.gf += m.awayScore;
+          away.ga += m.homeScore;
+
+          if (m.homeScore > m.awayScore) { home.pts += 3; home.w += 1; }
+          else if (m.homeScore < m.awayScore) { away.pts += 3; away.w += 1; }
+          else { home.pts += 1; away.pts += 1; }
+        }
+      }
+    });
+
+    groupTeams.forEach(t => t.gd = t.gf - t.ga);
+
+    groupTeams.sort((a, b) => {
+      if (b.pts !== a.pts) return b.pts - a.pts;
+      if (b.gd !== a.gd) return b.gd - a.gd;
+      if (b.gf !== a.gf) return b.gf - a.gf;
+      return a.name.localeCompare(b.name);
+    });
+
+    groupWinners.push(groupTeams[0]);
+    groupRunnersUp.push(groupTeams[1]);
+    groupThirds.push(groupTeams[2]);
+  });
+
+  groupThirds.sort((a, b) => {
+    if (b.pts !== a.pts) return b.pts - a.pts;
+    if (b.gd !== a.gd) return b.gd - a.gd;
+    if (b.gf !== a.gf) return b.gf - a.gf;
+    return a.name.localeCompare(b.name);
+  });
+
+  const bestThirds = groupThirds.slice(0, 8);
+  
+  const pairings = [
+    { home: groupWinners[0], away: bestThirds[0] }, // R32_M1
+    { home: groupWinners[1], away: bestThirds[1] }, // R32_M2
+    { home: groupWinners[2], away: bestThirds[2] }, // R32_M3
+    { home: groupWinners[3], away: bestThirds[3] }, // R32_M4
+    { home: groupWinners[4], away: bestThirds[4] }, // R32_M5
+    { home: groupWinners[5], away: bestThirds[5] }, // R32_M6
+    { home: groupWinners[6], away: bestThirds[6] }, // R32_M7
+    { home: groupWinners[7], away: bestThirds[7] }, // R32_M8
+    { home: groupWinners[8], away: groupRunnersUp[0] }, // R32_M9
+    { home: groupWinners[9], away: groupRunnersUp[1] }, // R32_M10
+    { home: groupWinners[10], away: groupRunnersUp[2] }, // R32_M11
+    { home: groupWinners[11], away: groupRunnersUp[3] }, // R32_M12
+    { home: groupRunnersUp[4], away: groupRunnersUp[5] }, // R32_M13
+    { home: groupRunnersUp[6], away: groupRunnersUp[7] }, // R32_M14
+    { home: groupRunnersUp[8], away: groupRunnersUp[9] }, // R32_M15
+    { home: groupRunnersUp[10], away: groupRunnersUp[11] } // R32_M16
+  ];
+
+  // Chaveamento dinâmico local de 31 posições
+  const bracket = Array.from({ length: 31 }, () => ({
+    homeId: null, awayId: null, homeScore: null, awayScore: null, isFinished: false, isInPlay: false
+  }));
+
+  for (let i = 0; i < 16; i++) {
+    bracket[i].homeId = pairings[i].home ? pairings[i].home.id : null;
+    bracket[i].awayId = pairings[i].away ? pairings[i].away.id : null;
+  }
+
+  // 4. MAPEAR E PROCESSAR CADA FASE DE MATA-MATA DA API
+  const apiKnockouts = finishedOrLive.filter(m => m.stage !== 'GROUP_STAGE');
+
+  // Helper para buscar jogo da API entre duas seleções específicas
+  function findApiKnockoutMatch(stageName, t1, t2) {
+    if (!t1 || !t2) return null;
+    return apiKnockouts.find(m => {
+      if (m.stage !== stageName) return false;
+      const homeTla = m.homeTeam?.tla;
+      const awayTla = m.awayTeam?.tla;
+      const apiH = TLA_TO_ID[homeTla];
+      const apiA = TLA_TO_ID[awayTla];
+      return (apiH === t1 && apiA === t2) || (apiH === t2 && apiA === t1);
+    });
+  }
+
+  // Helper para sincronizar e propagar rodada
+  function processRound(startIndex, count, apiStageName, dbPrefix, nextIndexOffset) {
+    for (let i = 0; i < count; i++) {
+      const idx = startIndex + i;
+      const slot = bracket[idx];
+      if (!slot.homeId || !slot.awayId) continue;
+
+      const apiMatch = findApiKnockoutMatch(apiStageName, slot.homeId, slot.awayId);
+      if (apiMatch) {
+        const homeTla = apiMatch.homeTeam.tla;
+        const apiHomeId = TLA_TO_ID[homeTla];
+        const fullTimeScore = apiMatch.score.fullTime;
+
+        let homeScore, awayScore;
+        // Alinha os placares com a orientação do nosso bracket
+        if (apiHomeId === slot.homeId) {
+          homeScore = fullTimeScore.home;
+          awayScore = fullTimeScore.away;
+        } else {
+          homeScore = fullTimeScore.away;
+          awayScore = fullTimeScore.home;
+        }
+
+        const matchId = `${dbPrefix}_M${i + 1}`;
+        toSync.push({
+          match_id: matchId,
+          home_score: homeScore,
+          away_score: awayScore,
+          status: apiMatch.status,
+        });
+
+        // Atualiza localmente para propagação de fases subsequentes
+        slot.homeScore = homeScore;
+        slot.awayScore = awayScore;
+        slot.isFinished = (apiMatch.status === 'FINISHED');
+
+        console.log(`  🏆 [${dbPrefix}] ${slot.homeId} ${homeScore}x${awayScore} ${slot.awayId} → [${matchId}]`);
+      }
+
+      // Propaga o vencedor para a próxima fase na memória local
+      if (nextIndexOffset !== null) {
+        const winner = getMatchWinner(slot);
+        const nextIdx = nextIndexOffset + Math.floor(i / 2);
+        const isHomeInNext = (i % 2 === 0);
+
+        if (isHomeInNext) {
+          bracket[nextIdx].homeId = winner;
+        } else {
+          bracket[nextIdx].awayId = winner;
+        }
+      }
+    }
+  }
+
+  // 1. Processar Rodada de 32 (Slots 0 a 15) -> Propaga para Oitavas (Slots 16 a 23)
+  console.log('⚙️ Processando Rodada de 32...');
+  processRound(0, 16, 'LAST_32', 'R32', 16);
+
+  // 2. Processar Rodada de 16 / Oitavas (Slots 16 a 23) -> Propaga para Quartas (Slots 24 a 27)
+  console.log('⚙️ Processando Oitavas de Final...');
+  // O football-data.org pode usar LAST_16 ou ROUND_OF_16. Vamos checar os matches para garantir
+  const hasLast16 = apiKnockouts.some(m => m.stage === 'LAST_16');
+  const stage16Name = hasLast16 ? 'LAST_16' : 'ROUND_OF_16';
+  processRound(16, 8, stage16Name, 'R16', 24);
+
+  // 3. Processar Quartas de Final (Slots 24 a 27) -> Propaga para Semifinais (Slots 28 a 29)
+  console.log('⚙️ Processando Quartas de Final...');
+  processRound(24, 4, 'QUARTER_FINALS', 'QF', 28);
+
+  // 4. Processar Semifinais (Slots 28 a 29) -> Propaga para Grande Final (Slot 30)
+  console.log('⚙️ Processando Semifinais...');
+  processRound(28, 2, 'SEMI_FINALS', 'SF', 30);
+
+  // 5. Processar Grande Final (Slot 30, FNL_M1) -> Determina Campeão
+  console.log('⚙️ Processando Grande Final...');
+  processRound(30, 1, 'FINAL', 'FNL', null);
+
+  // 6. UPSERT NO SUPABASE
   if (toSync.length === 0) {
-    console.log('\nℹ️  Nenhum jogo finalizado para sincronizar.');
+    console.log('\nℹ️  Nenhum jogo finalizado ou ao vivo para sincronizar.');
     return;
   }
 
-  console.log(`\n📥 Enviando ${toSync.length} resultado(s) para o Supabase...`);
-
-  // 3. Upsert em lotes no Supabase
+  console.log(`\n📥 Enviando ${toSync.length} resultado(s) totais para o Supabase...`);
   const res = await supabaseUpsert(SUPABASE_URL, SUPABASE_KEY, toSync);
 
   if (res.status >= 200 && res.status < 300) {
-    console.log(`\n🎉 Sincronização concluída! ${toSync.length} resultado(s) salvos.\n`);
+    console.log(`\n🎉 Sincronização concluída com sucesso! ${toSync.length} resultado(s) salvos.\n`);
   } else {
     console.error(`\n❌ Erro Supabase (status ${res.status}): ${res.body}`);
   }
 }
 
 syncResults().catch(err => {
-  console.error('💥 Erro fatal:', err.message);
+  console.error('💥 Erro fatal no script:', err.message);
   process.exit(1);
 });

@@ -3,142 +3,85 @@ import Layout from '../layouts/Layout.astro';
 import { teams, groups, generateMatches, validateWorldCupData } from '../data/worldCupData';
 
 const initialMatches = generateMatches();
-validateWorldCupData(); // Run build-time self-audit validation
+validateWorldCupData(); // Auto-auditoria em tempo de build
 
 // Supabase environment variables from server environment
 const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
 ---
 
-<Layout title="Tabela da Copa do Mundo FIFA 2026" description="Acompanhe a Tabela da Copa do Mundo 2026 em tempo real! Confira jogos de hoje, placares ao vivo, classificação dos grupos, mata-mata e a artilharia oficial.">
+<Layout title="Copa do Mundo FIFA 2026 — Tabela, Jogos e Resultados ao Vivo" description="Acompanhe a Tabela da Copa do Mundo 2026 em tempo real! Confira jogos de hoje, resultados de ontem, classificação dos grupos, chaveamento do mata-mata e artilharia oficial.">
   <main class="container">
     
     <!-- HEADER -->
     <header>
-      <img src="/logo-copa.png" alt="FIFA World Cup 2026 Logo" class="official-logo" style="width: 140px; height: auto; margin: 0 auto 1.5rem auto; display: block;" />
-      <div class="logo-badge">United States • Canada • Mexico 2026</div>
-      <h1>TABELA DA COPA DO MUNDO 2026</h1>
+      <img src="/logo-copa.png" alt="FIFA World Cup 2026 Logo" class="official-logo" style="width: 110px; height: auto; margin: 0 auto 1rem auto; display: block;" />
+      <div class="logo-badge">América do Norte 2026</div>
+      <h1>Copa do Mundo 2026</h1>
       <div id="live-indicator" class="live-indicator-badge" style="display: none;">
         <span class="live-dot"></span> JOGO AO VIVO
       </div>
-      <p class="subtitle">Acompanhe todos os jogos, placares em tempo real, chaveamento do mata-mata e artilharia oficial da Copa 2026!</p>
-      
-      <!-- NAV TABS -->
-      <div class="tabs-container">
-        <button class="tab-btn active" data-tab="jogos-dia">
-          📅 Jogos Hoje
-        </button>
-        <button class="tab-btn" data-tab="fase-grupos">
-          📋 Tabela da Copa
-        </button>
-        <button class="tab-btn" data-tab="mata-mata">
-          🏆 Mata-Mata
-        </button>
-        <button class="tab-btn" data-tab="artilharia">
-          👟 Artilharia
-        </button>
-        <button class="tab-btn" data-tab="bolao">
-          👥 Bolão & Ranking
-        </button>
-      </div>
+      <p class="subtitle">Confira os jogos de ontem e hoje, classificação dos grupos, chaveamento do mata-mata e a artilharia da Copa em tempo real.</p>
     </header>
 
-    <div class="instructions-card glass-card expanded" id="instructions-container">
-      <div class="instructions-header" id="toggle-instructions">
-        <span>💡 Como funciona esta Tabela?</span>
-        <span class="toggle-icon">▼</span>
-      </div>
-      <div class="instructions-content active" id="instructions-body">
-        <div class="steps-grid">
-          <div class="step-item">
-            <div class="step-number">1</div>
-            <p>
-              <strong>Resultados Oficiais</strong>
-              Veja os jogos programados para hoje e os placares oficiais de ontem atualizados via API!
-            </p>
-          </div>
-          <div class="step-item">
-            <div class="step-number">2</div>
-            <p>
-              <strong>Tabela Atualizada</strong>
-              Acompanhe a classificação dos grupos e o chaveamento automático do mata-mata em tempo real.
-            </p>
-          </div>
-          <div class="step-item">
-            <div class="step-number">3</div>
-            <p>
-              <strong>Top 5 Artilheiros</strong>
-              Veja quem está na briga pela Chuteira de Ouro com a lista dos 5 maiores artilheiros!
-            </p>
-          </div>
-          <div class="step-item">
-            <div class="step-number">4</div>
-            <p>
-              <strong>Bolão do Brasil</strong>
-              Participe do nosso bolão exclusivo focado nos jogos da Seleção Brasileira e dispute o ranking!
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- MONETIZATION BANNER (Removed) -->
-
-    <!-- VIEW 0: JOGOS DO DIA -->
+    <!-- VIEW 0: JOGOS (ONTEM E HOJE) -->
     <section id="jogos-dia" class="view-panel active">
-      <!-- COUNTDOWN BANNER -->
-      <div id="countdown-banner" class="glass-card" style="display: none; padding: 1rem; margin-bottom: 1.5rem; text-align: center; background: linear-gradient(135deg, rgba(96, 165, 250, 0.08), rgba(0, 255, 135, 0.04)); border-color: rgba(96, 165, 250, 0.2);">
-        <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 0.25rem;">⏱ Próximo Jogo Começa Em:</span>
-        <div id="countdown-timer" style="font-size: 1.5rem; font-weight: 800; color: var(--color-secondary); font-family: monospace;">00d 00h 00m 00s</div>
+      <div class="refresh-bar">
+        <span id="last-update-label" style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Carregando resultados...</span>
+        <button id="refresh-scores-btn" class="refresh-btn" title="Atualizar dados agora">
+          <span id="refresh-icon">🔄</span> Atualizar
+        </button>
       </div>
 
-      <div class="glass-card" style="margin-bottom: 2rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
-          <h2 style="color: var(--color-primary); font-weight: 700; margin: 0;">📅 Jogos de Hoje</h2>
-          <span style="font-size: 0.7rem; color: var(--color-primary); opacity: 0.8; font-weight: 600; margin-left: 0.5rem; letter-spacing: 0.05em;">• Horários de Brasília (UTC-3)</span>
-          <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
-            <span id="last-update-label" style="font-size: 0.75rem; color: var(--text-muted);">Carregando...</span>
-            <button id="refresh-scores-btn" title="Atualizar placares agora" style="background: rgba(0,255,135,0.1); border: 1px solid var(--color-primary); color: var(--color-primary); border-radius: 8px; padding: 0.3rem 0.75rem; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 0.35rem; transition: all 0.2s;">
-              <span id="refresh-icon">🔄</span> Atualizar
-            </button>
+      <div class="games-layout">
+        <!-- Main matches area (Yesterday & Today) -->
+        <div style="display: flex; flex-direction: column; gap: 2rem;">
+          
+          <!-- TODAY'S MATCHES -->
+          <div class="glass-card" style="padding: 1.5rem;">
+            <h2 class="panel-title">📅 Jogos de Hoje</h2>
+            <div class="matches-list" id="today-matches-container">
+              <!-- Populated via JS -->
+            </div>
           </div>
-        </div>
-        <div class="matches-list" id="today-matches-container">
-          <!-- Populated via JS -->
-        </div>
-      </div>
 
-      <!-- UPCOMING MATCHES SECTION -->
-      <div class="glass-card" style="margin-bottom: 2rem;" id="upcoming-matches-section">
-        <h2 style="color: var(--color-secondary); font-weight: 700; margin-bottom: 1rem;">📅 Próximos Jogos</h2>
-        <div class="upcoming-matches-grid" id="upcoming-matches-container">
-          <!-- Populated via JS -->
+          <!-- YESTERDAY'S MATCHES -->
+          <div class="glass-card" style="padding: 1.5rem;">
+            <h2 class="panel-title purple">⬅️ Resultados de Ontem</h2>
+            <div class="matches-list" id="yesterday-matches-container">
+              <!-- Populated via JS -->
+            </div>
+          </div>
+          
         </div>
-      </div>
-      
-      <div class="glass-card">
-        <h2 style="color: var(--text-muted); font-weight: 700; margin-bottom: 1rem;">⬅️ Placares de Ontem</h2>
-        <div class="matches-list" id="yesterday-matches-container">
-          <!-- Populated via JS -->
+
+        <!-- Sidebar (Upcoming Matches) -->
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+          <div class="glass-card" style="padding: 1.5rem;" id="upcoming-matches-section">
+            <h2 class="panel-title cyan">⏰ Próximos Jogos</h2>
+            <div class="upcoming-matches-grid" id="upcoming-matches-container">
+              <!-- Populated via JS -->
+            </div>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- VIEW 1: FASE DE GRUPOS -->
+    <!-- VIEW 1: TABELA DA COPA (GRUPOS) -->
     <section id="fase-grupos" class="view-panel">
       <div class="groups-grid">
         {groups.map(groupLetter => (
           <div class="glass-card group-card" data-group={groupLetter}>
-            <div class="group-title">
-              Grupo {groupLetter}
-              <span class="text-xs text-muted">Copa 2026</span>
+            <div class="group-card-header">
+              <span class="group-card-title">Grupo {groupLetter}</span>
+              <span class="group-card-subtitle">FIFA 2026</span>
             </div>
             
             <!-- Standings Table -->
             <table class="standing-table">
               <thead>
                 <tr>
-                  <th class="align-left">Sel.</th>
+                  <th class="align-left">Seleção</th>
                   <th>P</th>
                   <th>J</th>
                   <th>V</th>
@@ -159,313 +102,205 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       </div>
     </section>
 
-    <!-- VIEW 2: MATA-MATA -->
+    <!-- VIEW 2: MATA-MATA (CHAVEAMENTO MOBILE-OPTIMIZED) -->
     <section id="mata-mata" class="view-panel">
-      <div class="bracket-wrapper" id="bracket-container">
-        
+      <!-- Seletor de fases para mobile/desktop -->
+      <div class="bracket-navigation">
+        <button class="bracket-nav-btn active" data-round="0">32-avos</button>
+        <button class="bracket-nav-btn" data-round="1">Oitavas</button>
+        <button class="bracket-nav-btn" data-round="2">Quartas</button>
+        <button class="bracket-nav-btn" data-round="3">Semifinais</button>
+        <button class="bracket-nav-btn" data-round="4">Final</button>
+      </div>
+
+      <div class="bracket-content">
         <!-- Round of 32 -->
-        <div class="bracket-round" id="round-32">
-          <h3 class="text-center text-muted text-xs font-bold uppercase tracking-wider mb-2">Dezesseis-avos (32)</h3>
+        <div class="bracket-round-view active" id="round-32">
+          <h3 class="text-center text-muted text-xs font-bold uppercase tracking-wider mb-4" style="text-align: center; margin-bottom: 1.5rem; color: var(--color-purple);">Dezesseis-avos (32 seleções)</h3>
           <!-- Populated via JS -->
         </div>
 
         <!-- Round of 16 -->
-        <div class="bracket-round" id="round-16">
-          <h3 class="text-center text-muted text-xs font-bold uppercase tracking-wider mb-2">Oitavas de Final</h3>
+        <div class="bracket-round-view" id="round-16">
+          <h3 class="text-center text-muted text-xs font-bold uppercase tracking-wider mb-4" style="text-align: center; margin-bottom: 1.5rem; color: var(--color-purple);">Oitavas de Final</h3>
           <!-- Populated via JS -->
         </div>
 
         <!-- Quarter Finals -->
-        <div class="bracket-round" id="round-8">
-          <h3 class="text-center text-muted text-xs font-bold uppercase tracking-wider mb-2">Quartas de Final</h3>
+        <div class="bracket-round-view" id="round-8">
+          <h3 class="text-center text-muted text-xs font-bold uppercase tracking-wider mb-4" style="text-align: center; margin-bottom: 1.5rem; color: var(--color-purple);">Quartas de Final</h3>
           <!-- Populated via JS -->
         </div>
 
         <!-- Semi Finals -->
-        <div class="bracket-round" id="round-4">
-          <h3 class="text-center text-muted text-xs font-bold uppercase tracking-wider mb-2">Semifinais</h3>
+        <div class="bracket-round-view" id="round-4">
+          <h3 class="text-center text-muted text-xs font-bold uppercase tracking-wider mb-4" style="text-align: center; margin-bottom: 1.5rem; color: var(--color-purple);">Semifinais</h3>
           <!-- Populated via JS -->
         </div>
 
         <!-- Final -->
-        <div class="bracket-round" id="round-2">
-          <h3 class="text-center text-muted text-xs font-bold uppercase tracking-wider mb-2">Grande Final</h3>
+        <div class="bracket-round-view" id="round-2">
+          <h3 class="text-center text-muted text-xs font-bold uppercase tracking-wider mb-4" style="text-align: center; margin-bottom: 1.5rem; color: var(--color-purple);">Grande Final</h3>
           <!-- Populated via JS -->
         </div>
-
       </div>
 
       <!-- Champion Display Banner -->
       <div class="champion-banner" id="champion-display">
-        <h3 class="text-xs text-muted font-bold tracking-widest uppercase">👑 Campeão do Mundo 2026 👑</h3>
+        <h3 class="champion-title">🏆 CAMPEÃO DO MUNDO 2026 🏆</h3>
         <img src="" alt="Bandeira do Campeão" class="champion-flag" id="champion-flag-img" />
-        <div class="champion-name" id="champion-team-name">Brasil</div>
-        <p class="text-muted text-sm mt-2">Confira o chaveamento completo atualizado em tempo real com os resultados oficiais.</p>
+        <div class="champion-team-name" id="champion-team-name">-</div>
+        <p class="text-muted text-sm">Chaveamento completo atualizado automaticamente pelos placares oficiais.</p>
       </div>
     </section>
 
-    <!-- VIEW 3: ARTILHARIA -->
+    <!-- VIEW 3: ARTILHARIA (PÓDIO + LEADERBOARD) -->
     <section id="artilharia" class="view-panel">
-      <div class="glass-card" style="max-width: 600px; margin: 0 auto; padding: 2rem;">
-        <h2 class="text-center mb-6" style="color: var(--color-primary); font-weight: 700;">👟 Chuteira de Ouro (Artilharia)</h2>
-        <table class="standing-table" style="font-size: 1rem;">
-          <thead>
-            <tr>
-              <th class="align-left">Jogador</th>
-              <th class="align-left">Seleção</th>
-              <th>Gols</th>
-            </tr>
-          </thead>
-          <tbody id="artilharia-body">
-            <!-- Populated via JS -->
-          </tbody>
-        </table>
-        <div id="no-scorers-msg" class="text-center text-muted py-6">
-          A lista oficial de artilheiros será atualizada automaticamente em tempo real assim que os primeiros gols da Copa forem marcados!
-        </div>
-      </div>
-    </section>
-
-    <!-- VIEW 4: BOLÃO -->
-    <section id="bolao" class="view-panel">
-      <div class="bolao-wrapper">
-
-        <!-- Se não tiver cadastro ainda -->
-        <div id="bolao-gate" class="bolao-gate glass-card">
-          <div class="bolao-gate-icon">👥</div>
-          <h2>Bolão com Amigos (Apenas Jogos do Brasil)</h2>
-          <p class="text-muted">Acompanhe os resultados reais da Copa! Mas se você quiser competir, cadastre-se agora para criar grupos com amigos no nosso <strong>Bolão focado exclusivamente nos jogos da Seleção Brasileira!</strong></p>
-          <button class="btn btn-primary" id="bolao-goto-register" style="max-width:340px; margin-top:1rem;">📝 Cadastrar-se no Bolão do Brasil</button>
-        </div>
-
-        <!-- Painel principal do bolão (visível após cadastro) -->
-        <div id="bolao-panel" style="display:none;">
-
-          <!-- Ações do grupo -->
-          <div class="bolao-actions">
-            <div class="glass-card bolao-action-card" id="card-criar">
-              <div class="bolao-action-icon">✨</div>
-              <h3>Criar Bolão do Brasil</h3>
-              <p class="text-muted">Gere um código único e convide seus amigos para competir nos placares da Seleção Brasileira!</p>
-              <div class="bolao-form-row">
-                <input type="text" id="bolao-group-name" class="form-input" placeholder="Nome do grupo (ex: Família Silva)" maxlength="40" />
-                <button class="btn btn-primary" id="bolao-create-btn" style="white-space:nowrap;">Criar Grupo</button>
-              </div>
-            </div>
-
-            <div class="glass-card bolao-action-card" id="card-entrar">
-              <div class="bolao-action-icon">🔑</div>
-              <h3>Entrar em um Grupo</h3>
-              <p class="text-muted">Tem um código de um amigo? Cole aqui e entre na disputa!</p>
-              <div class="bolao-form-row">
-                <input type="text" id="bolao-join-code" class="form-input" placeholder="Código (ex: COPA-5984)" maxlength="10" style="text-transform:uppercase;" />
-                <button class="btn btn-primary" id="bolao-join-btn" style="white-space:nowrap;">Entrar</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Indicações Card -->
-          <div class="glass-card bolao-action-card" id="card-indicacao" style="margin-top: 1.5rem; display: block; max-width: 100%;">
-            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
-              <div class="bolao-action-icon">📢</div>
-              <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--text-main);">Programa de Indicações</h3>
-            </div>
-            <p class="text-muted" style="margin-bottom: 0.75rem; font-size: 0.9rem;">
-              Convide seus amigos para o bolão! Cada amigo que se cadastrar pelo seu link garante **+15 pontos** para você e **+15 pontos** para ele no Ranking do Brasil!
-            </p>
-            <div class="bolao-form-row">
-              <input type="text" id="ref-link-input" class="form-input" readonly value="" style="background: rgba(0,0,0,0.2);" />
-              <button class="btn btn-primary" id="ref-copy-btn" style="white-space:nowrap;">📋 Copiar Link</button>
-            </div>
-            <p class="text-xs text-muted" style="margin-top: 0.5rem; font-weight: 600;">
-              Seu Código de Indicação: <span id="ref-code-display" style="color:var(--color-primary); font-family: monospace; font-size: 0.95rem; letter-spacing: 0.05em;"></span>
-            </p>
-          </div>
-
-          <!-- Card de Conquistas/Badges -->
-          <div class="glass-card bolao-action-card" id="card-conquistas" style="margin-top: 1.5rem; display: block; max-width: 100%;">
-            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
-              <div class="bolao-action-icon">🏅</div>
-              <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--text-main);">Minhas Conquistas</h3>
-            </div>
-            <p class="text-muted" style="margin-bottom: 1rem; font-size: 0.9rem;">
-              Complete desafios para liberar insígnias exclusivas e subir no Ranking do Brasil!
-            </p>
-            <div class="badges-grid" id="user-badges-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 95px), 1fr)); gap: 0.75rem;">
-              <!-- Badges loaded dynamically -->
-            </div>
-          </div>
-
-          <!-- Meus grupos -->
-          <div id="bolao-my-groups" class="bolao-my-groups">
-            <h3 class="bolao-section-title">🏅 Meus Bolões do Brasil</h3>
-            <div id="bolao-groups-list" class="bolao-groups-list">
-              <p class="text-muted text-center" style="padding:2rem;">Você ainda não participa de nenhum grupo.<br/>Crie ou entre em um acima!</p>
-            </div>
-          </div>
-
-          <!-- Leaderboard do grupo selecionado -->
-          <div id="bolao-leaderboard-section" style="display:none;">
-            <div class="bolao-leaderboard-header">
-              <button id="bolao-back-btn" class="bolao-back-btn">← Voltar</button>
-              <h3 id="bolao-leaderboard-title">Ranking do Grupo</h3>
-              <div class="bolao-code-badge" id="bolao-leaderboard-code"></div>
-            </div>
-            <div class="glass-card bolao-leaderboard">
-              <table class="standing-table" style="font-size:1rem;">
-                <thead>
-                  <tr>
-                    <th style="text-align:center; width:40px;">#</th>
-                    <th class="align-left">Participante</th>
-                    <th>Ver Palpites</th>
-                    <th style="color: var(--color-accent);">Pontos (Em breve)</th>
-                  </tr>
-                </thead>
-                <tbody id="bolao-leaderboard-body">
-                  <!-- Populated via JS -->
-                </tbody>
-              </table>
-            </div>
-            <div class="bolao-share-row">
-              <button class="btn" id="bolao-copy-link-btn" style="max-width:360px; background: rgba(0,255,135,0.15); border: 1px solid var(--border-glass-active); color: var(--color-primary);">📋 Copiar Link de Convite</button>
-            </div>
-          </div>
-
-          <!-- Card Ranking Global -->
-          <div class="glass-card bolao-action-card" style="margin-top: 1.5rem; max-width: 100%; background: linear-gradient(135deg, rgba(255,215,0,0.05), rgba(0,255,135,0.03)); border-color: rgba(255,215,0,0.2);">
-            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
-              <div class="bolao-action-icon">🌍</div>
-              <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700;">Ranking Geral (Apenas Brasil)</h3>
-            </div>
-            <p class="text-muted" style="font-size: 0.9rem; margin-bottom: 1rem;">
-              Veja o Ranking Global com <strong>todos</strong> os palpiteiros do site, focado unicamente nos jogos da Seleção Brasileira! Os pontos são atualizados conforme os resultados oficiais do Brasil saem.
-            </p>
-            <a href="/bolao/ranking-global" class="btn btn-primary" style="display: inline-block; width: auto; font-size: 0.9rem; text-decoration: none;">🏆 Ver Ranking do Brasil →</a>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- MODAL 1: LEAD CAPTURE (CADASTRO PARA O BOLÃO) -->
-    <div class="modal-overlay" id="lead-modal">
-      <div class="glass-card modal-content">
-        <button class="close-modal-btn" id="close-lead-modal">&times;</button>
-        <h2 style="font-weight: 800; margin-bottom: 0.5rem; text-align: center; color: var(--color-primary);">PARTICIPE DO BOLÃO!</h2>
-        <p class="text-muted text-center text-sm mb-6">Cadastre-se rapidamente para participar do Bolão do Brasil, salvar seu progresso e competir com amigos!</p>
+      <div class="artilharia-panel">
         
-        <form id="lead-form">
-          <div class="form-group">
-            <label class="form-label" for="lead-name">Nome Completo</label>
-            <input type="text" id="lead-name" class="form-input" placeholder="Seu nome" required />
+        <!-- Podium -->
+        <div class="podium-container" id="podium-container">
+          <!-- 2nd Place -->
+          <div class="podium-column second" id="podium-second" style="visibility: hidden;">
+            <!-- Rendered via JS -->
           </div>
-          <div class="form-group">
-            <label class="form-label" for="lead-email">E-mail</label>
-            <input type="email" id="lead-email" class="form-input" placeholder="seu@email.com" required />
+          <!-- 1st Place -->
+          <div class="podium-column first" id="podium-first" style="visibility: hidden;">
+            <!-- Rendered via JS -->
           </div>
-          <button type="submit" class="btn btn-primary mt-2">Cadastrar no Bolão ➜</button>
-        </form>
+          <!-- 3rd Place -->
+          <div class="podium-column third" id="podium-third" style="visibility: hidden;">
+            <!-- Rendered via JS -->
+          </div>
+        </div>
+
+        <!-- Other Scorers List -->
+        <div class="glass-card scorers-table-card" id="scorers-table-card">
+          <h2 class="panel-title" style="margin-bottom: 1rem;">👟 Tabela de Artilheiros</h2>
+          <table class="standing-table" style="font-size: 0.9rem;">
+            <thead>
+              <tr>
+                <th class="align-left">Jogador</th>
+                <th class="align-left">Seleção</th>
+                <th>Gols</th>
+              </tr>
+            </thead>
+            <tbody id="artilharia-body">
+              <!-- Populated via JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <div id="no-scorers-msg" class="glass-card text-center text-muted" style="padding: 3rem 1.5rem; text-align: center;">
+          ⚽ A lista de artilheiros oficial será atualizada automaticamente em tempo real assim que os primeiros gols da Copa forem marcados!
+        </div>
       </div>
+    </section>
+
+    <!-- DESKTOP TOP NAV TABS -->
+    <div class="tabs-container">
+      <button class="tab-btn active" data-tab="jogos-dia">📅 Jogos</button>
+      <button class="tab-btn" data-tab="fase-grupos">📋 Tabela</button>
+      <button class="tab-btn" data-tab="mata-mata">🏆 Mata-Mata</button>
+      <button class="tab-btn" data-tab="artilharia">👟 Artilharia</button>
     </div>
 
-    <!-- MODAL 2: SQUAD DETAILS (ELENCO DETAILS) -->
+    <!-- MOBILE BOTTOM NAV BAR -->
+    <div class="mobile-nav-bar">
+      <button class="mobile-nav-btn active" data-tab="jogos-dia">
+        <span class="mobile-nav-btn-icon">📅</span>
+        <span>Jogos</span>
+      </button>
+      <button class="mobile-nav-btn" data-tab="fase-grupos">
+        <span class="mobile-nav-btn-icon">📋</span>
+        <span>Tabelas</span>
+      </button>
+      <button class="mobile-nav-btn" data-tab="mata-mata">
+        <span class="mobile-nav-btn-icon">🏆</span>
+        <span>Mata-Mata</span>
+      </button>
+      <button class="mobile-nav-btn" data-tab="artilharia">
+        <span class="mobile-nav-btn-icon">👟</span>
+        <span>Artilharia</span>
+      </button>
+    </div>
+
+    <!-- MODAL SQUAD DETAILS -->
     <div class="modal-overlay" id="squad-modal">
-      <div class="glass-card modal-content" style="max-width: 450px;">
+      <div class="glass-card modal-content">
         <button class="close-modal-btn" id="close-squad-modal">&times;</button>
-        <h3 style="font-weight: 800; margin-bottom: 1rem; text-align: center; color: var(--color-primary);" id="squad-modal-title">Elenco</h3>
-        <div class="squad-modal-grid" id="squad-players-list">
+        <h3 class="modal-title" id="squad-modal-title">Elenco</h3>
+        <div class="squad-players-grid" id="squad-players-list">
           <!-- Populated via JS -->
-        </div>
-      </div>
-    </div>
-
-    <!-- MODAL 3: WELCOME ONBOARDING CAROUSEL -->
-    <div class="modal-overlay" id="welcome-modal">
-      <div class="glass-card modal-content" style="max-width: 450px; padding: 0; overflow: hidden; display: flex; flex-direction: column;">
-        <div class="carousel-container" id="welcome-carousel">
-          <!-- Slide 1 -->
-          <div class="carousel-slide active" style="padding: 2.5rem 1.5rem; text-align: center;">
-            <div style="font-size: 4rem; margin-bottom: 1rem; animation: float 3s ease-in-out infinite;">📊</div>
-            <h2 style="color: var(--color-primary); margin-bottom: 1rem; font-weight: 800; font-size: 1.5rem;">Resultados em Tempo Real</h2>
-            <p class="text-muted" style="line-height: 1.6;">Acompanhe todos os placares, classificação dos grupos e o chaveamento oficial do mata-mata atualizados automaticamente a cada minuto!</p>
-          </div>
-          <!-- Slide 2 -->
-          <div class="carousel-slide" style="padding: 2.5rem 1.5rem; text-align: center; display: none;">
-            <div style="font-size: 4rem; margin-bottom: 1rem; animation: float 3s ease-in-out infinite;">👥</div>
-            <h2 style="color: var(--color-secondary); margin-bottom: 1rem; font-weight: 800; font-size: 1.5rem;">Bolão com Amigos</h2>
-            <p class="text-muted" style="line-height: 1.6;">Cadastre-se para criar grupos privados, convidar seus amigos e ver quem acerta mais nos jogos da Seleção Brasileira!</p>
-          </div>
-          <!-- Slide 3 -->
-          <div class="carousel-slide" style="padding: 2.5rem 1.5rem; text-align: center; display: none;">
-            <div style="font-size: 4rem; margin-bottom: 1rem; animation: float 3s ease-in-out infinite;">👟</div>
-            <h2 style="color: #00ff87; margin-bottom: 1rem; font-weight: 800; font-size: 1.5rem;">Artilharia Oficial</h2>
-            <p class="text-muted" style="line-height: 1.6;">Confira quem está liderando a briga pela Chuteira de Ouro com estatísticas oficiais vindas direto de campo!</p>
-          </div>
-        </div>
-
-        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1.2rem 2rem; background: rgba(0,0,0,0.3); border-top: 1px solid var(--border-glass);">
-          <div class="carousel-dots" id="welcome-dots">
-            <span class="dot active"></span><span class="dot"></span><span class="dot"></span>
-          </div>
-          <button class="btn btn-primary" id="welcome-next-btn" style="width: auto; padding: 0.5rem 1.5rem;">Próximo ➔</button>
         </div>
       </div>
     </div>
 
     <!-- FOOTER -->
-    <footer>
-      <p>&copy; 2026 Tabela da Copa do Mundo 2026. Desenvolvido por <a href="https://github.com" target="_blank">Lucro Ninja</a>.</p>
+    <footer style="margin-top: 4rem;">
+      <p>&copy; 2026 Tabela da Copa do Mundo 2026. Todos os dados são de caráter informativo.</p>
     </footer>
   </main>
 
   <!-- CLIENT-SIDE LOGIC -->
-  <script is:inline define:vars={{ initialMatches, teams, groups, supabaseUrl, supabaseAnonKey }}>window.onerror = function(msg, url, line, col, error) {
-      document.body.innerHTML = `<div style="color:red; padding:2rem; background:white; font-size:1.5rem; z-index:9999; position:absolute; top:0; left:0; width:100%;">
-        <h3>JS Error:</h3>
-        <p>${msg}</p>
-        <p>Line: ${line}, Col: ${col}</p>
-        <p>${error ? error.stack : ''}</p>
-      </div>` + document.body.innerHTML;
+  <script is:inline define:vars={{ initialMatches, teams, groups, supabaseUrl, supabaseAnonKey }}>
+    // Error Logging helpers
+    window.onerror = function(msg, url, line, col, error) {
+      console.error("JS Error: ", msg, "Line: ", line, "Stack: ", error ? error.stack : '');
     };
     window.onunhandledrejection = function(event) {
-      document.body.innerHTML = `<div style="color:red; padding:2rem; background:white; font-size:1.5rem; z-index:9999; position:absolute; top:0; left:0; width:100%;">
-        <h3>Unhandled Promise Rejection:</h3>
-        <p>${event.reason}</p>
-      </div>` + document.body.innerHTML;
+      console.error("Unhandled Promise Rejection: ", event.reason);
     };
 
-    // pass JSON variables safely from Astro metadata to browser JS
     let matches = JSON.parse(JSON.stringify(initialMatches));
-    let artilheirosReais = []; // Lista oficial atualizada em tempo real
+    let artilheirosReais = [];
     let bracket = Array.from({ length: 31 }, () => ({
       homeId: null, awayId: null, homeScore: null, awayScore: null, isFinished: false, isInPlay: false
     }));
 
-    // Selectors
-    const tabs = document.querySelectorAll('.tab-btn');
+    let activeBracketRound = 0; // 0 = R32, 1 = R16, 2 = QF, 3 = SF, 4 = Final
+
+    // Navigation Selectors
+    const desktopTabs = document.querySelectorAll('.tab-btn');
+    const mobileTabs = document.querySelectorAll('.mobile-nav-btn');
     const panels = document.querySelectorAll('.view-panel');
-    const leadModal = document.getElementById('lead-modal');
-    const closeLeadModal = document.getElementById('close-lead-modal');
-    const leadForm = document.getElementById('lead-form');
-    
     const squadModal = document.getElementById('squad-modal');
     const closeSquadModal = document.getElementById('close-squad-modal');
-    
-    // Tab switching
-    tabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        tabs.forEach(t => t.classList.remove('active'));
-        panels.forEach(p => p.classList.remove('active'));
-        
-        tab.classList.add('active');
-        const targetPanel = document.getElementById(tab.dataset.tab);
-        if (targetPanel) targetPanel.classList.add('active');
+
+    // Tab switcher
+    function switchTab(tabId) {
+      desktopTabs.forEach(t => t.classList.toggle('active', t.dataset.tab === tabId));
+      mobileTabs.forEach(t => t.classList.toggle('active', t.dataset.tab === tabId));
+      panels.forEach(p => p.classList.toggle('active', p.id === tabId));
+      
+      if (tabId === 'mata-mata') {
+        renderBracket();
+      }
+    }
+
+    desktopTabs.forEach(tab => {
+      tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+    });
+
+    mobileTabs.forEach(tab => {
+      tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+    });
+
+    // Bracket Nav button switcher
+    const bracketNavBtns = document.querySelectorAll('.bracket-nav-btn');
+    bracketNavBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        bracketNavBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeBracketRound = parseInt(btn.dataset.round, 10);
+        renderBracket();
       });
     });
 
-    // Helper: Country Flags URL
+    // Helper: Country Flags URL (Large flags for better aesthetics)
     function getFlagUrl(code) {
-      if (code === 'gb-eng') return 'https://flagcdn.com/w40/gb-eng.png';
-      return `https://flagcdn.com/w40/${code.toLowerCase()}.png`;
+      if (code === 'gb-eng') return 'https://flagcdn.com/w80/gb-eng.png';
+      return `https://flagcdn.com/w80/${code.toLowerCase()}.png`;
     }
 
     // Helper: Parse Datetime in Brasilia UTC-3
@@ -479,12 +314,11 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
         const utcDateStr = `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}T${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:00-03:00`;
         return new Date(utcDateStr);
       } catch (e) {
-        console.error("Error parsing datetime string:", dtStr, e);
         return null;
       }
     }
 
-    // Render logic for single match card HTML (purely static)
+    // Render single match card HTML
     function getMatchCardHTML(match, forceShowScore = false) {
       const homeTeam = teams[match.homeId];
       const awayTeam = teams[match.awayId];
@@ -494,49 +328,52 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       const aScore = showScore ? (match.awayScore !== null ? match.awayScore : 0) : '-';
 
       const statusBadge = match.isFinished
-        ? '<span style="color: var(--color-primary); font-weight: bold; font-size: 0.65rem; margin-left: 0.5rem; border: 1px solid var(--color-primary); padding: 2px 6px; border-radius: 10px; background: rgba(0,255,135,0.1); display: inline-block; white-space: nowrap; vertical-align: middle;">✅ Oficial</span>'
+        ? '<span style="color: var(--color-primary); font-weight: bold; font-size: 0.65rem; margin-left: 0.5rem; border: 1px solid var(--color-primary); padding: 2px 6px; border-radius: 10px; background: rgba(0,255,135,0.08); display: inline-block; white-space: nowrap; vertical-align: middle;">✅ Final</span>'
         : match.isInPlay
-        ? '<span style="color: #ff4444; font-weight: bold; font-size: 0.65rem; margin-left: 0.5rem; border: 1px solid #ff4444; padding: 2px 6px; border-radius: 10px; background: rgba(255,68,68,0.15); animation: pulse-red 1.5s infinite; display: inline-block; white-space: nowrap; vertical-align: middle;">🔴 AO VIVO</span>'
+        ? '<span style="color: var(--color-danger); font-weight: bold; font-size: 0.65rem; margin-left: 0.5rem; border: 1px solid var(--color-danger); padding: 2px 6px; border-radius: 10px; background: rgba(239,68,68,0.12); display: inline-block; white-space: nowrap; vertical-align: middle; animation: blink 1s infinite;">🔴 AO VIVO</span>'
         : '';
 
       const homeRank = window.teamRanks?.[match.homeId] ? `<span class="team-rank">#${window.teamRanks[match.homeId]}</span>` : '';
       const awayRank = window.teamRanks?.[match.awayId] ? `<span class="team-rank">#${window.teamRanks[match.awayId]}</span>` : '';
 
-      const phaseBadge = match.group ? `<span class="phase-badge">Grupo ${match.group}</span>` : '';
-
       return `
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; font-size: 0.7rem;">
-          ${phaseBadge}
-          <div class="match-datetime" style="letter-spacing: 0.02em;">📅 ${match.datetime || ''} ${statusBadge}</div>
+        <div class="match-info-top">
+          <span class="phase-badge">${match.group ? 'Grupo ' + match.group : 'Mata-Mata'}</span>
+          <span class="match-datetime">${match.datetime || ''} ${statusBadge}</span>
         </div>
-        <div class="match-venue" style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-align: center;">🏟️ ${match.stadium || ''}, ${match.city || ''}</div>
         <div class="match-row">
           <div class="match-team home">
-            <span class="team-name" data-team-id="${match.homeId}">${homeTeam.name}</span>
+            <span class="team-name-large" data-team-id="${match.homeId}">${homeTeam.name}</span>
             ${homeRank}
-            <img src="${getFlagUrl(homeTeam.code)}" alt="${homeTeam.name}" class="flag-emoji" />
+            <img src="${getFlagUrl(homeTeam.code)}" alt="${homeTeam.name}" class="flag-large" />
           </div>
-          <div class="match-scores-inputs">
-            <div style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 0.4rem 0.8rem; font-weight: bold; color: white; min-width: 45px; text-align: center;">${hScore}</div>
-            <span class="match-vs" style="margin: 0 0.5rem; color: var(--color-primary);">x</span>
-            <div style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; padding: 0.4rem 0.8rem; font-weight: bold; color: white; min-width: 45px; text-align: center;">${aScore}</div>
+          
+          <div class="score-display-container">
+            <div class="score-box ${match.isInPlay ? 'live' : ''}">${hScore}</div>
+            <span class="match-vs-divider">X</span>
+            <div class="score-box ${match.isInPlay ? 'live' : ''}">${aScore}</div>
           </div>
+          
           <div class="match-team away">
-            <img src="${getFlagUrl(awayTeam.code)}" alt="${awayTeam.name}" class="flag-emoji" />
+            <img src="${getFlagUrl(awayTeam.code)}" alt="${awayTeam.name}" class="flag-large" />
             ${awayRank}
-            <span class="team-name" data-team-id="${match.awayId}">${awayTeam.name}</span>
+            <span class="team-name-large" data-team-id="${match.awayId}">${awayTeam.name}</span>
           </div>
+        </div>
+        <div class="match-venue-text" style="text-align: center; margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-dark);">
+          🏟️ ${match.stadium || ''}, ${match.city || ''}
         </div>
       `;
     }
 
-    // Render Jogos do Dia
+    // Render Jogos (Ontem e Hoje)
     function renderJogosDoDia() {
       const todayContainer = document.getElementById('today-matches-container');
       const yesterdayContainer = document.getElementById('yesterday-matches-container');
       if (!todayContainer || !yesterdayContainer) return;
 
       const now = new Date();
+      // Format as DD/MM/YYYY
       const todayStr = String(now.getDate()).padStart(2, '0') + '/' + String(now.getMonth() + 1).padStart(2, '0') + '/' + now.getFullYear();
       
       const yesterday = new Date(now);
@@ -553,7 +390,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       yesterdayContainer.innerHTML = '';
 
       if (todayMatches.length === 0) {
-        todayContainer.innerHTML = '<p class="text-center text-muted" style="padding: 1rem;">Nenhum jogo programado para hoje.</p>';
+        todayContainer.innerHTML = '<p class="text-center text-muted" style="padding: 1.5rem; text-align: center;">Nenhum jogo programado para hoje.</p>';
       } else {
         todayMatches.forEach(match => {
           const card = document.createElement('div');
@@ -564,7 +401,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       }
 
       if (yesterdayMatches.length === 0) {
-        yesterdayContainer.innerHTML = '<p class="text-center text-muted" style="padding: 1rem;">Nenhum jogo ocorreu ontem.</p>';
+        yesterdayContainer.innerHTML = '<p class="text-center text-muted" style="padding: 1.5rem; text-align: center;">Nenhum jogo ocorreu ontem.</p>';
       } else {
         yesterdayMatches.forEach(match => {
           const card = document.createElement('div');
@@ -587,7 +424,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
         .map(m => ({ match: m, date: parseDatetime(m.datetime) }))
         .filter(x => x.date !== null && x.date > now)
         .sort((a, b) => a.date - b.date)
-        .slice(0, 3);
+        .slice(0, 4);
 
       if (future.length === 0) {
         section.style.display = 'none';
@@ -601,93 +438,31 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
         const homeTeam = teams[match.homeId];
         const awayTeam = teams[match.awayId];
         const phaseName = match.group ? `Grupo ${match.group}` : 'Mata-Mata';
-        
-        const homeRank = window.teamRanks?.[match.homeId] ? `#${window.teamRanks[match.homeId]} no grupo` : '';
-        const awayRank = window.teamRanks?.[match.awayId] ? `#${window.teamRanks[match.awayId]} no grupo` : '';
 
         const card = document.createElement('div');
         card.className = 'upcoming-match-card';
         card.innerHTML = `
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span class="upcoming-match-badge">${phaseName}</span>
-            <span class="upcoming-match-date">${match.datetime.split(' – ')[1]}</span>
+          <div class="upcoming-header">
+            <span class="upcoming-badge">${phaseName}</span>
+            <span class="upcoming-time">${match.datetime.split(' – ')[1]}</span>
           </div>
-          <div class="upcoming-match-teams">
-            <div class="upcoming-match-team">
-              <span style="display: flex; align-items: center; gap: 0.5rem;">
-                <img src="${getFlagUrl(homeTeam.code)}" alt="" class="flag-emoji" style="margin-right: 0;" />
-                <span>${homeTeam.name}</span>
-              </span>
-              <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">${homeRank}</span>
+          <div class="upcoming-teams-row">
+            <div class="upcoming-team-item">
+              <img src="${getFlagUrl(homeTeam.code)}" alt="" class="flag-small" />
+              <span>${homeTeam.name}</span>
             </div>
-            <div class="upcoming-match-team">
-              <span style="display: flex; align-items: center; gap: 0.5rem;">
-                <img src="${getFlagUrl(awayTeam.code)}" alt="" class="flag-emoji" style="margin-right: 0;" />
-                <span>${awayTeam.name}</span>
-              </span>
-              <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">${awayRank}</span>
+            <span style="color: var(--text-dark); font-size: 0.75rem; font-weight: 800;">VS</span>
+            <div class="upcoming-team-item" style="flex-direction: row-reverse;">
+              <img src="${getFlagUrl(awayTeam.code)}" alt="" class="flag-small" />
+              <span>${awayTeam.name}</span>
             </div>
           </div>
-          <div style="font-size: 0.7rem; color: var(--text-muted); border-top: 1px solid rgba(255, 255, 255, 0.03); padding-top: 0.4rem; margin-top: 0.25rem;">
-            📅 ${match.datetime.split(' – ')[0]}<br/>
-            🏟️ ${match.stadium}, ${match.city}
+          <div class="upcoming-venue-text">
+            📅 ${match.datetime.split(' – ')[0]} | 🏟️ ${match.stadium}, ${match.city}
           </div>
         `;
         container.appendChild(card);
       });
-    }
-
-    // Next match countdown
-    let countdownIntervalId = null;
-    function startCountdown() {
-      if (countdownIntervalId) clearInterval(countdownIntervalId);
-      
-      const timerEl = document.getElementById('countdown-timer');
-      const bannerEl = document.getElementById('countdown-banner');
-      if (!timerEl || !bannerEl) return;
-
-      function update() {
-        const hasLiveMatch = matches.some(m => m.isInPlay) || bracket.some(m => m && m.isInPlay);
-        if (hasLiveMatch) {
-          bannerEl.style.display = 'none';
-          return;
-        }
-
-        const now = new Date();
-        const futureMatches = matches
-          .filter(m => !m.isFinished && !m.isInPlay)
-          .map(m => ({ match: m, date: parseDatetime(m.datetime) }))
-          .filter(x => x.date !== null && x.date > now)
-          .sort((a, b) => a.date - b.date);
-
-        if (futureMatches.length === 0) {
-          bannerEl.style.display = 'none';
-          return;
-        }
-
-        const next = futureMatches[0];
-        const diff = next.date - now;
-
-        bannerEl.style.display = 'block';
-
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-        const dStr = days > 0 ? `${days}d ` : '';
-        timerEl.textContent = `${dStr}${String(hours).padStart(2, '0')}h ${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`;
-        
-        const nextHome = teams[next.match.homeId]?.name || '';
-        const nextAway = teams[next.match.awayId]?.name || '';
-        const labelEl = bannerEl.querySelector('span');
-        if (labelEl) {
-          labelEl.innerHTML = `⏱ Próximo Jogo: <strong>${nextHome} x ${nextAway}</strong> em:`;
-        }
-      }
-
-      update();
-      countdownIntervalId = setInterval(update, 1000);
     }
 
     // Render live indicator in header
@@ -695,10 +470,10 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       const indicatorEl = document.getElementById('live-indicator');
       if (!indicatorEl) return;
       const isAnyLive = matches.some(m => m.isInPlay) || bracket.some(m => m && m.isInPlay);
-      indicatorEl.style.display = isAnyLive ? 'flex' : 'none';
+      indicatorEl.style.display = isAnyLive ? 'inline-flex' : 'none';
     }
 
-    // Initialize/Render phase of the groups matches
+    // Initialize & render all groups
     function initGroups() {
       groups.forEach(groupLetter => {
         updateGroupStandings(groupLetter);
@@ -767,7 +542,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
         }
       });
 
-      // Sort standing rules: Points -> GD -> GF -> Alphabetical
+      // Sort group rules: Points -> GD -> GF -> Alphabetical
       groupTeams.sort((a, b) => {
         if (b.pts !== a.pts) return b.pts - a.pts;
         if (b.gd !== a.gd) return b.gd - a.gd;
@@ -791,9 +566,11 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
           tr.className = qualifyClass;
           tr.innerHTML = `
             <td class="align-left">
-              <span class="text-xs text-muted font-bold mr-1">${idx + 1}</span>
-              <img src="${getFlagUrl(team.code)}" alt="" class="flag-emoji" />
-              <span class="team-name" data-team-id="${team.id}">${team.name}</span>
+              <div class="table-team-cell">
+                <span class="text-xs text-muted font-bold" style="margin-right: 0.15rem;">${idx + 1}</span>
+                <img src="${getFlagUrl(team.code)}" alt="" class="flag-small" style="width:20px; height:13px; margin:0;" />
+                <span class="team-name" data-team-id="${team.id}">${team.name}</span>
+              </div>
             </td>
             <td><strong>${team.pts}</strong></td>
             <td>${team.games}</td>
@@ -805,7 +582,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       }
     }
 
-    // Calculate qualified teams from Group Stage
+    // Calculate Qualified Teams from Group Stage
     function calculateQualifiedTeams() {
       const groupWinners = [];
       const groupRunnersUp = [];
@@ -864,22 +641,22 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       const bestThirds = groupThirds.slice(0, 8);
       
       const pairings = [
-        { home: groupWinners[0], away: bestThirds[0] },
-        { home: groupWinners[1], away: bestThirds[1] },
-        { home: groupWinners[2], away: bestThirds[2] },
-        { home: groupWinners[3], away: bestThirds[3] },
-        { home: groupWinners[4], away: bestThirds[4] },
-        { home: groupWinners[5], away: bestThirds[5] },
-        { home: groupWinners[6], away: bestThirds[6] },
-        { home: groupWinners[7], away: bestThirds[7] },
-        { home: groupWinners[8], away: groupRunnersUp[0] },
-        { home: groupWinners[9], away: groupRunnersUp[1] },
-        { home: groupWinners[10], away: groupRunnersUp[2] },
-        { home: groupWinners[11], away: groupRunnersUp[3] },
-        { home: groupRunnersUp[4], away: groupRunnersUp[5] },
-        { home: groupRunnersUp[6], away: groupRunnersUp[7] },
-        { home: groupRunnersUp[8], away: groupRunnersUp[9] },
-        { home: groupRunnersUp[10], away: groupRunnersUp[11] }
+        { home: groupWinners[0], away: bestThirds[0] }, // R32_M1
+        { home: groupWinners[1], away: bestThirds[1] }, // R32_M2
+        { home: groupWinners[2], away: bestThirds[2] }, // R32_M3
+        { home: groupWinners[3], away: bestThirds[3] }, // R32_M4
+        { home: groupWinners[4], away: bestThirds[4] }, // R32_M5
+        { home: groupWinners[5], away: bestThirds[5] }, // R32_M6
+        { home: groupWinners[6], away: bestThirds[6] }, // R32_M7
+        { home: groupWinners[7], away: bestThirds[7] }, // R32_M8
+        { home: groupWinners[8], away: groupRunnersUp[0] }, // R32_M9
+        { home: groupWinners[9], away: groupRunnersUp[1] }, // R32_M10
+        { home: groupWinners[10], away: groupRunnersUp[2] }, // R32_M11
+        { home: groupWinners[11], away: groupRunnersUp[3] }, // R32_M12
+        { home: groupRunnersUp[4], away: groupRunnersUp[5] }, // R32_M13
+        { home: groupRunnersUp[6], away: groupRunnersUp[7] }, // R32_M14
+        { home: groupRunnersUp[8], away: groupRunnersUp[9] }, // R32_M15
+        { home: groupRunnersUp[10], away: groupRunnersUp[11] } // R32_M16
       ];
 
       for (let i = 0; i < 16; i++) {
@@ -887,7 +664,6 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
         if (!bracket[i]) {
           bracket[i] = { homeId: null, awayId: null, homeScore: null, awayScore: null, isFinished: false, isInPlay: false };
         }
-        // Only override if real results don't specify the team yet (to maintain dynamic progression logic)
         bracket[i].homeId = pair.home ? pair.home.id : null;
         bracket[i].awayId = pair.away ? pair.away.id : null;
       }
@@ -955,7 +731,9 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
         if (flagImg) flagImg.src = getFlagUrl(teams[champId].code);
         const nameEl = document.getElementById('champion-team-name');
         if (nameEl) nameEl.textContent = teams[champId].name;
-        champDisplay.style.display = 'flex';
+        if (champDisplay) {
+          champDisplay.style.display = 'flex';
+        }
       } else {
         if (champDisplay) champDisplay.style.display = 'none';
       }
@@ -966,65 +744,81 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       if (match.homeScore === null || match.awayScore === null) return null;
       if (match.homeScore > match.awayScore) return match.homeId;
       if (match.homeScore < match.awayScore) return match.awayId;
-      return match.homeId; // Tie default to home team
+      return match.homeId;
     }
 
-    // Render Bracket Tree (purely static)
+    // Render Bracket Tree (Mobile friendly layout with tab rounds)
     function renderBracket() {
       const rounds = [
         { id: 'round-32', start: 0, count: 16, title: 'Rodada de 32' },
         { id: 'round-16', start: 16, count: 8, title: 'Oitavas de Final' },
         { id: 'round-8', start: 24, count: 4, title: 'Quartas de Final' },
         { id: 'round-4', start: 28, count: 2, title: 'Semifinais' },
-        { id: 'round-2', start: 30, count: 1, title: 'Final' }
+        { id: 'round-2', start: 30, count: 1, title: 'Grande Final' }
       ];
 
-      rounds.forEach(r => {
-        const container = document.getElementById(r.id);
-        if (!container) return;
-        const titleEl = container.querySelector('h3');
-        const titleHtml = titleEl ? titleEl.outerHTML : `<h3 class="text-center text-muted text-xs font-bold uppercase tracking-wider mb-2">${r.title}</h3>`;
-        
-        container.innerHTML = titleHtml + '<div class="bracket-matches"></div>';
-        const matchesContainer = container.querySelector('.bracket-matches');
-
-        for (let i = 0; i < r.count; i++) {
-          const bracketIdx = r.start + i;
-          const match = bracket[bracketIdx];
-          
-          const hasHome = match && match.homeId;
-          const homeTeam = hasHome ? teams[match.homeId] : { name: 'A definir', code: 'placeholder' };
-          const hasAway = match && match.awayId;
-          const awayTeam = hasAway ? teams[match.awayId] : { name: 'A definir', code: 'placeholder' };
-
-          const isHomeWinner = match && match.homeScore !== null && match.awayScore !== null && match.homeScore >= match.awayScore;
-          const isAwayWinner = match && match.homeScore !== null && match.awayScore !== null && match.awayScore > match.homeScore;
-
-          const hScore = match && (match.homeScore !== null) ? match.homeScore : '-';
-          const aScore = match && (match.awayScore !== null) ? match.awayScore : '-';
-
-          const matchDiv = document.createElement('div');
-          matchDiv.className = `glass-card bracket-match ${(!hasHome || !hasAway) ? 'bracket-match-pending' : ''}`;
-          matchDiv.innerHTML = `
-            <div class="bracket-match-title">${r.title} - Jogo ${i + 1}</div>
-            <div class="bracket-team-row ${isHomeWinner ? 'winner' : ''} ${!hasHome ? 'team-pending' : ''}">
-              <div class="bracket-team-info">
-                ${hasHome ? `<img src="${getFlagUrl(homeTeam.code)}" class="flag-emoji" />` : ''}
-                <span>${homeTeam.name}</span>
-              </div>
-              <div class="bracket-score-display">${hScore}</div>
-            </div>
-            <div class="bracket-team-row ${isAwayWinner ? 'winner' : ''} ${!hasAway ? 'team-pending' : ''}">
-              <div class="bracket-team-info">
-                ${hasAway ? `<img src="${getFlagUrl(awayTeam.code)}" class="flag-emoji" />` : ''}
-                <span>${awayTeam.name}</span>
-              </div>
-              <div class="bracket-score-display">${aScore}</div>
-            </div>
-          `;
-          matchesContainer.appendChild(matchDiv);
+      // Hide all rounds except active Round
+      rounds.forEach((r, idx) => {
+        const roundDiv = document.getElementById(r.id);
+        if (roundDiv) {
+          roundDiv.classList.toggle('active', idx === activeBracketRound);
         }
       });
+
+      const activeRound = rounds[activeBracketRound];
+      const container = document.getElementById(activeRound.id);
+      if (!container) return;
+
+      const titleEl = container.querySelector('h3');
+      const titleHtml = titleEl ? titleEl.outerHTML : `<h3 style="text-align: center; margin-bottom: 1.5rem; color: var(--color-purple); font-weight: 800; text-transform: uppercase;">${activeRound.title}</h3>`;
+      
+      container.innerHTML = titleHtml + '<div class="bracket-list"></div>';
+      const listContainer = container.querySelector('.bracket-list');
+
+      for (let i = 0; i < activeRound.count; i++) {
+        const bracketIdx = activeRound.start + i;
+        const match = bracket[bracketIdx];
+        
+        const hasHome = match && match.homeId;
+        const homeTeam = hasHome ? teams[match.homeId] : { name: 'A definir', code: 'placeholder' };
+        const hasAway = match && match.awayId;
+        const awayTeam = hasAway ? teams[match.awayId] : { name: 'A definir', code: 'placeholder' };
+
+        const isHomeWinner = match && match.homeScore !== null && match.awayScore !== null && match.homeScore > match.awayScore;
+        const isAwayWinner = match && match.homeScore !== null && match.awayScore !== null && match.awayScore > match.homeScore;
+
+        const hScore = match && (match.homeScore !== null) ? match.homeScore : '-';
+        const aScore = match && (match.awayScore !== null) ? match.awayScore : '-';
+
+        const card = document.createElement('div');
+        card.className = `bracket-match-card glass-card ${(!hasHome || !hasAway) ? 'pending' : ''}`;
+        
+        const statusText = match && match.isInPlay 
+          ? '<span style="color: var(--color-danger); animation: blink 1s infinite; font-weight: 800;">🔴 AO VIVO</span>' 
+          : (match && match.isFinished ? '✅ Fim' : 'A definir');
+
+        card.innerHTML = `
+          <div class="bracket-match-header">
+            <span>Jogo ${i + 1}</span>
+            <span>${statusText}</span>
+          </div>
+          <div class="bracket-match-team-row ${isHomeWinner ? 'winner' : ''} ${!hasHome ? 'team-pending' : ''}">
+            <div class="bracket-match-team-info">
+              ${hasHome ? `<img src="${getFlagUrl(homeTeam.code)}" class="flag-small" />` : ''}
+              <span class="team-name" data-team-id="${homeTeam.id || ''}">${homeTeam.name}</span>
+            </div>
+            <div class="bracket-match-score">${hScore}</div>
+          </div>
+          <div class="bracket-match-team-row ${isAwayWinner ? 'winner' : ''} ${!hasAway ? 'team-pending' : ''}">
+            <div class="bracket-match-team-info">
+              ${hasAway ? `<img src="${getFlagUrl(awayTeam.code)}" class="flag-small" />` : ''}
+              <span class="team-name" data-team-id="${awayTeam.id || ''}">${awayTeam.name}</span>
+            </div>
+            <div class="bracket-match-score">${aScore}</div>
+          </div>
+        `;
+        listContainer.appendChild(card);
+      }
     }
 
     // Modal: Elenco (Squad) Detail
@@ -1036,19 +830,17 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       const listContainer = document.getElementById('squad-players-list');
       if (!titleEl || !listContainer) return;
 
-      titleEl.textContent = `Elenco - ${team.name}`;
+      titleEl.textContent = `Elenco — ${team.name}`;
       listContainer.innerHTML = '';
 
       team.players.forEach(pName => {
         const div = document.createElement('div');
         div.className = 'player-card';
         div.innerHTML = `
-          <div class="player-info">
-            <div class="player-avatar">${pName.charAt(0)}</div>
-            <div>
-              <div class="player-name">${pName}</div>
-              <div class="player-role">Jogador da Seleção</div>
-            </div>
+          <div class="player-avatar-circle">${pName.charAt(0)}</div>
+          <div>
+            <div class="player-name-text">${pName}</div>
+            <div class="player-subtitle">Seleção Nacional</div>
           </div>
         `;
         listContainer.appendChild(div);
@@ -1057,670 +849,144 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       squadModal.classList.add('active');
     }
 
-    // Render Golden Boot / Artilharia list
-    function renderArtilharia() {
-      const tbody = document.getElementById('artilharia-body');
-      const noMsg = document.getElementById('no-scorers-msg');
-      if (!tbody || !noMsg) return;
-
-      tbody.innerHTML = '';
-      const list = artilheirosReais.slice(0, 5); // Top 5 artilheiros
-
-      if (list.length > 0) {
-        noMsg.style.display = 'none';
-        list.forEach((p, index) => {
-          const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '';
-          const rank = index > 2 ? `<span style="font-size: 0.8rem; opacity: 0.6; margin-right: 0.5rem;">${index + 1}º</span>` : '';
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td class="align-left">${medal}${rank} ${p.name}</td>
-            <td class="align-left">
-              <img src="${getFlagUrl(p.teamCode)}" class="flag-emoji" /> ${p.teamName}
-            </td>
-            <td><strong style="color: var(--color-primary); font-size: 1.1rem;">${p.goals}</strong></td>
-          `;
-          tbody.appendChild(tr);
-        });
-      } else {
-        noMsg.style.display = 'block';
-      }
+    if (closeSquadModal) {
+      closeSquadModal.addEventListener('click', () => squadModal.classList.remove('active'));
     }
-
-    // COMPARTILHAR / LEAD GATE
-    let pendingAction = null;
-    let leadModalTriggered = false;
-
-    function triggerLeadCaptureModal(reason = '') {
-      if (leadModalTriggered) return;
-      if (localStorage.getItem('lead_cadastrado')) return;
-
-      leadModalTriggered = true;
-      console.log('Lead capture modal triggered due to:', reason);
-      if (leadModal) leadModal.classList.add('active');
-    }
-
-    function checkRegistrationAndExecute(action) {
-      const isRegistered = localStorage.getItem('lead_cadastrado');
-      if (isRegistered) {
-        executeAction(action);
-      } else {
-        pendingAction = action;
-        triggerLeadCaptureModal('user_action_' + action);
-      }
-    }
-
-    function getLegacyShareUrl() {
-      return `${window.location.origin}${window.location.pathname}`;
-    }
-
-    function appendRefCode(urlStr) {
-      const lead = getSavedLead();
-      if (lead?.refCode && urlStr) {
-        if (urlStr.includes('ref=')) return urlStr;
-        const separator = urlStr.includes('?') ? '&' : '?';
-        return `${urlStr}${separator}ref=${lead.refCode}`;
-      }
-      return urlStr;
-    }
-
-    function getShareUrl() {
-      const lead = getSavedLead();
-      const rawUrl = lead?.predictionUrl || lead?.url || getLegacyShareUrl();
-      return appendRefCode(rawUrl);
-    }
-
-    function getCleanSupabaseUrl() {
-      return (supabaseUrl || '').trim().replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
-    }
-
-    function generatePredictionSlug() {
-      const randomPart = Math.random().toString(36).slice(2, 8);
-      const timePart = Date.now().toString(36).slice(-4);
-      return `${randomPart}${timePart}`.toLowerCase();
-    }
-
-    function getTeamName(teamId) {
-      return teamId && teams[teamId] ? teams[teamId].name : null;
-    }
-
-    function getSimulationSnapshot() {
-      const finalMatch = bracket[30];
-      const championId = getMatchWinner(finalMatch);
-      let runnerUpId = null;
-
-      if (finalMatch && championId) {
-        runnerUpId = championId === finalMatch.homeId ? finalMatch.awayId : finalMatch.homeId;
-      }
-
-      return {
-        champion: getTeamName(championId),
-        runnerUp: getTeamName(runnerUpId),
-        topScorers: artilheirosReais.slice(0, 5),
-        matches,
-        bracket
-      };
-    }
-
-    async function findLeadIdByEmail(email) {
-      const cleanUrl = getCleanSupabaseUrl();
-      if (!cleanUrl || !supabaseAnonKey || !email) return null;
-
-      const res = await fetch(`${cleanUrl}/rest/v1/leads?email=eq.${encodeURIComponent(email)}&select=id&order=created_at.desc&limit=1`, {
-        headers: {
-          'apikey': supabaseAnonKey,
-          'Authorization': `Bearer ${supabaseAnonKey}`
-        }
-      });
-
-      if (!res.ok) return null;
-      const data = await res.json();
-      return data?.[0]?.id || null;
-    }
-
-    async function ensureLeadId() {
-      const lead = getSavedLead();
-      if (!lead) return null;
-      if (lead.leadId) return lead.leadId;
-
-      const leadId = await findLeadIdByEmail(lead.email);
-      if (leadId) {
-        localStorage.setItem('lead_cadastrado', JSON.stringify({ ...lead, leadId }));
-      }
-
-      return leadId;
-    }
-
-    async function recordEngagementEvent(eventType, points, eventKey, metadata = {}) {
-      const cleanUrl = getCleanSupabaseUrl();
-      if (!cleanUrl || !supabaseAnonKey || !eventType || !eventKey) return;
-
-      try {
-        const leadId = metadata.leadId || await ensureLeadId();
-        if (!leadId) return;
-
-        const res = await fetch(`${cleanUrl}/rest/v1/engagement_events`, {
-          method: 'POST',
-          headers: {
-            'apikey': supabaseAnonKey,
-            'Authorization': `Bearer ${supabaseAnonKey}`,
-            'Content-Type': 'application/json',
-            'Prefer': 'return=minimal'
-          },
-          body: JSON.stringify({
-            lead_id: leadId,
-            event_type: eventType,
-            event_key: eventKey,
-            points,
-            metadata
-          })
-        });
-
-        if (!res.ok && res.status !== 409) {
-          console.warn('Evento de ranking nao registrado:', eventType, await res.text());
-        }
-      } catch (err) {
-        console.warn('Erro ao registrar evento de ranking:', err);
-      }
-    }
-
-    async function createSharedPrediction(leadId) {
-      const cleanUrl = getCleanSupabaseUrl();
-      if (!cleanUrl || !supabaseAnonKey) return null;
-
-      for (let attempt = 0; attempt < 3; attempt++) {
-        const slug = generatePredictionSlug();
-        const res = await fetch(`${cleanUrl}/rest/v1/shared_predictions`, {
-          method: 'POST',
-          headers: {
-            'apikey': supabaseAnonKey,
-            'Authorization': `Bearer ${supabaseAnonKey}`,
-            'Content-Type': 'application/json',
-            'Prefer': 'return=representation'
-          },
-          body: JSON.stringify({
-            slug,
-            lead_id: leadId,
-            simulation_data: getSimulationSnapshot()
-          })
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          const savedSlug = data?.[0]?.slug || slug;
-          return {
-            slug: savedSlug,
-            url: `${window.location.origin}/palpite/${savedSlug}`
-          };
-        }
-
-        if (res.status !== 409) break;
-      }
-
-      return null;
-    }
-
-    async function ensurePublicPredictionUrl() {
-      const lead = getSavedLead();
-      if (lead?.predictionUrl) return lead.predictionUrl;
-      if (!lead) return getLegacyShareUrl();
-
-      let leadId = lead.leadId || null;
-      if (!leadId) {
-        leadId = await findLeadIdByEmail(lead.email);
-      }
-
-      const prediction = await createSharedPrediction(leadId);
-      if (!prediction) return getLegacyShareUrl();
-
-      const updatedLead = {
-        ...lead,
-        leadId,
-        predictionSlug: prediction.slug,
-        predictionUrl: prediction.url,
-        url: prediction.url
-      };
-      localStorage.setItem('lead_cadastrado', JSON.stringify(updatedLead));
-
-      return prediction.url;
-    }
-
-    async function executeAction(action) {
-      let shareUrl = action === 'share' ? await ensurePublicPredictionUrl() : getShareUrl();
-      shareUrl = appendRefCode(shareUrl);
-      const text = `Acompanhe a Tabela da Copa 2026 em tempo real e participe do Bolão dos amigos! Participe: ${shareUrl}`;
-
-      if (action === 'share') {
-        const lead = getSavedLead();
-        if (lead?.leadId) {
-          const shareKey = lead.predictionSlug || btoa(shareUrl).replace(/=+$/, '');
-          recordEngagementEvent('simulation_shared', 20, `share:${lead.leadId}:${shareKey}`, {
-            leadId: lead.leadId,
-            shareUrl
-          });
-        }
-
-        const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
-        if (navigator.share) {
-          navigator.share({
-            title: 'Tabela Copa 2026',
-            text: text,
-            url: shareUrl,
-          }).catch(() => {
-            window.open(waUrl, '_blank');
-          });
-        } else {
-          window.open(waUrl, '_blank');
-        }
-      }
-    }
-
-    function generateRefCode() {
-      return 'COPUS-' + Math.random().toString(36).substring(2, 6).toUpperCase();
-    }
-
-    if (leadForm) {
-      leadForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const nome = document.getElementById('lead-name').value;
-        const email = document.getElementById('lead-email').value;
-        let shareUrl = getLegacyShareUrl();
-        const simulationSnapshot = getSimulationSnapshot();
-
-        const savedLead = getSavedLead();
-        const refCode = savedLead?.refCode || generateRefCode();
-
-        const leadData = { nome, email, url: shareUrl, refCode };
-        localStorage.setItem('lead_cadastrado', JSON.stringify(leadData));
-
-        if (leadModal) leadModal.classList.remove('active');
-
-        if (supabaseUrl && supabaseAnonKey) {
-          try {
-            const payload = {
-              nome: nome,
-              email: email,
-              simulacao_data: simulationSnapshot,
-              url_compartilhamento: shareUrl,
-              ref_code: refCode
-            };
-
-            let cleanUrl = getCleanSupabaseUrl();
-
-            const leadRes = await fetch(`${cleanUrl}/rest/v1/leads`, {
-              method: 'POST',
-              headers: {
-                'apikey': supabaseAnonKey,
-                'Authorization': `Bearer ${supabaseAnonKey}`,
-                'Content-Type': 'application/json',
-                'Prefer': 'return=representation'
-              },
-              body: JSON.stringify(payload)
-            });
-
-            if (leadRes.ok) {
-              const savedLeads = await leadRes.json();
-              const savedLeadId = savedLeads?.[0]?.id || null;
-              if (savedLeadId) {
-                const updatedLeadData = { ...leadData, leadId: savedLeadId };
-                localStorage.setItem('lead_cadastrado', JSON.stringify(updatedLeadData));
-                await recordEngagementEvent('simulation_created', 10, `simulation:${savedLeadId}`, {
-                  leadId: savedLeadId
-                });
-
-                const refCodeConvite = localStorage.getItem('ref_code_convite');
-                if (refCodeConvite) {
-                  try {
-                    const referrerRes = await fetch(`${cleanUrl}/rest/v1/leads?ref_code=eq.${encodeURIComponent(refCodeConvite)}&select=id&limit=1`, {
-                      headers: { 'apikey': supabaseAnonKey, 'Authorization': `Bearer ${supabaseAnonKey}` }
-                    });
-                    if (referrerRes.ok) {
-                      const referrerData = await referrerRes.json();
-                      const referrerId = referrerData[0]?.id;
-                      if (referrerId && referrerId !== savedLeadId) {
-                        const refCreateRes = await fetch(`${cleanUrl}/rest/v1/referrals`, {
-                          method: 'POST',
-                          headers: {
-                            'apikey': supabaseAnonKey,
-                            'Authorization': `Bearer ${supabaseAnonKey}`,
-                            'Content-Type': 'application/json',
-                            'Prefer': 'return=minimal'
-                          },
-                          body: JSON.stringify({ referrer_id: referrerId, invited_id: savedLeadId })
-                        });
-                        if (refCreateRes.ok) {
-                          await recordEngagementEvent('friend_invited', 15, `friend_invited:${referrerId}:${savedLeadId}`, {
-                            leadId: referrerId,
-                            invitedId: savedLeadId
-                          });
-                          await recordEngagementEvent('invited_by_friend', 15, `invited_by_friend:${savedLeadId}`, {
-                            leadId: savedLeadId,
-                            referrerId: referrerId
-                          });
-                          localStorage.removeItem('ref_code_convite');
-                        }
-                      }
-                    }
-                  } catch (err) {
-                    console.error("Erro ao registrar indicacao no banco:", err);
-                  }
-                }
-              }
-            }
-            console.log("Lead sincronizado com Supabase com sucesso.");
-          } catch (err) {
-            console.error("Erro ao sincronizar com Supabase:", err);
-          }
-        }
-
-        if (pendingAction) {
-          await executeAction(pendingAction);
-          pendingAction = null;
-        }
-        
-        alert('Cadastro concluído com sucesso!');
-      });
-    }
-
-    if (closeLeadModal) closeLeadModal.addEventListener('click', () => leadModal && leadModal.classList.remove('active'));
-    if (closeSquadModal) closeSquadModal.addEventListener('click', () => squadModal && squadModal.classList.remove('active'));
 
     window.addEventListener('click', (e) => {
-      if (e.target === leadModal) leadModal.classList.remove('active');
       if (e.target === squadModal) squadModal.classList.remove('active');
     });
 
-    // Instructions Accordion Toggle
-    const toggleInstructions = document.getElementById('toggle-instructions');
-    const instructionsContainer = document.getElementById('instructions-container');
-    const instructionsBody = document.getElementById('instructions-body');
+    // Render Podium + Golden Boot Scorers
+    function renderArtilharia() {
+      const podiumEl = document.getElementById('podium-container');
+      const tbody = document.getElementById('artilharia-body');
+      const noMsg = document.getElementById('no-scorers-msg');
+      const scorersCard = document.getElementById('scorers-table-card');
+      if (!tbody || !noMsg || !podiumEl || !scorersCard) return;
 
-    if (toggleInstructions && instructionsContainer && instructionsBody) {
-      toggleInstructions.addEventListener('click', () => {
-        const isExpanded = instructionsContainer.classList.toggle('expanded');
-        instructionsBody.classList.toggle('active', isExpanded);
-      });
+      tbody.innerHTML = '';
+
+      if (artilheirosReais.length > 0) {
+        noMsg.style.display = 'none';
+        podiumEl.style.display = 'flex';
+        scorersCard.style.display = 'block';
+
+        // Render Podium
+        const first = artilheirosReais[0];
+        const second = artilheirosReais[1];
+        const third = artilheirosReais[2];
+
+        const firstCol = document.getElementById('podium-first');
+        const secondCol = document.getElementById('podium-second');
+        const thirdCol = document.getElementById('podium-third');
+
+        if (firstCol) {
+          if (first) {
+            firstCol.style.visibility = 'visible';
+            firstCol.innerHTML = `
+              <div class="podium-player-photo">
+                👑
+                <span class="podium-medal">🥇</span>
+              </div>
+              <div class="podium-player-name" title="${first.name}">${first.name}</div>
+              <div class="podium-player-team">
+                <img src="${getFlagUrl(first.teamCode)}" class="flag-small" />
+                <span>${first.teamName}</span>
+              </div>
+              <div class="podium-box">
+                <span>1º</span>
+                <span class="podium-box-score">${first.goals} Gols</span>
+              </div>
+            `;
+          } else {
+            firstCol.style.visibility = 'hidden';
+          }
+        }
+
+        if (secondCol) {
+          if (second) {
+            secondCol.style.visibility = 'visible';
+            secondCol.innerHTML = `
+              <div class="podium-player-photo">
+                ⚽
+                <span class="podium-medal">🥈</span>
+              </div>
+              <div class="podium-player-name" title="${second.name}">${second.name}</div>
+              <div class="podium-player-team">
+                <img src="${getFlagUrl(second.teamCode)}" class="flag-small" />
+                <span>${second.teamName}</span>
+              </div>
+              <div class="podium-box">
+                <span>2º</span>
+                <span class="podium-box-score">${second.goals} Gols</span>
+              </div>
+            `;
+          } else {
+            secondCol.style.visibility = 'hidden';
+          }
+        }
+
+        if (thirdCol) {
+          if (third) {
+            thirdCol.style.visibility = 'visible';
+            thirdCol.innerHTML = `
+              <div class="podium-player-photo">
+                let
+                <span class="podium-medal">🥉</span>
+              </div>
+              <div class="podium-player-name" title="${third.name}">${third.name}</div>
+              <div class="podium-player-team">
+                <img src="${getFlagUrl(third.teamCode)}" class="flag-small" />
+                <span>${third.teamName}</span>
+              </div>
+              <div class="podium-box">
+                <span>3º</span>
+                <span class="podium-box-score">${third.goals} Gols</span>
+              </div>
+            `;
+          } else {
+            thirdCol.style.visibility = 'hidden';
+          }
+        }
+
+        // Render table
+        const remaining = artilheirosReais.slice(3);
+        if (remaining.length > 0) {
+          remaining.forEach((p, idx) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td class="align-left">
+                <span class="text-xs text-muted font-bold mr-1">${idx + 4}º</span>
+                <span style="font-weight: 700;">${p.name}</span>
+              </td>
+              <td class="align-left">
+                <img src="${getFlagUrl(p.teamCode)}" class="flag-small" />
+                <span>${p.teamName}</span>
+              </td>
+              <td><strong style="color: var(--color-primary); font-size: 1.15rem;">${p.goals}</strong></td>
+            `;
+            tbody.appendChild(tr);
+          });
+        }
+      } else {
+        noMsg.style.display = 'block';
+        podiumEl.style.display = 'none';
+        scorersCard.style.display = 'none';
+      }
     }
 
     // Global event delegation for squad click
     document.addEventListener('click', (e) => {
-      const teamEl = e.target.closest('.team-name');
+      const teamEl = e.target.closest('.team-name, .team-name-large');
       if (teamEl && teamEl.dataset.teamId) {
         showSquadModal(teamEl.dataset.teamId);
       }
     });
 
-    // =============================================
-    // BOLAO LOGIC
-    // =============================================
-    function generateGroupCode() {
-      return 'COPA-' + Math.random().toString(36).substring(2, 6).toUpperCase();
-    }
-    function getSavedLead() {
-      try { return JSON.parse(localStorage.getItem('lead_cadastrado')); } catch(e) { return null; }
-    }
-    function getSavedGroups() {
-      try { return JSON.parse(localStorage.getItem('bolao_grupos')) || []; } catch(e) { return []; }
-    }
-    function saveGroups(grps) {
-      localStorage.setItem('bolao_grupos', JSON.stringify(grps));
-    }
-    async function initBolao() {
-      const lead = getSavedLead();
-      const gate = document.getElementById('bolao-gate');
-      const panel = document.getElementById('bolao-panel');
-      if (!gate || !panel) return;
-      if (lead) {
-        gate.style.display = 'none';
-        panel.style.display = 'block';
-        renderMyGroups();
-
-        let refCode = lead.refCode;
-        if (!refCode) {
-          refCode = 'COPUS-' + Math.random().toString(36).substring(2, 6).toUpperCase();
-          lead.refCode = refCode;
-          localStorage.setItem('lead_cadastrado', JSON.stringify(lead));
-          
-          if (supabaseUrl && supabaseAnonKey && lead.leadId) {
-            const cleanUrl = getCleanSupabaseUrl();
-            fetch(`${cleanUrl}/rest/v1/leads?id=eq.${lead.leadId}`, {
-              method: 'PATCH',
-              headers: {
-                'apikey': supabaseAnonKey,
-                'Authorization': `Bearer ${supabaseAnonKey}`,
-                'Content-Type': 'application/json',
-                'Prefer': 'return=minimal'
-              },
-              body: JSON.stringify({ ref_code: refCode })
-            }).catch(err => console.warn('Erro ao atualizar refCode legada:', err));
-          }
-        }
-
-        const refLinkInput = document.getElementById('ref-link-input');
-        const refCodeDisplay = document.getElementById('ref-code-display');
-        if (refLinkInput && refCodeDisplay) {
-          refCodeDisplay.textContent = refCode;
-          refLinkInput.value = `${window.location.origin}${window.location.pathname}?ref=${refCode}`;
-        }
-
-        if (supabaseUrl && supabaseAnonKey && lead.leadId) {
-          const cleanUrl = getCleanSupabaseUrl();
-          Promise.all([
-            fetch(`${cleanUrl}/rest/v1/engagement_events?lead_id=eq.${lead.leadId}&select=event_type`, {
-              headers: { 'apikey': supabaseAnonKey, 'Authorization': `Bearer ${supabaseAnonKey}` }
-            }).then(r => r.ok ? r.json() : []),
-            fetch(`${cleanUrl}/rest/v1/referrals?referrer_id=eq.${lead.leadId}&select=id`, {
-              headers: { 'apikey': supabaseAnonKey, 'Authorization': `Bearer ${supabaseAnonKey}` }
-            }).then(r => r.ok ? r.json() : [])
-          ]).then(([events, referrals]) => {
-            renderUserBadges(events, referrals.length);
-          }).catch(err => {
-            console.warn('Erro ao carregar conquistas:', err);
-            renderUserBadges([], 0);
-          });
-        } else {
-          renderUserBadges([], 0);
-        }
-      }
-      else { gate.style.display = 'flex'; panel.style.display = 'none'; }
-    }
-
-    function renderUserBadges(events, inviteCount) {
-      const container = document.getElementById('user-badges-container');
-      if (!container) return;
-
-      const eventTypes = new Set(events.map(e => e.event_type));
-
-      const badgesList = [
-        { key: 'palpiteiro', label: 'Palpiteiro', icon: '⚽', desc: 'Fez a primeira simulação', unlocked: eventTypes.has('simulation_created') || events.length > 0, isEliteCheck: false, progress: '' },
-        { key: 'criador', label: 'Fundador', icon: '👥', desc: 'Criou um grupo no Bolão', unlocked: eventTypes.has('group_created'), isEliteCheck: false, progress: '' },
-        { key: 'propagador', label: 'Divulgador', icon: '📢', desc: 'Compartilhou a simulação', unlocked: eventTypes.has('simulation_shared'), isEliteCheck: false, progress: '' },
-        { key: 'influenciador', label: 'Influenciador', icon: '🔥', desc: 'Convidou 5 amigos', unlocked: inviteCount >= 5, isEliteCheck: false, progress: inviteCount + '/5' },
-        { key: 'embaixador', label: 'Embaixador', icon: '👑', desc: 'Convidou 10 amigos', unlocked: inviteCount >= 10, isEliteCheck: false, progress: inviteCount + '/10' },
-        { key: 'elite', label: 'Elite', icon: '🏆', desc: 'Top 100 no Ranking Global', unlocked: false, isEliteCheck: true, progress: '' }
-      ];
-
-      container.innerHTML = badgesList.map(b => {
-        const opacity = b.unlocked ? '1' : '0.4';
-        const border = b.unlocked ? 'border: 2px solid var(--color-primary);' : 'border: 1px solid rgba(255,255,255,0.1);';
-        const shadow = b.unlocked ? 'box-shadow: 0 0 10px rgba(0,255,135,0.25);' : '';
-        const labelColor = b.unlocked ? 'color: var(--color-primary);' : 'color: var(--text-muted);';
-        const sub = b.progress ? '<div style="font-size:0.65rem; color:var(--color-primary); font-weight:700; margin-top:0.25rem;">' + b.progress + '</div>' : '';
-        const descText = b.isEliteCheck ? 'Clique para ver o Ranking' : b.desc;
-        const clickStyle = b.isEliteCheck ? ' cursor:pointer;' : '';
-        const clickHandler = b.isEliteCheck ? ' onclick="window.location.href=\'/ranking\'"' : '';
-
-        return '<div class="glass-card" style="padding:0.75rem; text-align:center; border-radius:12px; ' + border + ' ' + shadow + ' opacity:' + opacity + ';' + clickStyle + '" title="' + b.desc + '"' + clickHandler + '>' +
-          '<div style="font-size:1.75rem; margin-bottom:0.25rem;">' + b.icon + '</div>' +
-          '<div style="font-size:0.8rem; font-weight:700; ' + labelColor + '">' + b.label + '</div>' +
-          '<div style="font-size:0.65rem; color:var(--text-muted); margin-top:0.25rem; line-height:1.2;">' + descText + '</div>' +
-          sub +
-          '</div>';
-      }).join('');
-    }
-    function renderMyGroups() {
-      const grps = getSavedGroups();
-      const list = document.getElementById('bolao-groups-list');
-      if (!list) return;
-      if (grps.length === 0) { list.innerHTML = '<p class="text-muted text-center" style="padding:2rem;">Você ainda não participa de nenhum grupo.<br/>Crie ou entre em um acima!</p>'; return; }
-      list.innerHTML = grps.map((g, i) => '<div class="bolao-group-item glass-card" data-index="'+i+'"><div class="bolao-group-info"><span class="bolao-group-name">'+g.nome+'</span><span class="bolao-code-pill">'+g.codigo+'</span></div><button class="bolao-view-btn" data-index="'+i+'">Ver Ranking &rarr;</button></div>').join('');
-      list.querySelectorAll('.bolao-view-btn').forEach(btn => { btn.addEventListener('click', () => { openLeaderboard(getSavedGroups()[parseInt(btn.dataset.index)]); }); });
-    }
-    async function openLeaderboard(group) {
-      const section = document.getElementById('bolao-leaderboard-section');
-      const myGroups = document.getElementById('bolao-my-groups');
-      const actions = document.querySelector('.bolao-actions');
-      const title = document.getElementById('bolao-leaderboard-title');
-      const codeBadge = document.getElementById('bolao-leaderboard-code');
-      const tbody = document.getElementById('bolao-leaderboard-body');
-      if (!section || !title || !tbody) return;
-      title.textContent = group.nome; codeBadge.textContent = group.codigo;
-      section.style.display = 'block';
-      if (myGroups) myGroups.style.display = 'none';
-      if (actions) actions.style.display = 'none';
-      tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted" style="padding:2rem;">Carregando...</td></tr>';
-      const copyBtn = document.getElementById('bolao-copy-link-btn');
-      if (copyBtn) { copyBtn.onclick = () => { const link = window.location.origin + window.location.pathname + '?bolao=' + group.codigo; navigator.clipboard.writeText(link).then(() => { copyBtn.textContent = 'Link copiado!'; setTimeout(() => { copyBtn.textContent = 'Copiar Link de Convite'; }, 2500); }); }; }
-      const rawUrl = supabaseUrl || ''; const anonKey = supabaseAnonKey || '';
-      let cleanUrl = rawUrl.trim().replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
-      if (!cleanUrl || !anonKey) { tbody.innerHTML = '<tr><td colspan="5" class="text-muted text-center" style="padding:1rem;">Configure o Supabase para ver participantes.</td></tr>'; return; }
-      try {
-        const res = await fetch(cleanUrl + '/rest/v1/grupo_membros?grupo_id=' + group.id + '&select=joined_at,leads(nome,url_compartilhamento)&order=joined_at.asc', { headers: { 'apikey': anonKey, 'Authorization': 'Bearer ' + anonKey } });
-        const members = await res.json();
-        if (!members || members.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="text-muted text-center" style="padding:1rem;">Nenhum participante ainda. Compartilhe o código!</td></tr>'; return; }
-        tbody.innerHTML = members.map((m, i) => { const lead = m.leads || {}; const medal = i===0?'1º':i===1?'2º':i===2?'3º':(i+1)+'º'; return '<tr><td style="text-align:center;font-weight:800;">' + medal + '</td><td class="align-left" style="font-weight:600;">' + (lead.nome||'Anônimo') + '</td><td style="text-align:center;">' + (lead.url_compartilhamento ? '<a href="' + lead.url_compartilhamento + '" target="_blank" style="color:var(--color-secondary);font-size:0.8rem;">Ver Link</a>' : '-') + '</td><td style="text-align:center;font-weight:700;color:var(--color-accent);">0 pts</td></tr>'; }).join('');
-      } catch(err) { tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted" style="padding:1rem;">Erro ao carregar.</td></tr>'; console.error(err); }
-    }
-    const bolaoBackBtn = document.getElementById('bolao-back-btn');
-    if (bolaoBackBtn) { bolaoBackBtn.addEventListener('click', () => { document.getElementById('bolao-leaderboard-section').style.display = 'none'; const mg = document.getElementById('bolao-my-groups'); const act = document.querySelector('.bolao-actions'); if (mg) mg.style.display = 'block'; if (act) act.style.display = 'grid'; }); }
-    const bolaoGotoRegister = document.getElementById('bolao-goto-register');
-    if (bolaoGotoRegister) { bolaoGotoRegister.addEventListener('click', () => { document.getElementById('lead-modal').classList.add('active'); }); }
-    const bolaoCreateBtn2 = document.getElementById('bolao-create-btn');
-    if (bolaoCreateBtn2) {
-      bolaoCreateBtn2.addEventListener('click', async () => {
-        const lead = getSavedLead(); if (!lead) { alert('Cadastre-se primeiro!'); return; }
-        const nameInput = document.getElementById('bolao-group-name'); const groupName = nameInput.value.trim();
-        if (!groupName) { alert('Digite um nome para o grupo!'); nameInput.focus(); return; }
-        bolaoCreateBtn2.textContent = 'Criando...'; bolaoCreateBtn2.disabled = true;
-        const codigo = generateGroupCode(); let groupId = null;
-        const rawUrl = supabaseUrl || ''; const anonKey = supabaseAnonKey || '';
-        let cleanUrl = rawUrl.trim().replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
-        try {
-          if (cleanUrl && anonKey) {
-            const lr = await fetch(cleanUrl+'/rest/v1/leads?email=eq.'+encodeURIComponent(lead.email)+'&select=id&limit=1', { headers: {'apikey':anonKey,'Authorization':'Bearer '+anonKey} });
-            const ld = await lr.json(); const leadId = ld[0]&&ld[0].id;
-            if (!leadId) throw new Error('Lead nao encontrado.');
-            const gr = await fetch(cleanUrl+'/rest/v1/grupos', { method:'POST', headers:{'apikey':anonKey,'Authorization':'Bearer '+anonKey,'Content-Type':'application/json','Prefer':'return=representation'}, body: JSON.stringify({nome:groupName,codigo_acesso:codigo,criador_id:leadId}) });
-            const gd = await gr.json(); groupId = gd[0]&&gd[0].id;
-            await fetch(cleanUrl+'/rest/v1/grupo_membros', { method:'POST', headers:{'apikey':anonKey,'Authorization':'Bearer '+anonKey,'Content-Type':'application/json','Prefer':'return=minimal'}, body: JSON.stringify({grupo_id:groupId,lead_id:leadId}) });
-            await recordEngagementEvent('group_created', 30, `group_created:${leadId}:${groupId || codigo}`, {
-              leadId,
-              groupId: groupId || codigo,
-              groupName,
-              codigo
-            });
-          }
-        } catch(err) { console.error('Erro criar grupo:', err); }
-        const sg = getSavedGroups(); sg.push({nome:groupName,codigo,id:groupId||codigo}); saveGroups(sg);
-        nameInput.value = ''; bolaoCreateBtn2.textContent = 'Criar Grupo'; bolaoCreateBtn2.disabled = false;
-        renderMyGroups(); alert('Grupo "'+groupName+'" criado!\nCodigo: '+codigo+'\n\nCompartilhe este codigo com seus amigos!');
-      });
-    }
-    const bolaoJoinBtn2 = document.getElementById('bolao-join-btn');
-    if (bolaoJoinBtn2) {
-      bolaoJoinBtn2.addEventListener('click', async () => {
-        const lead = getSavedLead(); if (!lead) { alert('Cadastre-se primeiro!'); return; }
-        const codeInput = document.getElementById('bolao-join-code'); const code = codeInput.value.trim().toUpperCase();
-        if (!code) { alert('Digite o codigo do grupo!'); codeInput.focus(); return; }
-        bolaoJoinBtn2.textContent = 'Entrando...'; bolaoJoinBtn2.disabled = true;
-        const rawUrl = supabaseUrl || ''; const anonKey = supabaseAnonKey || '';
-        let cleanUrl = rawUrl.trim().replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
-        let groupId = null; let groupName = code;
-        try {
-          if (cleanUrl && anonKey) {
-            const gr = await fetch(cleanUrl+'/rest/v1/grupos?codigo_acesso=eq.'+code+'&select=id,nome&limit=1', { headers:{'apikey':anonKey,'Authorization':'Bearer '+anonKey} });
-            const gd = await gr.json();
-            if (!gd||gd.length===0) { alert('Codigo invalido. Verifique com quem te convidou!'); bolaoJoinBtn2.textContent='Entrar'; bolaoJoinBtn2.disabled=false; return; }
-            groupId=gd[0].id; groupName=gd[0].nome;
-            const lr = await fetch(cleanUrl+'/rest/v1/leads?email=eq.'+encodeURIComponent(lead.email)+'&select=id&limit=1', { headers:{'apikey':anonKey,'Authorization':'Bearer '+anonKey} });
-            const ld = await lr.json(); const leadId = ld[0]&&ld[0].id;
-            if (!leadId) throw new Error('Lead nao encontrado.');
-            await fetch(cleanUrl+'/rest/v1/grupo_membros', { method:'POST', headers:{'apikey':anonKey,'Authorization':'Bearer '+anonKey,'Content-Type':'application/json','Prefer':'return=minimal'}, body: JSON.stringify({grupo_id:groupId,lead_id:leadId}) });
-            await recordEngagementEvent('group_joined', 5, `group_joined:${leadId}:${groupId}`, {
-              leadId,
-              groupId,
-              groupName,
-              codigo: code
-            });
-          }
-        } catch(err) { console.error('Erro entrar grupo:', err); }
-        const sg = getSavedGroups(); if (!sg.some(g => g.codigo===code)) { sg.push({nome:groupName,codigo:code,id:groupId||code}); saveGroups(sg); }
-        codeInput.value = ''; bolaoJoinBtn2.textContent = 'Entrar'; bolaoJoinBtn2.disabled = false;
-        renderMyGroups(); alert('Voce entrou no grupo "'+groupName+'"!');
-      });
-    }
-    const refCopyBtn = document.getElementById('ref-copy-btn');
-    if (refCopyBtn) {
-      refCopyBtn.addEventListener('click', () => {
-        const refLinkInput = document.getElementById('ref-link-input');
-        if (refLinkInput) {
-          navigator.clipboard.writeText(refLinkInput.value).then(() => {
-            const originalText = refCopyBtn.textContent;
-            refCopyBtn.textContent = '✅ Copiado!';
-            setTimeout(() => { refCopyBtn.textContent = originalText; }, 2500);
-          });
-        }
-      });
-    }
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const refParam = urlParams.get('ref');
-    if (refParam) {
-      localStorage.setItem('ref_code_convite', refParam.toUpperCase());
-    }
-
-    document.querySelectorAll('.tab-btn[data-tab="bolao"]').forEach(btn => { btn.addEventListener('click', initBolao); });
-    const urlBolaoCode = new URLSearchParams(window.location.search).get('bolao');
-    if (urlBolaoCode) { const ji = document.getElementById('bolao-join-code'); if (ji) ji.value = urlBolaoCode.toUpperCase(); const bt = document.querySelector('[data-tab="bolao"]'); if (bt) bt.click(); }
-
     // Start everything
     async function initApp() {
-      // Welcome Carousel Logic
-      const welcomeModal = document.getElementById('welcome-modal');
-      const slides = document.querySelectorAll('.carousel-slide');
-      const dots = document.querySelectorAll('.carousel-dots .dot');
-      const nextBtn = document.getElementById('welcome-next-btn');
-      let currentSlide = 0;
-
-      function showSlide(index) {
-        slides.forEach((s, i) => s.style.display = i === index ? 'block' : 'none');
-        dots.forEach((d, i) => d.classList.toggle('active', i === index));
-        if (nextBtn) {
-          if (index === slides.length - 1) {
-            nextBtn.textContent = 'Começar! 🎉';
-          } else {
-            nextBtn.innerHTML = 'Próximo ➔';
-          }
-        }
-      }
-
-      if (nextBtn) {
-        nextBtn.addEventListener('click', () => {
-          if (currentSlide < slides.length - 1) {
-            currentSlide++;
-            showSlide(currentSlide);
-          } else {
-            if (welcomeModal) welcomeModal.classList.remove('active');
-            localStorage.setItem('hasSeenWelcome', 'true');
-          }
-        });
-      }
-
-      if (!localStorage.getItem('hasSeenWelcome') && welcomeModal) {
-        setTimeout(() => welcomeModal.classList.add('active'), 800);
-      }
-
-      // ─── SUPABASE FETCH (reutilizável para polling) ───────────────────────────
+      // ─── SUPABASE FETCH ──────────────────────────────────────────────────
       async function fetchSupabaseResults() {
         const cleanUrl = (supabaseUrl || '').trim().replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
         if (!cleanUrl || !supabaseAnonKey) return false;
@@ -1734,9 +1000,6 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
             const realData = await res.json();
             realData.forEach(rr => {
               if (rr.status === 'FINISHED' || rr.status === 'IN_PLAY' || rr.status === 'PAUSED') {
-                // Knockout match IDs: R32_M*, R16_M*, QF_M*, SF_M*, FNL_M*
-                // Group match IDs: A_M*, B_M*, ... L_M* (single letter prefix)
-                // IMPORTANT: Do NOT use startsWith('F_') — it collides with Group F match IDs!
                 const isKnockout = rr.match_id.startsWith('R32_') || rr.match_id.startsWith('R16_') || rr.match_id.startsWith('QF_') || rr.match_id.startsWith('SF_') || rr.match_id.startsWith('FNL_');
                 if (isKnockout) {
                   let idx = -1;
@@ -1776,6 +1039,7 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
                 }
               }
             });
+            
             const lbl = document.getElementById('last-update-label');
             if (lbl) {
               const now = new Date();
@@ -1785,7 +1049,9 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
               lbl.textContent = `⏱ Atualizado às ${h}:${min}:${s}`;
             }
           }
-        } catch(e) { console.error('Erro ao buscar resultados reais', e); }
+        } catch(e) { 
+          console.error('Erro ao buscar resultados reais', e); 
+        }
         return updated;
       }
 
@@ -1806,9 +1072,10 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
               assists: a.assists || 0,
               photo: a.player_photo || null,
             }));
-            console.log(`⚽ ${artilheirosReais.length} artilheiro(s) carregados do Supabase.`);
           }
-        } catch(e) { console.error('Erro ao buscar artilheiros reais', e); }
+        } catch(e) { 
+          console.error('Erro ao buscar artilheiros reais', e); 
+        }
       }
 
       await fetchSupabaseResults();
@@ -1818,13 +1085,11 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       calculateQualifiedTeams();
       renderArtilharia();
       renderLiveIndicator();
-      startCountdown();
 
-      // ─── POLLING AUTOMÁTICO ADAPTATIVO ───────────────────────────────────────
+      // ─── POLLING AUTOMATICO ──────────────────────────────────────────────
       let pollTimeoutId = null;
       async function runPolling() {
-        console.log('🔄 Polling automático do Supabase...');
-        const changed = await fetchSupabaseResults();
+        await fetchSupabaseResults();
         await fetchSupabaseScorers();
         
         groups.forEach(g => updateGroupStandings(g));
@@ -1834,13 +1099,13 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
         renderLiveIndicator();
         renderUpcomingMatches();
 
-        const interval = (matches.some(m => m.isInPlay) || bracket.some(m => m && m.isInPlay)) ? 30_000 : 60_000;
-        console.log(`⏱ Próximo polling em ${interval / 1000}s`);
+        const isAnyLive = matches.some(m => m.isInPlay) || bracket.some(m => m && m.isInPlay);
+        const interval = isAnyLive ? 30_000 : 60_000;
         pollTimeoutId = setTimeout(runPolling, interval);
       }
       runPolling();
 
-      // ─── BOTÃO DE REFRESH MANUAL ─────────────────────────────────────────────
+      // ─── BOTAO DE REFRESH MANUAL ─────────────────────────────────────────
       const refreshBtn = document.getElementById('refresh-scores-btn');
       const refreshIcon = document.getElementById('refresh-icon');
       if (refreshBtn) {
@@ -1848,23 +1113,27 @@ const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
           refreshBtn.disabled = true;
           if (refreshIcon) refreshIcon.style.animation = 'spin 0.8s linear infinite';
           if (pollTimeoutId) clearTimeout(pollTimeoutId);
+          
           await fetchSupabaseResults();
           await fetchSupabaseScorers();
+          
           groups.forEach(g => updateGroupStandings(g));
           calculateQualifiedTeams();
           renderArtilharia();
           renderJogosDoDia();
           renderLiveIndicator();
           renderUpcomingMatches();
+          
           if (refreshIcon) refreshIcon.style.animation = '';
           refreshBtn.disabled = false;
-          // Resume normal polling loop
-          const interval = (matches.some(m => m.isInPlay) || bracket.some(m => m && m.isInPlay)) ? 30_000 : 60_000;
+          
+          const isAnyLive = matches.some(m => m.isInPlay) || bracket.some(m => m && m.isInPlay);
+          const interval = isAnyLive ? 30_000 : 60_000;
           pollTimeoutId = setTimeout(runPolling, interval);
         });
       }
     }
 
-    initApp();</script>
+    initApp();
+  </script>
 </Layout>
-
